@@ -51,13 +51,15 @@ export default function SongList({
     return ratings[key] && Object.keys(ratings[key]).length > 0;
   });
 
-  // Show the completion card the first time the album becomes fully ranked
+  // Show the completion card the first time the album becomes fully ranked,
+  // but only after QuickScore has closed — otherwise the card fires mid-session
+  // the moment the last song gets its first category answered.
   useEffect(() => {
-    if (wasIncompleteOnMount.current && albumComplete && !completionShown) {
+    if (wasIncompleteOnMount.current && albumComplete && !completionShown && quickScoreSongs === null) {
       setCompletionShown(true);
       setShowCompletionCard(true);
     }
-  }, [albumComplete]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [albumComplete, quickScoreSongs]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-launch QuickScore when the user chose "Vibe Check" from the mode modal
   useEffect(() => {

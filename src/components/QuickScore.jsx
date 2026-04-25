@@ -683,6 +683,18 @@ export default function QuickScore({
   // Whether the current question is the bridge category
   const showBridgeLyrics = currentCat?.id === 'bridge' && bridgeLyrics;
 
+  const isFirstStep = songPos === 0 && catPos === 0;
+
+  function goBack() {
+    if (catPos > 0) {
+      setCatPos(catPos - 1);
+    } else if (songPos > 0) {
+      const prevSong = songsWithCats[songPos - 1];
+      setSongPos(songPos - 1);
+      setCatPos(prevSong.cats.length - 1);
+    }
+  }
+
   function advance() {
     const nextCat = catPos + 1;
     if (nextCat >= currentSong.cats.length) {
@@ -757,7 +769,7 @@ export default function QuickScore({
         />
       </div>
 
-      {/* Top bar — song counter + exit */}
+      {/* Top bar — back + song counter + exit */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -765,6 +777,23 @@ export default function QuickScore({
         padding: '12px 20px',
         flexShrink: 0,
       }}>
+        <button
+          onClick={goBack}
+          disabled={isFirstStep}
+          style={{
+            background: 'none',
+            border: '0.5px solid #e5e7eb',
+            borderRadius: 8,
+            padding: '5px 12px',
+            cursor: isFirstStep ? 'default' : 'pointer',
+            fontSize: 13,
+            color: '#6b7280',
+            opacity: isFirstStep ? 0 : 1,
+            pointerEvents: isFirstStep ? 'none' : 'auto',
+          }}
+        >
+          ← Back
+        </button>
         <div style={{ fontSize: 12, color: '#9ca3af' }}>
           {isSingleSong ? '\u00a0' : `Song ${songPos + 1} of ${songs.length}`}
         </div>
