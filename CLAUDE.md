@@ -36,8 +36,12 @@ src/
                              localStorage keys: eras_is_pro, eras_enabled_extras,
                              eras_custom_categories, eras_category_weights
     useManualOrder.js      — per-album manual order; getManualOrder, moveUp, moveDown, reorder, setOrder
+    useAlbumModes.js       — localStorage 'eras_album_modes'; stores 'score'|'manual' per albumId
+                             null = user hasn't chosen yet (modal shown on first visit)
   components/
     AlbumGrid / AlbumCard  — album picker with score badges
+    AlbumModeModal.jsx     — bottom-sheet shown on first album visit; "Vibe Check" (auto-starts QuickScore)
+                             or "Sort It Yourself"; choice saved via useAlbumModes
     SongList.jsx           — song list for one album; owns drag, QuickScore, AlbumCompleteCard state
     SongRow.jsx            — drag handle (⠿) + position # + title + score
     RatingPanel.jsx        — full star breakdown per category (currently unused in main flow)

@@ -1,0 +1,88 @@
+// Shown once when a user opens an album for the first time.
+// Asks whether they want to score songs (Vibe Check) or sort manually.
+export default function AlbumModeModal({ album, onChooseScore, onChooseManual }) {
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 200,
+      background: 'rgba(0,0,0,0.45)',
+      display: 'flex',
+      alignItems: 'flex-end',
+      justifyContent: 'center',
+      padding: '0 0 24px',
+    }}>
+      <div style={{
+        background: '#ffffff',
+        borderRadius: 20,
+        padding: '28px 20px 20px',
+        width: '100%',
+        maxWidth: 480,
+        margin: '0 16px',
+        boxShadow: '0 -4px 32px rgba(0,0,0,0.12)',
+      }}>
+        {/* Album identity */}
+        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <div style={{ fontSize: 36, marginBottom: 6 }}>{album.icon}</div>
+          <div style={{ fontSize: 17, fontWeight: 600, color: '#111827' }}>{album.name}</div>
+          <div style={{ fontSize: 13, color: '#9ca3af', marginTop: 2 }}>How do you want to rank this album?</div>
+        </div>
+
+        {/* Vibe Check option */}
+        <button
+          onClick={onChooseScore}
+          style={{
+            display: 'block',
+            width: '100%',
+            marginBottom: 10,
+            padding: '16px 16px',
+            borderRadius: 14,
+            border: '2px solid #a855f7',
+            background: '#faf5ff',
+            cursor: 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 26 }}>⭐</span>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#7c3aed', marginBottom: 3 }}>
+                Vibe Check
+              </div>
+              <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.45 }}>
+                Answer a few questions about each song and we'll rank them for you. You can manually sort songs after a score is assigned.
+              </div>
+            </div>
+          </div>
+        </button>
+
+        {/* Sort It Yourself option */}
+        <button
+          onClick={onChooseManual}
+          style={{
+            display: 'block',
+            width: '100%',
+            padding: '16px 16px',
+            borderRadius: 14,
+            border: '1.5px solid #e5e7eb',
+            background: '#ffffff',
+            cursor: 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 26 }}>⠿</span>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 3 }}>
+                Sort It Yourself
+              </div>
+              <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.45 }}>
+                Drag songs into your own order without answering any questions.
+              </div>
+            </div>
+          </div>
+        </button>
+      </div>
+    </div>
+  );
+}

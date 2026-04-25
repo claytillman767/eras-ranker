@@ -2,10 +2,13 @@ import { useState } from 'react';
 import { useRatings } from './hooks/useRatings';
 import { usePro } from './hooks/usePro';
 import { useManualOrder } from './hooks/useManualOrder';
+import { useAlbumModes } from './hooks/useAlbumModes';
 import AlbumGrid from './components/AlbumGrid';
+import AlbumModeModal from './components/AlbumModeModal';
 import SongList from './components/SongList';
 import Rankings from './components/Rankings';
 import Categories from './components/Categories';
+import { ALBUMS } from './data/albums';
 
 // Tab definitions
 const TABS = [
@@ -46,9 +49,37 @@ export default function App() {
   const activeCategories = getActiveCategories();
 
   const { getManualOrder, moveUp, moveDown, reorder, setOrder } = useManualOrder();
+  const { getAlbumMode, setAlbumMode } = useAlbumModes();
+
+  // Album waiting for a mode choice; null = no modal shown
+  const [pendingAlbumId, setPendingAlbumId] = useState(null);
+  // When true, SongList will auto-launch QuickScore on mount
+  const [autoStartScore, setAutoStartScore] = useState(false);
 
   function handleSelectAlbum(albumId) {
-    setSelectedAlbumId(albumId);
+    const mode = getAlbumMode(albumId);
+    if (mode === null) {
+      // First visit — show the mode-choice modal
+      setPendingAlbumId(albumId);
+    } else {
+      setSelectedAlbumId(albumId);
+      setActiveTab('rate');
+    }
+  }
+
+  function handleChooseScore() {
+    setAlbumMode(pendingAlbumId, 'score');
+    setSelectedAlbumId(pendingAlbumId);
+    setAutoStartScore(true);
+    setPendingAlbumId(null);
+    setActiveTab('rate');
+  }
+
+  function handleChooseManual() {
+    setAlbumMode(pendingAlbumId, 'manual');
+    setSelectedAlbumId(pendingAlbumId);
+    setAutoStartScore(false);
+    setPendingAlbumId(null);
     setActiveTab('rate');
   }
 
@@ -102,6 +133,15 @@ export default function App() {
         </div>
       </div>
 
+      {/* Album mode modal — shown on first visit to an album */}
+      {pendingAlbumId !== null && (
+        <AlbumModeModal
+          album={ALBUMS.find(a => a.id === pendingAlbumId)}
+          onChooseScore={handleChooseScore}
+          onChooseManual={handleChooseManual}
+        />
+      )}
+
       {/* Tab content area */}
       <div style={{ flex: 1, padding: '0 16px 80px' }}>
         {activeTab === 'albums' && (
@@ -129,6 +169,8 @@ export default function App() {
               onMoveDown={moveDown}
               onReorder={reorder}
               onSetOrder={setOrder}
+              autoStartScore={autoStartScore}
+              onAutoStartConsumed={() => setAutoStartScore(false)}
             />
           ) : (
             <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 14, padding: '60px 0' }}>

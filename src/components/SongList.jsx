@@ -20,6 +20,9 @@ export default function SongList({
   onMoveDown,
   onReorder,
   onSetOrder,
+  // Auto-launch QuickScore on first mount (Vibe Check flow)
+  autoStartScore,
+  onAutoStartConsumed,
 }) {
   // Which song row is expanded (showing action buttons)
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -55,6 +58,20 @@ export default function SongList({
       setShowCompletionCard(true);
     }
   }, [albumComplete]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-launch QuickScore when the user chose "Vibe Check" from the mode modal
+  useEffect(() => {
+    if (autoStartScore) {
+      const songs = (SONGS[albumId] || []).map((name, i) => ({
+        name,
+        index: i,
+        score: getCompositeScore(albumId, i, activeCategories),
+      }));
+      const firstUnscored = songs.findIndex(s => s.score === null);
+      setQuickScoreSongs({ songs, initialSongPos: firstUnscored === -1 ? 0 : firstUnscored });
+      onAutoStartConsumed?.();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const album = ALBUMS.find(a => a.id === albumId);
   if (!album) return null;
