@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+/* Reset box-sizing and remove default margin */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Make the app fill the full viewport on mobile */
+#root {
+  min-height: 100dvh;
+}
