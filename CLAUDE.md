@@ -8,13 +8,14 @@ React 19 + Vite. All styling is **inline styles only** (no Tailwind classes in J
 
 Dev server:
 ```
-cd "C:\Users\clayt\OneDrive\Desktop\eras-ranker"
+cd "C:\Users\clayt\dev\eras-ranker"
 npm run dev
 ```
 
-Build for sharing:
+Build & deploy:
 ```
-npm run build   # outputs dist/ → drag to netlify.com/drop
+npm run build   # outputs dist/
+git add . && git commit -m "message" && git push   # Vercel auto-deploys on push to main
 ```
 
 ## File map
@@ -90,6 +91,21 @@ src/
 - AlbumCompleteCard: shown once per session when album transitions incomplete → fully ranked
 - RankingCard: 1080×1080 Canvas shareable card; unlock condition: at least one album fully ranked
 - `drawCard(ctx, songs)` named export used by both
+
+## Deployment & version control
+- **GitHub:** private repo at `https://github.com/claytillman767/eras-ranker`
+- **Vercel:** auto-deploys on every push to `main`; live at `https://eras-ranker.vercel.app`
+- **Local path:** `C:\Users\clayt\dev\eras-ranker` (moved out of OneDrive to avoid git conflicts)
+- **`.env`** contains `GENIUS_API_TOKEN` — used only by Python lyrics scripts, never needed at runtime; gitignored, never commit it
+- **`.claude/settings.local.json`** is gitignored — do not commit it
+- **Vercel build settings:** Framework = Vite, Build = `npm run build`, Output = `dist`, Root Directory = (blank/repo root)
+
+### Working on a second computer
+1. Install Git and Node.js
+2. `git clone https://github.com/claytillman767/eras-ranker`
+3. `cd eras-ranker && npm install`
+4. Create `.env` manually and paste in the Genius API token
+5. `npm run dev` to start
 
 ---
 
