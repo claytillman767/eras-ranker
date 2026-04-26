@@ -13,17 +13,19 @@ export function useAuth() {
   const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    // Firebase calls this once immediately with the current user (or null),
-    // then again any time the user signs in or out.
+    if (!auth) {
+      setAuthLoading(false);
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setAuthLoading(false);
     });
-    return unsubscribe; // clean up listener when component unmounts
+    return unsubscribe;
   }, []);
 
-  const signIn  = () => signInWithPopup(auth, googleProvider);
-  const signOut = () => firebaseSignOut(auth);
+  const signIn  = () => auth && signInWithPopup(auth, googleProvider);
+  const signOut = () => auth && firebaseSignOut(auth);
 
   return { user, authLoading, signIn, signOut };
 }

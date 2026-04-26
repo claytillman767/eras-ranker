@@ -12,8 +12,12 @@ const firebaseConfig = {
   measurementId:     import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+// If the API key is missing (e.g. env vars not set on this deployment),
+// skip Firebase entirely so the rest of the app still loads.
+const firebaseReady = !!firebaseConfig.apiKey;
 
-export const auth = getAuth(app);
-export const db   = getFirestore(app);
-export const googleProvider = new GoogleAuthProvider();
+const app = firebaseReady ? initializeApp(firebaseConfig) : null;
+
+export const auth           = firebaseReady ? getAuth(app)      : null;
+export const db             = firebaseReady ? getFirestore(app) : null;
+export const googleProvider = firebaseReady ? new GoogleAuthProvider() : null;
