@@ -8,7 +8,7 @@ import AlbumModeModal from './components/AlbumModeModal';
 import SongList from './components/SongList';
 import Rankings from './components/Rankings';
 import Categories from './components/Categories';
-import { ALBUMS } from './data/albums';
+import { ALL_ALBUMS } from './data/albums';
 
 // Tab definitions
 const TABS = [
@@ -136,7 +136,7 @@ export default function App() {
       {/* Album mode modal — shown on first visit to an album */}
       {pendingAlbumId !== null && (
         <AlbumModeModal
-          album={ALBUMS.find(a => a.id === pendingAlbumId)}
+          album={ALL_ALBUMS.find(a => a.id === pendingAlbumId)}
           onChooseScore={handleChooseScore}
           onChooseManual={handleChooseManual}
         />

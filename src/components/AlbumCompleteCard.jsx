@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ALBUMS, SONGS } from '../data/albums';
+import { ALL_ALBUMS, SONGS } from '../data/albums';
 import { drawCard } from './RankingCard';
 
 // Full-screen overlay shown when a user finishes ranking every song in an album.
@@ -15,7 +15,7 @@ export default function AlbumCompleteCard({
 
   // Build the top-songs list across all albums (same logic as RankingCard)
   const allRated = [];
-  for (const album of ALBUMS) {
+  for (const album of ALL_ALBUMS) {
     const songs = SONGS[album.id] || [];
     for (let i = 0; i < songs.length; i++) {
       const score = getCompositeScore(album.id, i, activeCategories);

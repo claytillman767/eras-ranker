@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import ScoreBar from './ScoreBar';
-import { ALBUMS, SONGS } from '../data/albums';
+import { ALL_ALBUMS, SONGS } from '../data/albums';
 import RankingCard from './RankingCard';
 
 // Rankings tab — shows top songs or top albums sorted by composite score.
@@ -10,7 +10,7 @@ export default function Rankings({ getCompositeScore, getAlbumScore, activeCateg
   // Build top songs list: all rated songs across all albums, sorted desc, max 20
   function getTopSongs() {
     const all = [];
-    for (const album of ALBUMS) {
+    for (const album of ALL_ALBUMS) {
       const songs = SONGS[album.id] || [];
       for (let i = 0; i < songs.length; i++) {
         const score = getCompositeScore(album.id, i, activeCategories);
@@ -24,7 +24,7 @@ export default function Rankings({ getCompositeScore, getAlbumScore, activeCateg
 
   // Build top albums list: all albums with at least one rated song, sorted desc
   function getTopAlbums() {
-    return ALBUMS
+    return ALL_ALBUMS
       .map(album => ({ ...album, score: getAlbumScore(album.id, activeCategories) }))
       .filter(a => a.score !== null)
       .sort((a, b) => b.score - a.score);

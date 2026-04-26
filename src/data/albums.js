@@ -15,6 +15,12 @@ export const ALBUMS = [
   { id: 'ls',  name: 'The Life of a Showgirl',        year: 2026, icon: '🎭', color: '#fdf4ff' },
 ];
 
+// Non-album Taylor Swift tracks (features, soundtracks, standalone singles).
+export const OTHER_ALBUM = { id: 'ot', name: 'Other', year: null, icon: '🎵', color: '#f0f4f8' };
+
+// Full list of all album entries including Other — use this wherever a lookup by id is needed.
+export const ALL_ALBUMS = [...ALBUMS, OTHER_ALBUM];
+
 // Full song lists per album. Index within each array = songIndex used in rating keys.
 // Key format: albumId + '_' + songIndex (0-based)
 export const SONGS = {
@@ -27,23 +33,53 @@ export const SONGS = {
     'Fearless', 'Fifteen', 'Love Story', 'Hey Stephen', 'White Horse',
     'You Belong with Me', 'Breathe', 'Tell Me Why', "You're Not Sorry",
     'The Way I Loved You', 'Forever & Always', 'The Best Day', 'Change',
+    // Fearless (Taylor's Version) vault tracks
+    'You All Over Me (feat. Maren Morris) (From The Vault)',
+    'Mr. Perfectly Fine (From The Vault)',
+    'We Were Happy (From The Vault)',
+    'That\'s When (feat. Keith Urban) (From The Vault)',
+    'Don\'t You (feat. Trombone Shorty) (From The Vault)',
+    'Bye Bye Baby (From The Vault)',
   ],
   st: [
     'Mine', 'Sparks Fly', 'Back to December', 'Speak Now', 'Dear John',
     'Mean', 'The Story of Us', 'Never Grow Up', 'Enchanted',
     'Better than Revenge', 'Innocent', 'Haunted', 'Last Kiss', 'Long Live',
+    // Speak Now (Taylor's Version) vault tracks
+    'Electric Touch (feat. Fall Out Boy) (From The Vault)',
+    'When Emma Falls in Love (From The Vault)',
+    'I Can See You (From The Vault)',
+    'Castles Crumbling (feat. Hayley Williams) (From The Vault)',
+    'Timeless (From The Vault)',
+    'Foolish One (From The Vault)',
   ],
   rd: [
     'State of Grace', 'Red', 'Treacherous', 'I Knew You Were Trouble',
     'All Too Well', '22', 'I Almost Do', 'We Are Never Getting Back Together',
     'Stay Stay Stay', 'The Last Time', 'Holy Ground', 'Sad Beautiful Tragic',
     'The Lucky One', 'Everything Has Changed', 'Starlight', 'Begin Again',
+    // Red (Taylor's Version) vault tracks
+    'Better Man (From The Vault)',
+    'Nothing New (feat. Phoebe Bridgers) (From The Vault)',
+    'Babe (From The Vault)',
+    'Message in a Bottle (From The Vault)',
+    'I Bet You Think About Me (feat. Chris Stapleton) (From The Vault)',
+    'Forever Winter (From The Vault)',
+    'Run (feat. Ed Sheeran) (From The Vault)',
+    'The Very First Night (From The Vault)',
+    'All Too Well (10 Minute Version) (From The Vault)',
   ],
   '89': [
     'Welcome to New York', 'Blank Space', 'Style', 'Out of the Woods',
     'All You Had to Do Was Stay', 'Shake It Off', 'I Wish You Would',
     'Bad Blood', 'Wildest Dreams', 'How You Get the Girl', 'Clean',
     'Wonderland', 'You Are in Love', 'New Romantics',
+    // 1989 (Taylor's Version) vault tracks
+    'Slut! (From The Vault)',
+    'Say Don\'t Go (From The Vault)',
+    'Now That We Don\'t Talk (From The Vault)',
+    'Suburban Legends (From The Vault)',
+    'Is It Over Now? (From The Vault)',
   ],
   rp: [
     '...Ready for It?', 'End Game', 'I Did Something Bad', "Don't Blame Me",
@@ -95,5 +131,21 @@ export const SONGS = {
     'The Fate of Ophelia', 'Elizabeth Taylor', 'Opalite', 'Father Figure',
     'Eldest Daughter', 'Ruin the Friendship', 'Actually Romantic', 'WI$SHLI$T',
     'Wood', 'CANCELLED!', 'Honey', 'The Life of a Showgirl (feat. Sabrina Carpenter)',
+  ],
+  // Songs Taylor Swift appears on that aren't part of a main album.
+  // Includes soundtrack songs, standalone singles, and features on other artists' tracks.
+  ot: [
+    'Crazier',
+    'Today Was a Fairy Tale',
+    'Safe & Sound (feat. The Civil Wars)',
+    'Eyes Open',
+    'Sweeter Than Fiction',
+    'Both of Us (feat. Taylor Swift)',
+    'Highway Don\'t Care (feat. Taylor Swift)',
+    'Only the Young',
+    'Beautiful Ghosts',
+    'Carolina',
+    'Christmas Tree Farm',
+    'All of the Girls You Loved Before',
   ],
 };

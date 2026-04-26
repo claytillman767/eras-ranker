@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import SongRow from './SongRow';
 import QuickScore from './QuickScore';
 import AlbumCompleteCard from './AlbumCompleteCard';
-import { ALBUMS, SONGS } from '../data/albums';
+import { ALL_ALBUMS, SONGS } from '../data/albums';
 
 // Full song list for one album with drag-to-reorder and inline scoring.
 // Props come from App via useRatings, usePro, and useManualOrder hooks.
@@ -75,7 +75,7 @@ export default function SongList({
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const album = ALBUMS.find(a => a.id === albumId);
+  const album = ALL_ALBUMS.find(a => a.id === albumId);
   if (!album) return null;
 
   function handleSongClick(songIndex) {

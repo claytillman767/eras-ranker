@@ -1,4 +1,4 @@
-import { ALBUMS, SONGS } from '../data/albums';
+import { ALL_ALBUMS, SONGS } from '../data/albums';
 
 // ── Canvas card renderer ──────────────────────────────────────────────────────
 
@@ -137,7 +137,7 @@ export default function RankingCard({ getCompositeScore, activeCategories, ratin
   // A song counts as "scored" if it has any rating data at all.
   // Using raw ratings (not getCompositeScore) so that songs where all
   // categories were skipped don't falsely fail the check.
-  const hasCompletedAlbum = ALBUMS.some(album => {
+  const hasCompletedAlbum = ALL_ALBUMS.some(album => {
     const songs = SONGS[album.id] || [];
     return songs.length > 0 && songs.every((_, i) => {
       const key = `${album.id}_${i}`;
@@ -147,7 +147,7 @@ export default function RankingCard({ getCompositeScore, activeCategories, ratin
 
   // Build full sorted list of rated songs for the card
   const allRated = [];
-  for (const album of ALBUMS) {
+  for (const album of ALL_ALBUMS) {
     const songs = SONGS[album.id] || [];
     for (let i = 0; i < songs.length; i++) {
       const score = getCompositeScore(album.id, i, activeCategories);
