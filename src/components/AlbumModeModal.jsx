@@ -1,6 +1,6 @@
 // Shown once when a user opens an album for the first time.
 // Asks whether they want to score songs (Vibe Check) or sort manually.
-export default function AlbumModeModal({ album, onChooseScore, onChooseManual }) {
+export default function AlbumModeModal({ album, onChooseScore, onChooseManual, onBack }) {
   return (
     <div style={{
       position: 'fixed',
@@ -8,9 +8,9 @@ export default function AlbumModeModal({ album, onChooseScore, onChooseManual })
       zIndex: 200,
       background: 'rgba(0,0,0,0.45)',
       display: 'flex',
-      alignItems: 'flex-end',
+      alignItems: 'center',
       justifyContent: 'center',
-      padding: '0 0 24px',
+      padding: 0,
     }}>
       <div style={{
         background: '#ffffff',
@@ -19,8 +19,26 @@ export default function AlbumModeModal({ album, onChooseScore, onChooseManual })
         width: '100%',
         maxWidth: 480,
         margin: '0 16px',
-        boxShadow: '0 -4px 32px rgba(0,0,0,0.12)',
+        boxShadow: '0 4px 32px rgba(0,0,0,0.18)',
       }}>
+        {/* Back button */}
+        <button
+          onClick={onBack}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            color: '#6b7280',
+            fontSize: 14,
+            padding: '0 0 16px',
+          }}
+        >
+          ← Back
+        </button>
+
         {/* Album identity */}
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
           <div style={{ fontSize: 36, marginBottom: 6 }}>{album.icon}</div>

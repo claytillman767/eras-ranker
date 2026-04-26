@@ -267,6 +267,7 @@ export default function App() {
           album={ALL_ALBUMS.find(a => a.id === pendingAlbumId)}
           onChooseScore={handleChooseScore}
           onChooseManual={handleChooseManual}
+          onBack={() => setPendingAlbumId(null)}
         />
       )}
 
