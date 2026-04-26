@@ -1,4 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import { SONGS } from '../data/albums';
 import { getBridgeLyrics } from '../data/bridgeLyrics';
 
@@ -20,8 +22,34 @@ function saveRatings(ratings) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(ratings));
 }
 
-export function useRatings() {
+// Save ratings to Firestore (silently fails if offline — localStorage still saved)
+function saveRatingsToFirestore(user, ratings) {
+  if (!user) return;
+  setDoc(doc(db, 'users', user.uid), { ratings }, { merge: true }).catch(() => {});
+}
+
+export function useRatings(user) {
   const [ratings, setRatings] = useState(loadRatings);
+
+  // When the user logs in, pull their data from Firestore.
+  // If Firestore is empty, migrate whatever is in localStorage up to Firestore.
+  useEffect(() => {
+    if (!user) return;
+    getDoc(doc(db, 'users', user.uid)).then(snap => {
+      if (snap.exists() && snap.data().ratings) {
+        // Firestore has data — use it as the source of truth
+        const cloud = snap.data().ratings;
+        setRatings(cloud);
+        saveRatings(cloud); // keep localStorage in sync
+      } else {
+        // No Firestore data yet — migrate localStorage up to the cloud
+        const local = loadRatings();
+        if (Object.keys(local).length > 0) {
+          saveRatingsToFirestore(user, local);
+        }
+      }
+    }).catch(() => {}); // if offline, just keep using localStorage
+  }, [user]);
 
   // Set a star value (1–5) for one category on one song.
   // Passing value = 0 clears that category rating.
@@ -47,9 +75,10 @@ export function useRatings() {
       }
 
       saveRatings(next);
+      saveRatingsToFirestore(user, next);
       return next;
     });
-  }, []);
+  }, [user]);
 
   // Calculate composite score (0–100) for one song given the active categories.
   // Returns null if no categories have been rated yet.

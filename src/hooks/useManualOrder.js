@@ -1,4 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import { SONGS } from '../data/albums';
 
 // Stores a custom song order per album in localStorage.
@@ -17,8 +19,31 @@ function saveOrders(orders) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
 }
 
-export function useManualOrder() {
+function saveOrdersToFirestore(user, orders) {
+  if (!user) return;
+  setDoc(doc(db, 'users', user.uid), { manualOrder: orders }, { merge: true }).catch(() => {});
+}
+
+export function useManualOrder(user) {
   const [orders, setOrders] = useState(loadOrders);
+
+  // When the user logs in, pull their manual order from Firestore.
+  // If Firestore is empty, migrate from localStorage.
+  useEffect(() => {
+    if (!user) return;
+    getDoc(doc(db, 'users', user.uid)).then(snap => {
+      if (snap.exists() && snap.data().manualOrder) {
+        const cloud = snap.data().manualOrder;
+        setOrders(cloud);
+        saveOrders(cloud);
+      } else {
+        const local = loadOrders();
+        if (Object.keys(local).length > 0) {
+          saveOrdersToFirestore(user, local);
+        }
+      }
+    }).catch(() => {});
+  }, [user]);
 
   // Get the manual order for an album.
   // If none saved yet, return the default track order (0, 1, 2, ...).
@@ -36,9 +61,10 @@ export function useManualOrder() {
       [next[position - 1], next[position]] = [next[position], next[position - 1]];
       const updated = { ...prev, [albumId]: next };
       saveOrders(updated);
+      saveOrdersToFirestore(user, updated);
       return updated;
     });
-  }, []);
+  }, [user]);
 
   // Move the song at `position` one slot down (toward the bottom)
   const moveDown = useCallback((albumId, position) => {
@@ -49,9 +75,10 @@ export function useManualOrder() {
       [next[position], next[position + 1]] = [next[position + 1], next[position]];
       const updated = { ...prev, [albumId]: next };
       saveOrders(updated);
+      saveOrdersToFirestore(user, updated);
       return updated;
     });
-  }, []);
+  }, [user]);
 
   // Move song from one position to another (drag and drop)
   const reorder = useCallback((albumId, fromPos, toPos) => {
@@ -63,18 +90,20 @@ export function useManualOrder() {
       next.splice(toPos, 0, item);
       const updated = { ...prev, [albumId]: next };
       saveOrders(updated);
+      saveOrdersToFirestore(user, updated);
       return updated;
     });
-  }, []);
+  }, [user]);
 
   // Directly set the full order for an album (used by "Resort by score")
   const setOrder = useCallback((albumId, indices) => {
     setOrders(prev => {
       const updated = { ...prev, [albumId]: indices };
       saveOrders(updated);
+      saveOrdersToFirestore(user, updated);
       return updated;
     });
-  }, []);
+  }, [user]);
 
   return { getManualOrder, moveUp, moveDown, reorder, setOrder };
 }
