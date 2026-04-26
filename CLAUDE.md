@@ -116,6 +116,17 @@ src/
 ## Future Enhancement Ideas
 **DO NOT begin any of these unless the user explicitly instructs you to.**
 
+### Easter Eggs (two remaining — Midnights already built)
+
+#### The "Getaway Car" Escape  (albumId `rp`, songIndex 8)
+**Trigger:** User finishes rating "Getaway Car" via QuickScore (the `onRate` callback fires for the last category of that song).  
+**Effect:** A small vintage car emoji/icon (🚗) slides in from the left edge at the bottom of the screen, zips across, and exits off the right edge. It leaves a short trail of neon-colored dots ("exhaust") that fade out behind it. Implemented as a `position: fixed` overlay with a CSS `@keyframes` translate animation (~1.5 s). The car and trail auto-remove after the animation completes. Best placed as a lightweight `GetawayCarEgg.jsx` component, triggered from `QuickScore.jsx` when `albumId === 'rp'` and `songs[currentSongPos].name === 'Getaway Car'` and the last category is answered.
+
+#### "The Manuscript" Fade  (albumId `tp`, last song index 30)
+**Trigger:** User finishes rating the final song on The Tortured Poets Department (the `AlbumCompleteCard` fires for album `tp`), same as the Midnights egg pattern.  
+**Effect:** Before the `AlbumCompleteCard` shows, a full-screen parchment-textured overlay fades in (`background: linear-gradient(135deg, #f5f0e8, #ede5d0)`). A line of text — *"The story isn't mine anymore..."* — types itself out character-by-character in a monospace/typewriter font (use `setInterval` over ~2 s to append chars to state). The overlay then slowly fades away (~1 s), and the normal completion card appears. Implement as `ManuscriptEgg.jsx`, wired into `SongList.jsx` alongside the Midnights egg (`albumId === 'tp'`).
+
+
 ### User Accounts (Email + Google Sign-In)
 Add login/signup with Firebase Authentication (email/password + Google OAuth). On first login, migrate existing localStorage data into the user's Firestore document. Swap the three data hooks (`useRatings`, `usePro`, `useManualOrder`) to read/write Firestore instead of localStorage so ratings and settings follow the user across devices. Pro status moves from a localStorage flag to a trusted database field (Stripe integration still a separate step). Estimated effort: 1–2 weeks part-time.
 

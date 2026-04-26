@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import SongRow from './SongRow';
 import QuickScore from './QuickScore';
 import AlbumCompleteCard from './AlbumCompleteCard';
+import MidnightsEasterEgg from './MidnightsEasterEgg';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
 
 // Full song list for one album with drag-to-reorder and inline scoring.
@@ -31,6 +32,8 @@ export default function SongList({
   // Completion card overlay
   const [showCompletionCard, setShowCompletionCard] = useState(false);
   const [completionShown, setCompletionShown] = useState(false);
+  // Midnights Easter egg — shown before the completion card for album 'ml'
+  const [showMidnightsEgg, setShowMidnightsEgg] = useState(false);
 
   // Drag state: which positions are being dragged from/to
   const [dragState, setDragState] = useState(null); // { fromPos, toPos } | null
@@ -54,10 +57,15 @@ export default function SongList({
   // Show the completion card the first time the album becomes fully ranked,
   // but only after QuickScore has closed — otherwise the card fires mid-session
   // the moment the last song gets its first category answered.
+  // For Midnights (ml), the Easter egg plays first; the completion card follows after.
   useEffect(() => {
     if (wasIncompleteOnMount.current && albumComplete && !completionShown && quickScoreSongs === null) {
       setCompletionShown(true);
-      setShowCompletionCard(true);
+      if (albumId === 'ml') {
+        setShowMidnightsEgg(true);
+      } else {
+        setShowCompletionCard(true);
+      }
     }
   }, [albumComplete, quickScoreSongs]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -151,6 +159,16 @@ export default function SongList({
 
   return (
     <div>
+      {/* Midnights Easter egg — clock-strike overlay, plays before the completion card */}
+      {showMidnightsEgg && (
+        <MidnightsEasterEgg
+          onDone={() => {
+            setShowMidnightsEgg(false);
+            setShowCompletionCard(true);
+          }}
+        />
+      )}
+
       {/* Album completion card — shown once when every song in the album is rated */}
       {showCompletionCard && (
         <AlbumCompleteCard
