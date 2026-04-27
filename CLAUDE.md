@@ -3,6 +3,9 @@
 ## User
 Not a developer. Use plain, simple language — no jargon.
 
+## App intent
+This is a **commercial product**, not a hobby or fan project. Treat every decision — licensing, architecture, legal risk, monetization, scalability — accordingly. Do not assume small scale or low stakes.
+
 ## Stack
 React 19 + Vite. All styling is **inline styles only** (no Tailwind classes in JSX).
 

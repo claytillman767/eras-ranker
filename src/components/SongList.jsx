@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import SongRow from './SongRow';
+import AlbumHero from './AlbumHero';
 import QuickScore from './QuickScore';
 import AlbumCompleteCard from './AlbumCompleteCard';
 import MidnightsEasterEgg from './MidnightsEasterEgg';
@@ -21,9 +22,13 @@ export default function SongList({
   onMoveDown,
   onReorder,
   onSetOrder,
-  // Auto-launch QuickScore on first mount (Vibe Check flow)
+  // Auto-launch QuickScore on first mount (Vibe Check flow or Continue card)
   autoStartScore,
+  autoStartSongIndex,   // when set, opens QuickScore on this specific song index
   onAutoStartConsumed,
+  // Extra data hooks needed for AlbumHero
+  getAlbumScore,
+  getRatedCount,
 }) {
   // Which song row is expanded (showing action buttons)
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -55,9 +60,7 @@ export default function SongList({
   });
 
   // Show the completion card the first time the album becomes fully ranked,
-  // but only after QuickScore has closed — otherwise the card fires mid-session
-  // the moment the last song gets its first category answered.
-  // For Midnights (ml), the Easter egg plays first; the completion card follows after.
+  // but only after QuickScore has closed.
   useEffect(() => {
     if (wasIncompleteOnMount.current && albumComplete && !completionShown && quickScoreSongs === null) {
       setCompletionShown(true);
@@ -69,7 +72,7 @@ export default function SongList({
     }
   }, [albumComplete, quickScoreSongs]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-launch QuickScore when the user chose "Vibe Check" from the mode modal
+  // Auto-launch QuickScore when the user chose "Vibe Check" or tapped Continue
   useEffect(() => {
     if (autoStartScore) {
       const songs = (SONGS[albumId] || []).map((name, i) => ({
@@ -77,8 +80,16 @@ export default function SongList({
         index: i,
         score: getCompositeScore(albumId, i, activeCategories),
       }));
-      const firstUnscored = songs.findIndex(s => s.score === null);
-      setQuickScoreSongs({ songs, initialSongPos: firstUnscored === -1 ? 0 : firstUnscored });
+      let initialPos;
+      if (autoStartSongIndex !== null && autoStartSongIndex !== undefined) {
+        // Continue card — open on the specific song
+        initialPos = autoStartSongIndex;
+      } else {
+        // Vibe Check — start from first unscored song
+        const firstUnscored = songs.findIndex(s => s.score === null);
+        initialPos = firstUnscored === -1 ? 0 : firstUnscored;
+      }
+      setQuickScoreSongs({ songs, initialSongPos: initialPos });
       onAutoStartConsumed?.();
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -87,11 +98,7 @@ export default function SongList({
   if (!album) return null;
 
   function handleSongClick(songIndex) {
-    if (selectedIndex === songIndex) {
-      setSelectedIndex(null);
-    } else {
-      setSelectedIndex(songIndex);
-    }
+    setSelectedIndex(prev => (prev === songIndex ? null : songIndex));
   }
 
   // Always display in manual order
@@ -101,8 +108,12 @@ export default function SongList({
     score: getCompositeScore(albumId, songIndex, activeCategories),
   }));
 
-  // Show "Rank by score" button when at least one song has been scored
+  // Show "Rank by score" when at least one song has been scored
   const hasAnyScore = sortedSongs.some(s => s.score !== null);
+
+  // Detect whether the current manual order already matches score order
+  const isRankedByScore = hasAnyScore &&
+    JSON.stringify(manualOrder) === JSON.stringify(sortedSongs.map(s => s.index));
 
   function handleResortByScore() {
     const confirmed = window.confirm(
@@ -114,7 +125,7 @@ export default function SongList({
     }
   }
 
-  // ── Drag handlers ─────────────────────────────────────────────────────────
+  // ── Drag handlers ───────────────────────────────────────────────
 
   function startDrag(fromPos) {
     setDragState({ fromPos, toPos: fromPos });
@@ -144,7 +155,7 @@ export default function SongList({
     }
   }
 
-  // Shared button style for action bar
+  // Shared style for the selected-row action bar buttons
   const actionBtnStyle = (primary) => ({
     padding: '5px 10px',
     borderRadius: 6,
@@ -157,9 +168,12 @@ export default function SongList({
     flexShrink: 0,
   });
 
+  // Build the section-header legend: abbreviations of the first 4 active categories
+  const catLegend = activeCategories.slice(0, 4).map(c => abbrevLabel(c.name)).join(' · ');
+
   return (
     <div>
-      {/* Midnights Easter egg — clock-strike overlay, plays before the completion card */}
+      {/* Midnights Easter egg */}
       {showMidnightsEgg && (
         <MidnightsEasterEgg
           onDone={() => {
@@ -169,7 +183,7 @@ export default function SongList({
         />
       )}
 
-      {/* Album completion card — shown once when every song in the album is rated */}
+      {/* Album completion card */}
       {showCompletionCard && (
         <AlbumCompleteCard
           albumName={album.name}
@@ -180,7 +194,7 @@ export default function SongList({
         />
       )}
 
-      {/* QuickScore overlay — used for both Score Album and Score single song */}
+      {/* QuickScore overlay */}
       {quickScoreSongs !== null && (
         <QuickScore
           songs={quickScoreSongs.songs}
@@ -195,115 +209,126 @@ export default function SongList({
         />
       )}
 
-      {/* Header row — back button + album info */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+      {/* ── Album hero (replaces the old small header) ── */}
+      <AlbumHero
+        albumId={albumId}
+        getCompositeScore={getCompositeScore}
+        getAlbumScore={getAlbumScore}
+        getRatedCount={getRatedCount}
+        activeCategories={activeCategories}
+        onBack={onBack}
+      />
+
+      {/* ── Action buttons ── */}
+      <div style={{ padding: '0 16px 14px' }}>
         <button
-          onClick={onBack}
-          style={{
-            background: 'none',
-            border: '0.5px solid #e5e7eb',
-            borderRadius: 8,
-            padding: '6px 12px',
-            cursor: 'pointer',
-            fontSize: 13,
-            color: '#374151',
-            flexShrink: 0,
+          onClick={() => {
+            const firstUnscored = displaySongs.findIndex(s => s.score === null);
+            setQuickScoreSongs({
+              songs: displaySongs,
+              initialSongPos: firstUnscored === -1 ? 0 : firstUnscored,
+            });
           }}
-        >
-          ← Albums
-        </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: 22 }}>{album.icon}</span>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 500, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{album.name}</div>
-            <div style={{ fontSize: 11, color: '#9ca3af' }}>{album.year} · tap a song to reorder or score</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Score Album button — always visible, kicks off rapid scoring */}
-      <button
-        onClick={() => {
-          const firstUnscored = displaySongs.findIndex(s => s.score === null);
-          setQuickScoreSongs({ songs: displaySongs, initialSongPos: firstUnscored === -1 ? 0 : firstUnscored });
-        }}
-        style={{
-          display: 'block',
-          width: '100%',
-          marginBottom: 8,
-          padding: '10px 12px',
-          borderRadius: 10,
-          border: 'none',
-          background: '#a855f7',
-          color: '#ffffff',
-          fontSize: 13,
-          fontWeight: 600,
-          cursor: 'pointer',
-          textAlign: 'center',
-          letterSpacing: '0.01em',
-        }}
-      >
-        ★ Score Album
-      </button>
-
-      {/* Rank by score button — appears once any song has been scored */}
-      {hasAnyScore && (
-        <button
-          onClick={handleResortByScore}
           style={{
             display: 'block',
             width: '100%',
-            marginBottom: 10,
-            padding: '7px 12px',
-            borderRadius: 8,
-            border: '0.5px solid #d8b4fe',
-            background: '#faf5ff',
-            color: '#7c3aed',
-            fontSize: 12,
-            fontWeight: 500,
+            marginBottom: 8,
+            padding: '12px',
+            borderRadius: 10,
+            border: 'none',
+            background: '#a855f7',
+            color: '#ffffff',
+            fontSize: 14,
+            fontWeight: 600,
             cursor: 'pointer',
-            textAlign: 'center',
+            boxShadow: '0 1px 2px rgba(168,85,247,0.25)',
           }}
         >
-          Rank by score ↕
+          ★ Score Album
         </button>
-      )}
 
-      {/* Song rows */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {displaySongs.map((song, listPos) => {
-          const compositeScore = getCompositeScore(albumId, song.index, activeCategories);
-          const isDraggingThis = dragState?.fromPos === listPos;
-          const lineAbove = dragState && !isDraggingThis && dragState.toPos === listPos && dragState.fromPos > listPos;
-          const lineBelow = dragState && !isDraggingThis && dragState.toPos === listPos && dragState.fromPos < listPos;
-          const isSelected = selectedIndex === song.index;
+        {hasAnyScore && (
+          <button
+            onClick={handleResortByScore}
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: '0.5px solid #d8b4fe',
+              background: '#faf5ff',
+              color: '#7c3aed',
+              fontSize: 12,
+              fontWeight: 500,
+              cursor: 'pointer',
+            }}
+          >
+            {isRankedByScore ? '✓ Ranked by score' : 'Rank by score ↕'}
+          </button>
+        )}
+      </div>
 
-          return (
-            <div
-              key={song.index}
-              ref={el => { rowRefs.current[listPos] = el; }}
-              style={{
-                opacity: isDraggingThis ? 0.35 : 1,
-                boxShadow: lineAbove ? '0 -2px 0 #a855f7' : lineBelow ? '0 2px 0 #a855f7' : 'none',
-                borderRadius: 8,
-                transition: 'opacity 0.15s',
-              }}
-            >
-              <SongRow
-                song={song}
-                isSelected={isSelected}
-                compositeScore={compositeScore}
-                onClick={() => handleSongClick(song.index)}
-                position={listPos}
-                onDragStart={() => startDrag(listPos)}
-                onDragMove={(clientY) => moveDrag(clientY)}
-                onDragEnd={() => endDrag()}
-              />
+      {/* ── Song rows ── */}
+      <div style={{ padding: '0 16px 80px' }}>
+        {/* Section header with category legend */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'baseline',
+          marginBottom: 8,
+        }}>
+          <div style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: '#6b7280',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+          }}>
+            Songs
+          </div>
+          {hasAnyScore && (
+            <div style={{ fontSize: 10, color: '#9ca3af' }}>
+              {catLegend}
+            </div>
+          )}
+        </div>
 
-              {/* Action bar — shown when song is selected */}
-              {isSelected && (
-                <div
-                  style={{
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {displaySongs.map((song, listPos) => {
+            const compositeScore = getCompositeScore(albumId, song.index, activeCategories);
+            const songRatings = ratings[`${albumId}_${song.index}`] || null;
+            const isDraggingThis = dragState?.fromPos === listPos;
+            const lineAbove = dragState && !isDraggingThis && dragState.toPos === listPos && dragState.fromPos > listPos;
+            const lineBelow = dragState && !isDraggingThis && dragState.toPos === listPos && dragState.fromPos < listPos;
+            const isSelected = selectedIndex === song.index;
+
+            return (
+              <div
+                key={song.index}
+                ref={el => { rowRefs.current[listPos] = el; }}
+                style={{
+                  opacity: isDraggingThis ? 0.35 : 1,
+                  boxShadow: lineAbove ? '0 -2px 0 #a855f7' : lineBelow ? '0 2px 0 #a855f7' : 'none',
+                  borderRadius: 10,
+                  transition: 'opacity 0.15s',
+                }}
+              >
+                <SongRow
+                  song={song}
+                  isSelected={isSelected}
+                  compositeScore={compositeScore}
+                  onClick={() => handleSongClick(song.index)}
+                  position={listPos}
+                  onDragStart={() => startDrag(listPos)}
+                  onDragMove={(clientY) => moveDrag(clientY)}
+                  onDragEnd={() => endDrag()}
+                  songRatings={songRatings}
+                  activeCategories={activeCategories}
+                />
+
+                {/* Action bar — shown when song row is selected */}
+                {isSelected && (
+                  <div style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: 6,
@@ -312,48 +337,56 @@ export default function SongList({
                     borderLeft: '3px solid #a855f7',
                     borderRight: '0.5px solid #e9d5ff',
                     borderBottom: '0.5px solid #e9d5ff',
-                    borderBottomLeftRadius: 8,
-                    borderBottomRightRadius: 8,
-                  }}
-                >
-                  {/* Reorder buttons */}
-                  <button
-                    onClick={() => onMoveUp(albumId, listPos)}
-                    disabled={listPos === 0}
-                    style={{
-                      ...actionBtnStyle(false),
-                      opacity: listPos === 0 ? 0.35 : 1,
-                    }}
-                  >
-                    ↑ Up
-                  </button>
-                  <button
-                    onClick={() => onMoveDown(albumId, listPos)}
-                    disabled={listPos === displaySongs.length - 1}
-                    style={{
-                      ...actionBtnStyle(false),
-                      opacity: listPos === displaySongs.length - 1 ? 0.35 : 1,
-                    }}
-                  >
-                    ↓ Down
-                  </button>
-
-                  <div style={{ flex: 1 }} />
-
-                  {/* Score button — opens QuickScore for this song only */}
-                  <button
-                    onClick={() => setQuickScoreSongs({ songs: [song], initialSongPos: 0 })}
-                    style={actionBtnStyle(true)}
-                  >
-                    ★ Score
-                  </button>
-                </div>
-              )}
-
-            </div>
-          );
-        })}
+                    borderBottomLeftRadius: 10,
+                    borderBottomRightRadius: 10,
+                  }}>
+                    <button
+                      onClick={() => onMoveUp(albumId, listPos)}
+                      disabled={listPos === 0}
+                      style={{ ...actionBtnStyle(false), opacity: listPos === 0 ? 0.35 : 1 }}
+                    >
+                      ↑ Up
+                    </button>
+                    <button
+                      onClick={() => onMoveDown(albumId, listPos)}
+                      disabled={listPos === displaySongs.length - 1}
+                      style={{ ...actionBtnStyle(false), opacity: listPos === displaySongs.length - 1 ? 0.35 : 1 }}
+                    >
+                      ↓ Down
+                    </button>
+                    <div style={{ flex: 1 }} />
+                    <button
+                      onClick={() => setQuickScoreSongs({ songs: [song], initialSongPos: 0 })}
+                      style={actionBtnStyle(true)}
+                    >
+                      ★ Score
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
+}
+
+function abbrevLabel(name) {
+  const MAP = {
+    'Lyrics': 'Lyr',
+    'Music / melody': 'Music',
+    'Bridge': 'Brdg',
+    'Nostalgia': 'Nost',
+    'Skip on shuffle?': 'Skip',
+    'Hook / chorus': 'Hook',
+    'Vocal performance': 'Voc',
+    'Cry factor': 'Cry',
+    'Romantic feel': 'Rom',
+    'Hype / energy': 'Hype',
+    'Opening line': 'Open',
+    'Vibe / atmosphere': 'Vibe',
+    'Storytelling': 'Story',
+  };
+  return MAP[name] || name.slice(0, 5);
 }

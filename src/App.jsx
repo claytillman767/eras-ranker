@@ -4,6 +4,7 @@ import { useRatings } from './hooks/useRatings';
 import { usePro } from './hooks/usePro';
 import { useManualOrder } from './hooks/useManualOrder';
 import { useAlbumModes } from './hooks/useAlbumModes';
+import Home from './components/Home';
 import AlbumGrid from './components/AlbumGrid';
 import AlbumModeModal from './components/AlbumModeModal';
 import SongList from './components/SongList';
@@ -11,26 +12,29 @@ import Rankings from './components/Rankings';
 import Categories from './components/Categories';
 import { ALL_ALBUMS } from './data/albums';
 
-// Tab definitions
+// Tab definitions — Home is first
 const TABS = [
-  { id: 'albums',     label: 'Albums' },
-  { id: 'rate',       label: 'Rate songs' },
-  { id: 'rankings',   label: 'Rankings' },
+  { id: 'home',      label: 'Home' },
+  { id: 'albums',    label: 'Albums' },
+  { id: 'rate',      label: 'Rate songs' },
+  { id: 'rankings',  label: 'Rankings' },
   { id: 'categories', label: 'Categories' },
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('albums');
+  const [activeTab, setActiveTab] = useState('home');
   const [selectedAlbumId, setSelectedAlbumId] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef(null);
 
-  // Auth — knows who is signed in (or null if not signed in)
+  // Auth
   const { user, authLoading, signIn, signOut } = useAuth();
 
-  // Data hooks — each one accepts user so it can sync to Firestore when signed in
+  // Data hooks
   const {
     ratings,
+    lastRatedKey,
+    streak,
     setStarRating,
     getCompositeScore,
     getAlbumScore,
@@ -60,8 +64,10 @@ export default function App() {
 
   // Album waiting for a mode choice; null = no modal shown
   const [pendingAlbumId, setPendingAlbumId] = useState(null);
-  // When true, SongList will auto-launch QuickScore on mount
+  // Auto-launch QuickScore on SongList mount
   const [autoStartScore, setAutoStartScore] = useState(false);
+  // When set, opens QuickScore on this specific song index (Continue card)
+  const [autoStartSongIndex, setAutoStartSongIndex] = useState(null);
 
   // Close the user menu if the user clicks anywhere outside it
   useEffect(() => {
@@ -78,7 +84,6 @@ export default function App() {
   function handleSelectAlbum(albumId) {
     const mode = getAlbumMode(albumId);
     if (mode === null) {
-      // First visit — show the mode-choice modal
       setPendingAlbumId(albumId);
     } else {
       setSelectedAlbumId(albumId);
@@ -90,6 +95,7 @@ export default function App() {
     setAlbumMode(pendingAlbumId, 'score');
     setSelectedAlbumId(pendingAlbumId);
     setAutoStartScore(true);
+    setAutoStartSongIndex(null); // start from first unscored
     setPendingAlbumId(null);
     setActiveTab('rate');
   }
@@ -98,15 +104,29 @@ export default function App() {
     setAlbumMode(pendingAlbumId, 'manual');
     setSelectedAlbumId(pendingAlbumId);
     setAutoStartScore(false);
+    setAutoStartSongIndex(null);
     setPendingAlbumId(null);
     setActiveTab('rate');
+  }
+
+  // Called from the Home tab's Continue card or daily prompt
+  function handleContinueRating(albumId, songIndex) {
+    const mode = getAlbumMode(albumId);
+    if (mode === null) {
+      // First visit to this album — show mode modal
+      setPendingAlbumId(albumId);
+    } else {
+      setSelectedAlbumId(albumId);
+      setAutoStartScore(true);
+      setAutoStartSongIndex(songIndex);
+      setActiveTab('rate');
+    }
   }
 
   function handleBack() {
     setActiveTab('albums');
   }
 
-  // Get the first letter of the user's name for the avatar fallback
   const userInitial = user?.displayName?.charAt(0)?.toUpperCase() ?? '?';
 
   return (
@@ -119,7 +139,7 @@ export default function App() {
       display: 'flex',
       flexDirection: 'column',
     }}>
-      {/* App header + tab bar */}
+      {/* ── App header + tab bar ── */}
       <div style={{
         padding: '14px 16px 0',
         borderBottom: '0.5px solid #e5e7eb',
@@ -128,18 +148,15 @@ export default function App() {
         background: '#ffffff',
         zIndex: 10,
       }}>
-        {/* Title row with login button on the right */}
+        {/* Title row with auth button on the right */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div style={{ fontSize: 17, fontWeight: 500, color: '#111827' }}>
             The Eras Ranker
           </div>
 
-          {/* Auth area — top right */}
           {authLoading ? (
-            // Small placeholder while Firebase figures out auth state
             <div style={{ width: 32, height: 32 }} />
           ) : user ? (
-            // Signed in — show avatar; click opens a mini menu
             <div ref={userMenuRef} style={{ position: 'relative' }}>
               <button
                 onClick={() => setShowUserMenu(v => !v)}
@@ -165,7 +182,6 @@ export default function App() {
                 )}
               </button>
 
-              {/* Dropdown menu */}
               {showUserMenu && (
                 <div style={{
                   position: 'absolute',
@@ -206,7 +222,6 @@ export default function App() {
               )}
             </div>
           ) : (
-            // Not signed in — show Sign in button
             <button
               onClick={signIn}
               style={{
@@ -224,7 +239,6 @@ export default function App() {
                 boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
               }}
             >
-              {/* Google "G" logo */}
               <svg width="14" height="14" viewBox="0 0 18 18">
                 <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
                 <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
@@ -271,8 +285,26 @@ export default function App() {
         />
       )}
 
-      {/* Tab content area */}
+      {/* ── Tab content ── */}
       <div style={{ flex: 1, padding: '0 16px 80px' }}>
+
+        {activeTab === 'home' && (
+          <Home
+            user={user}
+            signIn={signIn}
+            ratings={ratings}
+            getCompositeScore={getCompositeScore}
+            getAlbumScore={getAlbumScore}
+            getRatedCount={getRatedCount}
+            activeCategories={activeCategories}
+            lastRatedKey={lastRatedKey}
+            streak={streak}
+            onContinueRating={handleContinueRating}
+            onSelectAlbum={handleSelectAlbum}
+            onGoToAlbums={() => setActiveTab('albums')}
+          />
+        )}
+
         {activeTab === 'albums' && (
           <AlbumGrid
             onSelectAlbum={handleSelectAlbum}
@@ -292,6 +324,8 @@ export default function App() {
               ratings={ratings}
               activeCategories={activeCategories}
               getCompositeScore={getCompositeScore}
+              getAlbumScore={getAlbumScore}
+              getRatedCount={getRatedCount}
               setStarRating={setStarRating}
               manualOrder={getManualOrder(selectedAlbumId)}
               onMoveUp={moveUp}
@@ -299,7 +333,8 @@ export default function App() {
               onReorder={reorder}
               onSetOrder={setOrder}
               autoStartScore={autoStartScore}
-              onAutoStartConsumed={() => setAutoStartScore(false)}
+              autoStartSongIndex={autoStartSongIndex}
+              onAutoStartConsumed={() => { setAutoStartScore(false); setAutoStartSongIndex(null); }}
             />
           ) : (
             <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 14, padding: '60px 0' }}>

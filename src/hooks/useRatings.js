@@ -6,6 +6,9 @@ import { getBridgeLyrics } from '../data/bridgeLyrics';
 
 // Key used to store all ratings in localStorage
 const STORAGE_KEY = 'eras_ratings';
+const LAST_RATED_STORAGE_KEY = 'eras_last_rated';
+const STREAK_KEY = 'eras_streak';
+const LAST_RATED_DAY_KEY = 'eras_last_rated_day';
 
 // Load saved ratings from localStorage, or return empty object if nothing saved yet
 function loadRatings() {
@@ -22,6 +25,28 @@ function saveRatings(ratings) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(ratings));
 }
 
+function loadLastRatedKey() {
+  return localStorage.getItem(LAST_RATED_STORAGE_KEY) || null;
+}
+
+function loadStreak() {
+  return parseInt(localStorage.getItem(STREAK_KEY) || '0', 10);
+}
+
+function loadLastRatedDay() {
+  const v = localStorage.getItem(LAST_RATED_DAY_KEY);
+  return v ? parseInt(v, 10) : null;
+}
+
+// Given the current streak and the day of the previous rating, return the new streak.
+// UTC day number = Math.floor(Date.now() / 86400000)
+function computeNewStreak(currentStreak, lastDay) {
+  const today = Math.floor(Date.now() / 86400000);
+  if (lastDay === today) return currentStreak;          // already rated today
+  if (lastDay === today - 1) return currentStreak + 1; // consecutive day
+  return 1;                                            // gap — reset
+}
+
 // Save ratings to Firestore (silently fails if offline — localStorage still saved)
 function saveRatingsToFirestore(user, ratings) {
   if (!user) return;
@@ -30,6 +55,9 @@ function saveRatingsToFirestore(user, ratings) {
 
 export function useRatings(user) {
   const [ratings, setRatings] = useState(loadRatings);
+  const [lastRatedKey, setLastRatedKey] = useState(loadLastRatedKey);
+  const [streak, setStreak] = useState(loadStreak);
+  const [lastRatedDay, setLastRatedDay] = useState(loadLastRatedDay);
 
   // When the user logs in, pull their data from Firestore.
   // If Firestore is empty, migrate whatever is in localStorage up to Firestore.
@@ -41,6 +69,19 @@ export function useRatings(user) {
         const cloud = snap.data().ratings;
         setRatings(cloud);
         saveRatings(cloud); // keep localStorage in sync
+        // Restore lastRatedKey, streak, lastRatedDay from Firestore
+        if (snap.data().lastRatedKey) {
+          setLastRatedKey(snap.data().lastRatedKey);
+          localStorage.setItem(LAST_RATED_STORAGE_KEY, snap.data().lastRatedKey);
+        }
+        if (snap.data().streak != null) {
+          setStreak(snap.data().streak);
+          localStorage.setItem(STREAK_KEY, String(snap.data().streak));
+        }
+        if (snap.data().lastRatedDay != null) {
+          setLastRatedDay(snap.data().lastRatedDay);
+          localStorage.setItem(LAST_RATED_DAY_KEY, String(snap.data().lastRatedDay));
+        }
       } else {
         // No Firestore data yet — migrate localStorage up to the cloud
         const local = loadRatings();
@@ -78,6 +119,29 @@ export function useRatings(user) {
       saveRatingsToFirestore(user, next);
       return next;
     });
+
+    // Track the most recently rated song
+    const newLastKey = `${albumId}_${songIndex}`;
+    localStorage.setItem(LAST_RATED_STORAGE_KEY, newLastKey);
+    setLastRatedKey(newLastKey);
+
+    // Update streak — read current values directly from localStorage for accuracy
+    const today = Math.floor(Date.now() / 86400000);
+    const prevDay = loadLastRatedDay();
+    const prevStreak = loadStreak();
+    const newStreak = computeNewStreak(prevStreak, prevDay);
+    localStorage.setItem(STREAK_KEY, String(newStreak));
+    localStorage.setItem(LAST_RATED_DAY_KEY, String(today));
+    setStreak(newStreak);
+    setLastRatedDay(today);
+
+    if (user) {
+      setDoc(doc(db, 'users', user.uid), {
+        lastRatedKey: newLastKey,
+        streak: newStreak,
+        lastRatedDay: today,
+      }, { merge: true }).catch(() => {});
+    }
   }, [user]);
 
   // Calculate composite score (0–100) for one song given the active categories.
@@ -181,6 +245,8 @@ export function useRatings(user) {
 
   return {
     ratings,
+    lastRatedKey,
+    streak,
     setStarRating,
     getCompositeScore,
     getAlbumScore,
