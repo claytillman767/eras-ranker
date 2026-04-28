@@ -20,7 +20,6 @@ import { ALL_ALBUMS } from './data/albums';
 const TABS = [
   { id: 'home',       label: 'Home' },
   { id: 'albums',     label: 'Albums' },
-  { id: 'rate',       label: 'Rate songs' },
   { id: 'rankings',   label: 'Rankings' },
   { id: 'categories', label: 'Categories' },
   { id: 'settings',   label: 'Settings' },
