@@ -36,6 +36,9 @@ src/
     snippetLyrics.js       — DO NOT edit by hand; regenerate: python parse_snippets.py
                              Best lyric snippet per song (bridge > chorus > verse 1)
                              Used as floating BG on shuffle screen + scroller on Lyrics screen
+    spotifyStartTimes.js   — Developer-controlled Spotify playback start positions (NOT user-facing)
+                             Key: "albumId_songIndex", Value: milliseconds into the track
+                             Songs not listed start from 0. Edit this file to set per-song start points.
   hooks/
     useAuth.js             — Firebase Google sign-in; exposes user, authLoading, signIn, signOut
     useRatings.js          — accepts user param; reads/writes localStorage + Firestore (ratings field)
@@ -52,6 +55,7 @@ src/
                              Requires VITE_SPOTIFY_CLIENT_ID env var; redirect URIs must be registered in Spotify dashboard
     useSettings.js         — app-wide settings; localStorage 'eras_settings' + Firestore sync
                              DEFAULTS: { showCategoryBars: true, spotifyAutoplay: true }
+                             Note: Spotify start time is NOT in settings — it's developer-set in spotifyStartTimes.js
   components/
     AlbumGrid / AlbumCard  — album picker with score badges
     AlbumModeModal.jsx     — bottom-sheet shown on first album visit; "Vibe Check" (auto-starts QuickScore)
@@ -109,6 +113,7 @@ src/
 - Completion: animated DoneFlash auto-closes after 2s
 - Props: `songs`, `albumId`, `albumName`, `albumIcon`, `activeCategories`, `ratings`, `onRate`, `onClose`, `initialSongPos`,
   `spotify`, `spotifyAutoplay`, `onGoToSpotifySettings`
+- Spotify start position comes from `SPOTIFY_START_TIMES` in `spotifyStartTimes.js` — looked up inside `playTrack`, not passed as a prop
 
 ## Lyrics scripts (Python)
 - `parse_bridges.py` → `src/data/bridgeLyrics.js` (bridge sections only)
@@ -213,6 +218,19 @@ automatically while rating. See `useSpotify.js` and `SpotifyMiniPlayer.jsx`.
 - **Spotify branding rules enforced in UI:** green logo only on white backgrounds, min 24px, Spotify
   green (#1DB954) reserved for logo only (not used on play/pause controls), "Open in Spotify" link
   provides required attribution link-back, "Powered by Spotify" attribution text shown
+
+## Spotify start times (developer-controlled)
+Per-song playback start positions are set in `src/data/spotifyStartTimes.js` — this is a developer-only file, not exposed to users. The key is `"albumId_songIndex"` and the value is milliseconds. `playTrack` in `useSpotify.js` looks up the key automatically; songs without an entry start at 0.
+
+Example:
+```js
+export const SPOTIFY_START_TIMES = {
+  fe_2: 28000,  // Cruel Summer — skip to 0:28
+  tv_0: 15000,  // The 1 — skip 15s intro
+};
+```
+
+Do **not** add a user-facing setting for this. It is intentionally developer-controlled.
 
 **Remaining Spotify work:**
 - Apply for Extended Quota Mode before user count exceeds 25

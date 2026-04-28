@@ -151,6 +151,7 @@ export default function Settings({ settings, updateSetting, spotify, isPro, unlo
                 value={settings.spotifyAutoplay}
                 onChange={v => updateSetting('spotifyAutoplay', v)}
               />
+
             </>
           ) : (
             /* Pro but not yet connected */

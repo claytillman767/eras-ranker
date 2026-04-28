@@ -128,6 +128,8 @@ async function getFreshToken() {
   }
 }
 
+import { SPOTIFY_START_TIMES } from '../data/spotifyStartTimes';
+
 // Strips parenthetical suffixes that break Spotify search
 // e.g. "(From The Vault)", "(feat. Post Malone)", "(Taylor's Version)"
 function cleanName(name) {
@@ -328,6 +330,8 @@ export function useSpotify() {
 
     if (!uri) return; // song not found on Spotify
 
+    const startMs = SPOTIFY_START_TIMES[cacheKey] ?? 0;
+
     try {
       await fetch(
         `https://api.spotify.com/v1/me/player/play?device_id=${deviceIdRef.current}`,
@@ -337,7 +341,7 @@ export function useSpotify() {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ uris: [uri] }),
+          body: JSON.stringify({ uris: [uri], position_ms: startMs }),
         }
       );
     } catch { /* ignore playback errors silently */ }
