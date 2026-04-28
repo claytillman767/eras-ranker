@@ -317,6 +317,26 @@ export default function Settings({ settings, updateSetting, spotify, isPro, unlo
         </div>
       )}
 
+      {/* ── Spotify Premium note ── */}
+      <div style={{
+        marginTop: 10,
+        padding: '10px 14px',
+        fontSize: 11,
+        color: '#6b7280',
+        lineHeight: 1.5,
+      }}>
+        Spotify Premium lets you play any track, podcast episode or audiobook, ad-free and with better audio quality.{' '}
+        <a
+          href="https://spotify.com/premium"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: '#1DB954', textDecoration: 'none', fontWeight: 500 }}
+        >
+          Go to spotify.com/premium
+        </a>{' '}
+        to try it for free.
+      </div>
+
       {/* ── Disclaimer ── */}
       <div style={{
         marginTop: 32,
