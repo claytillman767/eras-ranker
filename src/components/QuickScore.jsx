@@ -841,6 +841,7 @@ export default function QuickScore({
         playerReady={!!spotify?.playerReady}
         isPlaying={!!spotify?.isPlaying}
         songName={currentSong?.name}
+        trackUri={spotify?.currentTrackUri}
         onTogglePlay={spotify?.togglePlay}
         onGoToSettings={onGoToSpotifySettings}
       />

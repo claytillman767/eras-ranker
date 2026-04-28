@@ -42,11 +42,22 @@ src/
     usePro.js              — accepts user param; reads/writes localStorage + Firestore (pro field)
     useManualOrder.js      — accepts user param; reads/writes localStorage + Firestore (manualOrder field)
     useAlbumModes.js       — accepts user param; reads/writes localStorage + Firestore (albumModes field)
+  hooks/
+    useSpotify.js          — Spotify Web Playback SDK integration (Pro-only)
+                             PKCE OAuth flow; token storage in localStorage; SDK script loaded dynamically
+                             Track URIs found via Spotify Search API + cached in localStorage 'eras_spotify_tracks'
+                             Exposes: isConnected, isLoading, playerReady, isPlaying, currentTrackUri,
+                               error, connect, disconnect, playTrack, pause, resume, togglePlay
+                             connect() redirects to Spotify OAuth; callback detected on app load via ?code=&state=eras_spotify
+                             Requires VITE_SPOTIFY_CLIENT_ID env var; redirect URIs must be registered in Spotify dashboard
+    useSettings.js         — app-wide settings; localStorage 'eras_settings' + Firestore sync
+                             DEFAULTS: { showCategoryBars: true, spotifyAutoplay: true }
   components/
     AlbumGrid / AlbumCard  — album picker with score badges
     AlbumModeModal.jsx     — bottom-sheet shown on first album visit; "Vibe Check" (auto-starts QuickScore)
                              or "Sort It Yourself"; choice saved via useAlbumModes
     SongList.jsx           — song list for one album; owns drag, QuickScore, AlbumCompleteCard state
+                             receives spotify, spotifyAutoplay, onGoToSpotifySettings props → passed to QuickScore
     SongRow.jsx            — drag handle (⠿) + position # + title + score
     RatingPanel.jsx        — full star breakdown per category (currently unused in main flow)
     QuickScore.jsx         — full-screen rapid scoring overlay
@@ -54,6 +65,13 @@ src/
                              LyricScroller shown above stars on the Lyrics category question
                              ShuffleScreen: Play=5★, Skip=1★ for replay; lyrics float in BG
                              Bridge category auto-skipped for songs with no bridge lyrics
+                             SpotifyMiniPlayer shown between top bar and question content
+                             Autoplays song on Spotify when songPos changes (if connected + playerReady + spotifyAutoplay)
+                             Pauses Spotify on unmount
+    SpotifyMiniPlayer.jsx  — compact bar inside QuickScore; white background (Spotify branding compliant)
+                             Connected: logo + song name + purple play/pause + "Open in Spotify" ↗ link
+                             Not connected: prompts user to connect (links to Settings)
+                             Spotify branding rules enforced: green logo on white bg only, min 24px, no green on controls
     StarRating.jsx         — reusable star input; size='sm'|'md'|'lg'; readonly prop
     Rankings.jsx           — top songs / top albums leaderboard + RankingCard at bottom
     RankingCard.jsx        — shareable card button (Rankings tab); also exports drawCard()
@@ -61,6 +79,8 @@ src/
     Categories.jsx         — Pro unlock + category toggles + weight sliders + custom creator
     ScoreBar.jsx           — visual score bar used in Rankings
     PaywallCard.jsx        — Pro upgrade prompt (used in Categories)
+    Settings.jsx           — Display section (category bars toggle) + Spotify section (connect/disconnect, autoplay)
+                             Spotify section is Pro-gated; shows paywall card for non-Pro users
 ```
 
 ## Key data patterns
@@ -77,7 +97,7 @@ src/
 - `isPro` stored as `'eras_is_pro'` in localStorage; `unlockPro()` is a mock — no payment wired
 - Extra category weights rescaled so all active categories always sum to 100
 - Weight overrides stored per-category in `eras_category_weights`; reset clears that key
-- Pro gates: extra/custom categories, weight sliders, Categories tab paywall UI
+- Pro gates: extra/custom categories, weight sliders, Categories tab paywall UI, **Spotify integration**
 
 ## QuickScore flow
 - Covers full viewport (`position: fixed, inset: 0, zIndex: 1000`)
@@ -87,7 +107,8 @@ src/
 - On Bridge category: bridge lyrics shown as inline italic quote above stars
 - Star labels (calibration phrases) defined in `STAR_LABELS` map inside QuickScore.jsx
 - Completion: animated DoneFlash auto-closes after 2s
-- Props: `songs`, `albumId`, `albumName`, `albumIcon`, `activeCategories`, `ratings`, `onRate`, `onClose`, `initialSongPos`
+- Props: `songs`, `albumId`, `albumName`, `albumIcon`, `activeCategories`, `ratings`, `onRate`, `onClose`, `initialSongPos`,
+  `spotify`, `spotifyAutoplay`, `onGoToSpotifySettings`
 
 ## Lyrics scripts (Python)
 - `parse_bridges.py` → `src/data/bridgeLyrics.js` (bridge sections only)
@@ -148,7 +169,7 @@ service cloud.firestore {
 - **GitHub:** private repo at `https://github.com/claytillman767/eras-ranker`
 - **Vercel:** auto-deploys on every push to `main`; live at `https://eras-ranker.vercel.app`
 - **Local path:** `C:\Users\clayt\dev\eras-ranker` (moved out of OneDrive to avoid git conflicts)
-- **`.env`** contains `GENIUS_API_TOKEN` (Python lyrics scripts only) and all `VITE_FIREBASE_*` keys (loaded by Vite at build time); gitignored, never commit it
+- **`.env`** contains `GENIUS_API_TOKEN` (Python lyrics scripts only), all `VITE_FIREBASE_*` keys, and `VITE_SPOTIFY_CLIENT_ID` (loaded by Vite at build time); gitignored, never commit it
 - **`.claude/settings.local.json`** is gitignored — do not commit it
 - **Vercel build settings:** Framework = Vite, Build = `npm run build`, Output = `dist`, Root Directory = (blank/repo root)
 
@@ -179,10 +200,21 @@ service cloud.firestore {
 Google sign-in is live. Ratings, Pro settings, manual order, and album modes all sync to Firestore. See the **Authentication & Firestore** section above for full details.
 Remaining future work in this area: Stripe integration to move Pro status from a localStorage flag to a trusted Firestore field.
 
-### Song Previews in Rating Flow (Pro-only)
-A small play/pause player with a progress bar appears inside the rating flow for Pro users — "hear it, then rate it." Player should be visible on every rating screen for the current song, autoplay by default, with a toggle in the Categories tab to turn autoplay off.
+### ~~Song Previews in Rating Flow~~ ✅ BUILT via Spotify Web Playback SDK
+Pro users can connect their Spotify Premium account (Settings → Spotify) to hear each song play
+automatically while rating. See `useSpotify.js` and `SpotifyMiniPlayer.jsx`.
 
-**Research already done — read before starting:**
-- **Spotify:** Removed preview URLs from Taylor Swift's entire catalog. Confirmed via API check — 0/193 songs return a preview URL. Do not pursue Spotify.
-- **Deezer:** Has a preview API but terms restrict usage to "strictly private, family-scope" apps. Legal gray area — not recommended.
-- **Feed.fm (check first):** Enterprise API at https://www.feed.fm — offers fully licensed clips from major label catalogs with custom timestamp selection. Custom pricing (contact for quote). Most legitimate path forward if the app grows to the point where licensing spend makes sense. Verify Taylor Swift catalog availability before committing.
+**Key technical notes:**
+- Uses **Spotify Web Playback SDK** + PKCE OAuth — plays full songs on the user's own Spotify account
+- Taylor Swift preview URLs are gone from the API, but full playback via SDK works fine
+- Track URIs found at runtime via Spotify Search API, cached in localStorage `eras_spotify_tracks`
+- Spotify **developer quota:** free tier supports up to 25 users. To go beyond 25 users, must apply
+  for **Extended Quota Mode** at developer.spotify.com — requires app description, use case, screenshots
+- **Spotify branding rules enforced in UI:** green logo only on white backgrounds, min 24px, Spotify
+  green (#1DB954) reserved for logo only (not used on play/pause controls), "Open in Spotify" link
+  provides required attribution link-back, "Powered by Spotify" attribution text shown
+
+**Remaining Spotify work:**
+- Apply for Extended Quota Mode before user count exceeds 25
+- Consider adding a progress bar to the mini player
+- The autoplay toggle is in Settings → Spotify; could also add it directly in the QuickScore overlay
