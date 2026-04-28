@@ -31,6 +31,10 @@ export default function SongList({
   getRatedCount,
   // Display settings
   showCategoryBars,
+  // Spotify playback (optional — omit to hide the feature entirely)
+  spotify,
+  spotifyAutoplay,
+  onGoToSpotifySettings,
 }) {
   // Which song row is expanded (showing action buttons)
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -208,6 +212,9 @@ export default function SongList({
           ratings={ratings}
           onRate={(songIndex, catId, val) => setStarRating(albumId, songIndex, catId, val)}
           onClose={() => setQuickScoreSongs(null)}
+          spotify={spotify}
+          spotifyAutoplay={spotifyAutoplay}
+          onGoToSpotifySettings={onGoToSpotifySettings}
         />
       )}
 

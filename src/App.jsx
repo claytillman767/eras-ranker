@@ -5,6 +5,7 @@ import { usePro } from './hooks/usePro';
 import { useManualOrder } from './hooks/useManualOrder';
 import { useAlbumModes } from './hooks/useAlbumModes';
 import { useSettings } from './hooks/useSettings';
+import { useSpotify } from './hooks/useSpotify';
 import Home from './components/Home';
 import AlbumGrid from './components/AlbumGrid';
 import AlbumModeModal from './components/AlbumModeModal';
@@ -65,6 +66,7 @@ export default function App() {
   const { getManualOrder, moveUp, moveDown, reorder, setOrder } = useManualOrder(user);
   const { getAlbumMode, setAlbumMode } = useAlbumModes(user);
   const { settings, updateSetting } = useSettings(user);
+  const spotify = useSpotify();
 
   // Album waiting for a mode choice; null = no modal shown
   const [pendingAlbumId, setPendingAlbumId] = useState(null);
@@ -340,6 +342,9 @@ export default function App() {
               autoStartSongIndex={autoStartSongIndex}
               onAutoStartConsumed={() => { setAutoStartScore(false); setAutoStartSongIndex(null); }}
               showCategoryBars={settings.showCategoryBars}
+              spotify={isPro ? spotify : null}
+              spotifyAutoplay={settings.spotifyAutoplay}
+              onGoToSpotifySettings={() => setActiveTab('settings')}
             />
           ) : (
             <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 14, padding: '60px 0' }}>
@@ -361,6 +366,8 @@ export default function App() {
           <Settings
             settings={settings}
             updateSetting={updateSetting}
+            spotify={spotify}
+            isPro={isPro}
           />
         )}
 

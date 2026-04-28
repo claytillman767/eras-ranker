@@ -5,7 +5,8 @@ import { db } from '../firebase';
 const STORAGE_KEY = 'eras_settings';
 
 const DEFAULTS = {
-  showCategoryBars: true,  // show the mini score-bar breakdown on song rows
+  showCategoryBars:  true,  // show the mini score-bar breakdown on song rows
+  spotifyAutoplay:   true,  // automatically start Spotify playback when a new song appears in QuickScore
 };
 
 function loadSettings() {

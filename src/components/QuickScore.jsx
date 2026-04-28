@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getBridgeLyrics } from '../data/bridgeLyrics';
 import { getSnippetLyrics } from '../data/snippetLyrics';
+import SpotifyMiniPlayer from './SpotifyMiniPlayer';
 
 // Calibration phrases for each category × star level (index 0 = ★1).
 // Goal: make ★1–★2 feel like valid, honest ratings — not insults.
@@ -622,6 +623,9 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick }) {
 // ratings       — raw ratings object from useRatings
 // onRate(songIndex, catId, val) — saves a rating
 // onClose       — dismisses the overlay
+// spotify       — object from useSpotify (optional; omit to disable Spotify features)
+// spotifyAutoplay — boolean; when true, song plays automatically on each advance
+// onGoToSpotifySettings — callback to navigate the user to the Settings tab
 export default function QuickScore({
   songs,
   albumId,
@@ -632,6 +636,9 @@ export default function QuickScore({
   onRate,
   onClose,
   initialSongPos = 0,
+  spotify,
+  spotifyAutoplay = true,
+  onGoToSpotifySettings,
 }) {
   const [songPos, setSongPos] = useState(initialSongPos);
   const [catPos, setCatPos] = useState(0);
@@ -639,6 +646,21 @@ export default function QuickScore({
   const [showTrees, setShowTrees] = useState(false);
 
   const isSingleSong = songs.length === 1;
+
+  // ── Spotify autoplay: start playing whenever the song changes ────────────
+  useEffect(() => {
+    if (!spotify?.isConnected || !spotify?.playerReady || !spotifyAutoplay) return;
+    const song = songs[songPos];
+    if (!song) return;
+    spotify.playTrack(albumId, song.index, song.name, albumName);
+  }, [songPos, spotify?.playerReady]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Pause when QuickScore closes ─────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      spotify?.pause?.();
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pre-compute effective categories per song.
   // • Bridge is skipped for songs without bridge lyrics.
@@ -812,6 +834,16 @@ export default function QuickScore({
           ✕ Exit
         </button>
       </div>
+
+      {/* ── Spotify mini player ── */}
+      <SpotifyMiniPlayer
+        isConnected={!!spotify?.isConnected}
+        playerReady={!!spotify?.playerReady}
+        isPlaying={!!spotify?.isPlaying}
+        songName={currentSong?.name}
+        onTogglePlay={spotify?.togglePlay}
+        onGoToSettings={onGoToSpotifySettings}
+      />
 
       {/* ── No-bridge notice ── */}
       {isNoBridgeNotice ? (
