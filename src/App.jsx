@@ -170,6 +170,7 @@ export default function App() {
   }
 
   const userInitial = user?.displayName?.charAt(0)?.toUpperCase() ?? '?';
+  const userFirstName = user?.displayName?.split(' ')[0] ?? 'there';
 
   return (
     <div style={{
@@ -204,24 +205,37 @@ export default function App() {
                 onClick={() => setShowUserMenu(v => !v)}
                 title={user.displayName ?? 'Account'}
                 style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '50%',
-                  border: '2px solid #a855f7',
-                  padding: 0,
-                  cursor: 'pointer',
-                  overflow: 'hidden',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 7,
+                  padding: '5px 10px 5px 5px',
+                  borderRadius: 20,
+                  border: '1.5px solid #a855f7',
                   background: '#f3e8ff',
+                  cursor: 'pointer',
+                }}
+              >
+                {/* Avatar circle */}
+                <div style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  background: '#e9d5ff',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                }}
-              >
-                {user.photoURL ? (
-                  <img src={user.photoURL} alt={user.displayName ?? 'User'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#a855f7' }}>{userInitial}</span>
-                )}
+                  flexShrink: 0,
+                }}>
+                  {user.photoURL ? (
+                    <img src={user.photoURL} alt={user.displayName ?? 'User'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed' }}>{userInitial}</span>
+                  )}
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#7c3aed', whiteSpace: 'nowrap' }}>
+                  Hello, {userFirstName}
+                </span>
               </button>
 
               {showUserMenu && (
