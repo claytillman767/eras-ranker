@@ -9,6 +9,7 @@ export default function AlbumHero({
   getRatedCount,
   activeCategories,
   onBack,
+  spotifyArtUrl,
 }) {
   const album = ALL_ALBUMS.find(a => a.id === albumId);
   if (!album) return null;
@@ -47,20 +48,35 @@ export default function AlbumHero({
 
       {/* Album identity row */}
       <div style={{ display: 'flex', gap: 14, alignItems: 'center', marginBottom: 14 }}>
-        <div style={{
-          width: 76,
-          height: 76,
-          borderRadius: 14,
-          background: album.color,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 38,
-          flexShrink: 0,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-        }}>
-          {album.icon}
-        </div>
+        {spotifyArtUrl ? (
+          <img
+            src={spotifyArtUrl}
+            alt={album.name}
+            style={{
+              width: 76,
+              height: 76,
+              borderRadius: 14,
+              objectFit: 'cover',
+              flexShrink: 0,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+            }}
+          />
+        ) : (
+          <div style={{
+            width: 76,
+            height: 76,
+            borderRadius: 14,
+            background: album.color,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 38,
+            flexShrink: 0,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+          }}>
+            {album.icon}
+          </div>
+        )}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 18, fontWeight: 600, color: '#111827', lineHeight: 1.15 }}>
             {album.name}

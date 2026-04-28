@@ -7,7 +7,7 @@ const gridStyle = {
   gap: 10,
 };
 
-export default function AlbumGrid({ onSelectAlbum, selectedAlbumId, getAlbumScore, getRatedCount, activeCategories }) {
+export default function AlbumGrid({ onSelectAlbum, selectedAlbumId, getAlbumScore, getRatedCount, activeCategories, albumArt }) {
   return (
     <div style={{ padding: '12px 0' }}>
       <div style={gridStyle}>
@@ -19,6 +19,7 @@ export default function AlbumGrid({ onSelectAlbum, selectedAlbumId, getAlbumScor
             albumScore={getAlbumScore(album.id, activeCategories)}
             isSelected={album.id === selectedAlbumId}
             onClick={() => onSelectAlbum(album.id)}
+            spotifyArtUrl={albumArt?.[album.id] ?? null}
           />
         ))}
       </div>

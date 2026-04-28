@@ -34,6 +34,7 @@ export default function SongList({
   // Spotify playback (optional — omit to hide the feature entirely)
   spotify,
   spotifyAutoplay,
+  spotifyAlbumArt,
   onGoToSpotifySettings,
 }) {
   // Which song row is expanded (showing action buttons)
@@ -226,6 +227,7 @@ export default function SongList({
         getRatedCount={getRatedCount}
         activeCategories={activeCategories}
         onBack={onBack}
+        spotifyArtUrl={spotifyAlbumArt?.[albumId] ?? null}
       />
 
       {/* ── Action buttons ── */}

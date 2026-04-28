@@ -1,7 +1,7 @@
 // Single album card shown in the album grid.
 // Shows icon, name, and either album score (if songs rated), rated count, or year.
 
-export default function AlbumCard({ album, ratedCount, albumScore, isSelected, onClick }) {
+export default function AlbumCard({ album, ratedCount, albumScore, isSelected, onClick, spotifyArtUrl }) {
   // Decide what to show in the bottom line
   let bottomLine;
   if (albumScore !== null) {
@@ -44,7 +44,15 @@ export default function AlbumCard({ album, ratedCount, albumScore, isSelected, o
         gap: 4,
       }}
     >
-      <span style={{ fontSize: 24 }}>{album.icon}</span>
+      {spotifyArtUrl ? (
+        <img
+          src={spotifyArtUrl}
+          alt={album.name}
+          style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }}
+        />
+      ) : (
+        <span style={{ fontSize: 24 }}>{album.icon}</span>
+      )}
       <span style={{
         fontSize: 12,
         fontWeight: 500,

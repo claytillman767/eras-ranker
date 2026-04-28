@@ -318,6 +318,7 @@ export default function App() {
             getAlbumScore={getAlbumScore}
             getRatedCount={getRatedCount}
             activeCategories={activeCategories}
+            albumArt={isPro ? spotify.albumArt : null}
           />
         )}
 
@@ -344,6 +345,7 @@ export default function App() {
               showCategoryBars={settings.showCategoryBars}
               spotify={isPro ? spotify : null}
               spotifyAutoplay={settings.spotifyAutoplay}
+              spotifyAlbumArt={isPro ? spotify.albumArt : null}
               onGoToSpotifySettings={() => setActiveTab('settings')}
             />
           ) : (

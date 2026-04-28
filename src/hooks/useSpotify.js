@@ -11,6 +11,8 @@
 //
 // Users need a Spotify Premium account for Web Playback SDK.
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { ALBUMS, SONGS } from '../data/albums';
+import { SPOTIFY_START_TIMES } from '../data/spotifyStartTimes';
 
 const CLIENT_ID   = import.meta.env.VITE_SPOTIFY_CLIENT_ID ?? '';
 const REDIRECT_URI = window.location.origin + '/';
@@ -27,6 +29,7 @@ const TOKEN_KEY   = 'spotify_access_token';
 const REFRESH_KEY = 'spotify_refresh_token';
 const EXPIRY_KEY  = 'spotify_token_expiry';
 const CACHE_KEY   = 'eras_spotify_tracks';     // song-URI lookup cache
+const ART_KEY     = 'eras_spotify_album_art';  // albumId → image URL cache
 
 // ── PKCE helpers ──────────────────────────────────────────────────────────────
 
@@ -75,6 +78,18 @@ function loadCache() {
 
 function saveCache(cache) {
   try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); }
+  catch { /* storage full — ignore */ }
+}
+
+// ── Album art cache ───────────────────────────────────────────────────────────
+
+function loadArtCache() {
+  try { return JSON.parse(localStorage.getItem(ART_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function saveArtCache(cache) {
+  try { localStorage.setItem(ART_KEY, JSON.stringify(cache)); }
   catch { /* storage full — ignore */ }
 }
 
@@ -128,8 +143,6 @@ async function getFreshToken() {
   }
 }
 
-import { SPOTIFY_START_TIMES } from '../data/spotifyStartTimes';
-
 // Strips parenthetical suffixes that break Spotify search
 // e.g. "(From The Vault)", "(feat. Post Malone)", "(Taylor's Version)"
 function cleanName(name) {
@@ -159,7 +172,11 @@ async function searchTrackUri(songName, albumName, token) {
     const match = items.find(t =>
       t.album.name.toLowerCase().replace(/[^a-z0-9 ]/g, '').includes(shortAlbum)
     );
-    return (match ?? items[0]).uri;
+    const best = match ?? items[0];
+    const images = best.album.images;
+    // Prefer medium size (index 1 ~300px); fall back to largest if only one size
+    const imageUrl = (images[1] ?? images[0])?.url ?? null;
+    return { uri: best.uri, imageUrl };
   } catch {
     return null;
   }
@@ -175,10 +192,12 @@ export function useSpotify() {
   const [isPlaying, setIsPlaying]         = useState(false);
   const [currentSongName, setCurrentSongName] = useState(null);
   const [error, setError]                 = useState(null);
+  const [albumArt, setAlbumArt]           = useState(loadArtCache);
 
   const playerRef    = useRef(null);
   const deviceIdRef  = useRef(null);
   const trackCache   = useRef(loadCache());
+  const artCache     = useRef(loadArtCache());
 
   // ── Handle redirect back from Spotify (code in URL) ─────────────────────
   useEffect(() => {
@@ -275,6 +294,38 @@ export function useSpotify() {
     }
   }, [isConnected]);
 
+  // ── Proactively fetch album art for all albums when connected ─────────────
+  useEffect(() => {
+    if (!isConnected) return;
+
+    async function prefetchArt() {
+      const token = await getFreshToken();
+      if (!token) return;
+
+      const updated = { ...artCache.current };
+      let changed = false;
+
+      for (const album of ALBUMS) {
+        if (updated[album.id]) continue; // already cached
+        const songName = SONGS[album.id]?.[0];
+        if (!songName) continue;
+        const result = await searchTrackUri(songName, album.name, token);
+        if (result?.imageUrl) {
+          updated[album.id] = result.imageUrl;
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        artCache.current = updated;
+        saveArtCache(updated);
+        setAlbumArt({ ...updated });
+      }
+    }
+
+    prefetchArt();
+  }, [isConnected]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Connect: kick off PKCE OAuth flow ────────────────────────────────────
   const connect = useCallback(async () => {
     if (!CLIENT_ID) {
@@ -321,10 +372,17 @@ export function useSpotify() {
     let uri = trackCache.current[cacheKey];
 
     if (!uri) {
-      uri = await searchTrackUri(songName, albumName, token);
-      if (uri) {
+      const result = await searchTrackUri(songName, albumName, token);
+      if (result?.uri) {
+        uri = result.uri;
         trackCache.current[cacheKey] = uri;
         saveCache(trackCache.current);
+        // Cache art as a bonus if we don't have it yet for this album
+        if (result.imageUrl && !artCache.current[albumId]) {
+          artCache.current[albumId] = result.imageUrl;
+          saveArtCache(artCache.current);
+          setAlbumArt(prev => ({ ...prev, [albumId]: result.imageUrl }));
+        }
       }
     }
 
@@ -359,6 +417,7 @@ export function useSpotify() {
     playerReady,
     isPlaying,
     currentSongName,
+    albumArt,
     error,
     connect,
     disconnect,
