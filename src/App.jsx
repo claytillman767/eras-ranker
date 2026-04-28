@@ -26,6 +26,8 @@ const TABS = [
   { id: 'settings',   label: 'Settings' },
 ];
 
+const BETA_KEY = 'eras_beta_unlocked';
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [selectedAlbumId, setSelectedAlbumId] = useState(null);
@@ -35,45 +37,11 @@ export default function App() {
   // Auth
   const { user, authLoading, signIn, signOut } = useAuth();
 
-  // ── Beta gate ────────────────────────────────────────────────────────────────
-  const BETA_KEY = 'eras_beta_unlocked';
+  // ── Beta gate state ──────────────────────────────────────────────────────────
   const [betaUnlocked, setBetaUnlocked] = useState(() => localStorage.getItem(BETA_KEY) === 'true');
   const [betaRejected, setBetaRejected] = useState(false);
 
-  // When a Google sign-in completes, check the allowlist.
-  useEffect(() => {
-    if (betaUnlocked || authLoading || !user) return;
-    const allowedRaw = import.meta.env.VITE_BETA_EMAILS ?? '';
-    const allowed = allowedRaw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-    // Empty list = allow any signed-in Google account
-    if (allowed.length === 0 || allowed.includes(user.email?.toLowerCase())) {
-      localStorage.setItem(BETA_KEY, 'true');
-      setBetaUnlocked(true);
-      setBetaRejected(false);
-    } else {
-      setBetaRejected(true);
-      signOut();
-    }
-  }, [user, authLoading, betaUnlocked]);
-
-  function handleBetaPassword() {
-    localStorage.setItem(BETA_KEY, 'true');
-    setBetaUnlocked(true);
-  }
-
-  if (!betaUnlocked) {
-    return (
-      <BetaGate
-        onSignIn={signIn}
-        onPassword={handleBetaPassword}
-        loading={authLoading}
-        rejected={betaRejected}
-      />
-    );
-  }
-  // ────────────────────────────────────────────────────────────────────────────
-
-  // Data hooks
+  // ── Data hooks — ALL hooks must be declared before any conditional return ────
   const {
     ratings,
     lastRatedKey,
@@ -107,11 +75,8 @@ export default function App() {
   const { settings, updateSetting } = useSettings(user);
   const spotify = useSpotify();
 
-  // Album waiting for a mode choice; null = no modal shown
   const [pendingAlbumId, setPendingAlbumId] = useState(null);
-  // Auto-launch QuickScore on SongList mount
   const [autoStartScore, setAutoStartScore] = useState(false);
-  // When set, opens QuickScore on this specific song index (Continue card)
   const [autoStartSongIndex, setAutoStartSongIndex] = useState(null);
 
   // Close the user menu if the user clicks anywhere outside it
@@ -125,6 +90,40 @@ export default function App() {
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, [showUserMenu]);
+
+  // When a Google sign-in completes, check the allowlist and unlock the gate.
+  useEffect(() => {
+    if (betaUnlocked || authLoading || !user) return;
+    const allowedRaw = import.meta.env.VITE_BETA_EMAILS ?? '';
+    const allowed = allowedRaw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+    // Empty list = allow any signed-in Google account
+    if (allowed.length === 0 || allowed.includes(user.email?.toLowerCase())) {
+      localStorage.setItem(BETA_KEY, 'true');
+      setBetaUnlocked(true);
+      setBetaRejected(false);
+    } else {
+      setBetaRejected(true);
+      signOut();
+    }
+  }, [user, authLoading, betaUnlocked]);
+
+  // ── Gate check — safe to early-return now that all hooks are declared above ──
+  function handleBetaPassword() {
+    localStorage.setItem(BETA_KEY, 'true');
+    setBetaUnlocked(true);
+  }
+
+  if (!betaUnlocked) {
+    return (
+      <BetaGate
+        onSignIn={signIn}
+        onPassword={handleBetaPassword}
+        loading={authLoading || (!!user && !betaRejected)}
+        rejected={betaRejected}
+      />
+    );
+  }
+  // ────────────────────────────────────────────────────────────────────────────
 
   function handleSelectAlbum(albumId) {
     const mode = getAlbumMode(albumId);
@@ -140,7 +139,7 @@ export default function App() {
     setAlbumMode(pendingAlbumId, 'score');
     setSelectedAlbumId(pendingAlbumId);
     setAutoStartScore(true);
-    setAutoStartSongIndex(null); // start from first unscored
+    setAutoStartSongIndex(null);
     setPendingAlbumId(null);
     setActiveTab('rate');
   }
@@ -154,11 +153,9 @@ export default function App() {
     setActiveTab('rate');
   }
 
-  // Called from the Home tab's Continue card or daily prompt
   function handleContinueRating(albumId, songIndex) {
     const mode = getAlbumMode(albumId);
     if (mode === null) {
-      // First visit to this album — show mode modal
       setPendingAlbumId(albumId);
     } else {
       setSelectedAlbumId(albumId);
@@ -410,6 +407,9 @@ export default function App() {
             spotify={spotify}
             isPro={isPro}
             unlockPro={unlockPro}
+            user={user}
+            signIn={signIn}
+            signOut={signOut}
           />
         )}
 

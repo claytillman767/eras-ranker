@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 // Settings tab — app-wide display and behaviour preferences.
-export default function Settings({ settings, updateSetting, spotify, isPro, unlockPro }) {
+export default function Settings({ settings, updateSetting, spotify, isPro, unlockPro, user, signIn, signOut }) {
   const [showProModal, setShowProModal] = useState(false);
 
   function handleUnlockPro() {
@@ -16,6 +16,111 @@ export default function Settings({ settings, updateSetting, spotify, isPro, unlo
       {showProModal && (
         <ProModal onUnlock={handleUnlockPro} onClose={() => setShowProModal(false)} />
       )}
+
+      {/* ── Account section ── */}
+      <SectionHeader>Account</SectionHeader>
+      <div style={{
+        background: '#ffffff',
+        border: '0.5px solid #e5e7eb',
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 28,
+      }}>
+        {user ? (
+          <>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+              padding: '16px',
+              borderBottom: '0.5px solid #f3f4f6',
+            }}>
+              {/* Avatar */}
+              <div style={{
+                width: 48,
+                height: 48,
+                borderRadius: '50%',
+                border: '2px solid #a855f7',
+                overflow: 'hidden',
+                background: '#f3e8ff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt={user.displayName ?? 'User'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span style={{ fontSize: 20, fontWeight: 700, color: '#a855f7' }}>
+                    {user.displayName?.charAt(0)?.toUpperCase() ?? '?'}
+                  </span>
+                )}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
+                  {user.displayName ?? 'Google User'}
+                </div>
+                <div style={{ fontSize: 12, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {user.email}
+                </div>
+              </div>
+            </div>
+            <div style={{ padding: '8px 12px' }}>
+              <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 10, paddingTop: 4 }}>
+                Your ratings and settings are backed up to the cloud and will sync across devices.
+              </div>
+              <button
+                onClick={signOut}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  borderRadius: 10,
+                  border: '0.5px solid #e5e7eb',
+                  background: '#ffffff',
+                  fontSize: 13,
+                  color: '#ef4444',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                Sign out
+              </button>
+            </div>
+          </>
+        ) : (
+          <div style={{ padding: '16px' }}>
+            <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.5, marginBottom: 14 }}>
+              Sign in with Google to back up your ratings and sync across devices.
+            </div>
+            <button
+              onClick={signIn}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                width: '100%',
+                padding: '11px',
+                borderRadius: 10,
+                border: '1px solid #d1d5db',
+                background: '#ffffff',
+                fontSize: 14,
+                fontWeight: 500,
+                color: '#111827',
+                cursor: 'pointer',
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 18 18">
+                <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+                <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+                <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+                <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+              </svg>
+              Sign in with Google
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* ── Display section ── */}
       <SectionHeader>Display</SectionHeader>
