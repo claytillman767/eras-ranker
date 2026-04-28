@@ -16,6 +16,7 @@ export default function SpotifyMiniPlayer({
   trackUri,        // spotify:track:xxx — used to build the "Open in Spotify" link
   onTogglePlay,
   onGoToSettings,  // called when the user taps the "Connect Spotify" prompt
+  style,           // optional outer container style overrides
 }) {
   // Convert a Spotify URI to a web URL for the "Open in Spotify" link
   // e.g. "spotify:track:abc123" → "https://open.spotify.com/track/abc123"
@@ -68,6 +69,7 @@ export default function SpotifyMiniPlayer({
       border: '0.5px solid #e5e7eb',
       borderRadius: 10,
       boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+      ...style,
     }}>
       {/* Spotify logo — green on white is the only approved color combination */}
       <SpotifyLogo size={24} />

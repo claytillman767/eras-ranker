@@ -820,17 +820,6 @@ export default function QuickScore({
         </button>
       </div>
 
-      {/* ── Spotify mini player ── */}
-      <SpotifyMiniPlayer
-        isConnected={!!spotify?.isConnected}
-        playerReady={!!spotify?.playerReady}
-        isPlaying={!!spotify?.isPlaying}
-        songName={currentSong?.name}
-        trackUri={spotify?.currentTrackUri}
-        onTogglePlay={spotify?.togglePlay}
-        onGoToSettings={onGoToSpotifySettings}
-      />
-
       {/* ── No-bridge notice ── */}
       {isNoBridgeNotice ? (
         <NoBridgeScreen
@@ -875,10 +864,23 @@ export default function QuickScore({
             {albumIcon} {albumName}
           </div>
 
-          {/* Song name */}
-          <div style={{ fontSize: 22, fontWeight: 700, color: '#111827', lineHeight: 1.3, marginBottom: currentCat?.id === 'lyrics' ? 16 : 32, maxWidth: 320 }}>
-            {currentSong?.name}
-          </div>
+          {/* Song name / Spotify mini player */}
+          {spotify?.isConnected ? (
+            <SpotifyMiniPlayer
+              isConnected={!!spotify?.isConnected}
+              playerReady={!!spotify?.playerReady}
+              isPlaying={!!spotify?.isPlaying}
+              songName={currentSong?.name}
+              trackUri={spotify?.currentTrackUri}
+              onTogglePlay={spotify?.togglePlay}
+              onGoToSettings={onGoToSpotifySettings}
+              style={{ margin: `0 0 ${currentCat?.id === 'lyrics' ? 16 : 32}px`, width: '100%' }}
+            />
+          ) : (
+            <div style={{ fontSize: 22, fontWeight: 700, color: '#111827', lineHeight: 1.3, marginBottom: currentCat?.id === 'lyrics' ? 16 : 32, maxWidth: 320 }}>
+              {currentSong?.name}
+            </div>
+          )}
 
           {/* Category label */}
           <div style={{ fontSize: 11, fontWeight: 600, color: '#a855f7', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
