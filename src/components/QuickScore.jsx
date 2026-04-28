@@ -647,13 +647,22 @@ export default function QuickScore({
 
   const isSingleSong = songs.length === 1;
 
-  // ── Spotify autoplay: start playing whenever the song changes ────────────
+  // ── Spotify autoplay: start playing from shuffle timestamp on new song ───
   useEffect(() => {
     if (!spotify?.isConnected || !spotify?.playerReady || !spotifyAutoplay) return;
     const song = songs[songPos];
     if (!song) return;
-    spotify.playTrack(albumId, song.index, song.name, albumName);
+    spotify.playTrack(albumId, song.index, song.name, albumName, 'shuffle');
   }, [songPos, spotify?.playerReady]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Spotify bridge seek: jump to bridge timestamp when bridge cat is active
+  useEffect(() => {
+    if (!spotify?.isConnected || !spotify?.playerReady || !spotifyAutoplay) return;
+    if (currentCat?.id !== 'bridge') return;
+    const song = songs[songPos];
+    if (!song) return;
+    spotify.playTrack(albumId, song.index, song.name, albumName, 'bridge');
+  }, [catPos]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pause when QuickScore closes ─────────────────────────────────────────
   useEffect(() => {

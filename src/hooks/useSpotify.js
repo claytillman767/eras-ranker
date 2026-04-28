@@ -13,6 +13,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ALBUMS, SONGS } from '../data/albums';
 import { SPOTIFY_START_TIMES } from '../data/spotifyStartTimes';
+import { SPOTIFY_BRIDGE_TIMES } from '../data/spotifyBridgeTimes';
 
 const CLIENT_ID   = import.meta.env.VITE_SPOTIFY_CLIENT_ID ?? '';
 const REDIRECT_URI = window.location.origin + '/';
@@ -364,7 +365,8 @@ export function useSpotify() {
 
   // ── Play a specific song ──────────────────────────────────────────────────
   // albumId + songIndex are used as the cache key; songName + albumName for the search.
-  const playTrack = useCallback(async (albumId, songIndex, songName, albumName) => {
+  // screen: 'shuffle' (first screen) | 'bridge' (bridge category)
+  const playTrack = useCallback(async (albumId, songIndex, songName, albumName, screen = 'shuffle') => {
     const token = await getFreshToken();
     if (!token || !deviceIdRef.current) return;
 
@@ -388,7 +390,9 @@ export function useSpotify() {
 
     if (!uri) return; // song not found on Spotify
 
-    const startMs = SPOTIFY_START_TIMES[cacheKey] ?? 0;
+    const startMs = screen === 'bridge'
+      ? (SPOTIFY_BRIDGE_TIMES[cacheKey] ?? 0)
+      : (SPOTIFY_START_TIMES[cacheKey] ?? 0);
 
     try {
       await fetch(
