@@ -29,6 +29,8 @@ export default function SongList({
   // Extra data hooks needed for AlbumHero
   getAlbumScore,
   getRatedCount,
+  // Display settings
+  showCategoryBars,
 }) {
   // Which song row is expanded (showing action buttons)
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -270,7 +272,7 @@ export default function SongList({
 
       {/* ── Song rows ── */}
       <div style={{ padding: '0 16px 80px' }}>
-        {/* Section header with category legend */}
+        {/* Section header with optional category legend */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -286,7 +288,7 @@ export default function SongList({
           }}>
             Songs
           </div>
-          {hasAnyScore && (
+          {hasAnyScore && showCategoryBars !== false && (
             <div style={{ fontSize: 10, color: '#9ca3af' }}>
               {catLegend}
             </div>
@@ -324,6 +326,7 @@ export default function SongList({
                   onDragEnd={() => endDrag()}
                   songRatings={songRatings}
                   activeCategories={activeCategories}
+                  showCategoryBars={showCategoryBars}
                 />
 
                 {/* Action bar — shown when song row is selected */}
@@ -374,13 +377,13 @@ export default function SongList({
 
 function abbrevLabel(name) {
   const MAP = {
-    'Lyrics': 'Lyr',
+    'Lyrics': 'Lyrics',
     'Music / melody': 'Music',
-    'Bridge': 'Brdg',
-    'Nostalgia': 'Nost',
+    'Bridge': 'Bridge',
+    'Nostalgia': 'Nostlg',
     'Skip on shuffle?': 'Skip',
     'Hook / chorus': 'Hook',
-    'Vocal performance': 'Voc',
+    'Vocal performance': 'Vocal',
     'Cry factor': 'Cry',
     'Romantic feel': 'Rom',
     'Hype / energy': 'Hype',
@@ -388,5 +391,5 @@ function abbrevLabel(name) {
     'Vibe / atmosphere': 'Vibe',
     'Storytelling': 'Story',
   };
-  return MAP[name] || name.slice(0, 5);
+  return MAP[name] || name.slice(0, 6);
 }

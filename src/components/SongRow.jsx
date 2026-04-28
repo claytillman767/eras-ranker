@@ -10,8 +10,9 @@ export default function SongRow({
   onDragMove,
   onDragEnd,
   // New props for category bars
-  songRatings,     // object like { lyrics: 4, music: 3, ... } or null/undefined
-  activeCategories, // full array of active category objects
+  songRatings,       // object like { lyrics: 4, music: 3, ... } or null/undefined
+  activeCategories,  // full array of active category objects
+  showCategoryBars,  // boolean — when false, hides the mini bar breakdown
 }) {
   const scored = compositeScore !== null;
 
@@ -119,8 +120,8 @@ export default function SongRow({
           )}
         </div>
 
-        {/* Category bars — only shown for scored songs */}
-        {scored && ratedBars.length > 0 && (
+        {/* Category bars — only shown for scored songs when the setting is on */}
+        {scored && showCategoryBars !== false && ratedBars.length > 0 && (
           <div style={{ display: 'flex', gap: 6, marginTop: 5 }}>
             {ratedBars.map(bar => (
               <div key={bar.id} style={{ flex: 1 }}>
@@ -151,16 +152,16 @@ export default function SongRow({
   );
 }
 
-// Abbreviate category name to ≤5 chars for the tiny bar legend
+// Short label for the tiny bar legend beneath each song row
 function abbrevLabel(name) {
   const MAP = {
-    'Lyrics': 'Lyr',
+    'Lyrics': 'Lyrics',
     'Music / melody': 'Music',
-    'Bridge': 'Brdg',
-    'Nostalgia': 'Nost',
+    'Bridge': 'Bridge',
+    'Nostalgia': 'Nostlg',
     'Skip on shuffle?': 'Skip',
     'Hook / chorus': 'Hook',
-    'Vocal performance': 'Voc',
+    'Vocal performance': 'Vocal',
     'Cry factor': 'Cry',
     'Romantic feel': 'Rom',
     'Hype / energy': 'Hype',
@@ -168,5 +169,5 @@ function abbrevLabel(name) {
     'Vibe / atmosphere': 'Vibe',
     'Storytelling': 'Story',
   };
-  return MAP[name] || name.slice(0, 5);
+  return MAP[name] || name.slice(0, 6);
 }

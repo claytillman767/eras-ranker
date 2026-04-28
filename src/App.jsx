@@ -4,21 +4,24 @@ import { useRatings } from './hooks/useRatings';
 import { usePro } from './hooks/usePro';
 import { useManualOrder } from './hooks/useManualOrder';
 import { useAlbumModes } from './hooks/useAlbumModes';
+import { useSettings } from './hooks/useSettings';
 import Home from './components/Home';
 import AlbumGrid from './components/AlbumGrid';
 import AlbumModeModal from './components/AlbumModeModal';
 import SongList from './components/SongList';
 import Rankings from './components/Rankings';
 import Categories from './components/Categories';
+import Settings from './components/Settings';
 import { ALL_ALBUMS } from './data/albums';
 
 // Tab definitions — Home is first
 const TABS = [
-  { id: 'home',      label: 'Home' },
-  { id: 'albums',    label: 'Albums' },
-  { id: 'rate',      label: 'Rate songs' },
-  { id: 'rankings',  label: 'Rankings' },
+  { id: 'home',       label: 'Home' },
+  { id: 'albums',     label: 'Albums' },
+  { id: 'rate',       label: 'Rate songs' },
+  { id: 'rankings',   label: 'Rankings' },
   { id: 'categories', label: 'Categories' },
+  { id: 'settings',   label: 'Settings' },
 ];
 
 export default function App() {
@@ -61,6 +64,7 @@ export default function App() {
 
   const { getManualOrder, moveUp, moveDown, reorder, setOrder } = useManualOrder(user);
   const { getAlbumMode, setAlbumMode } = useAlbumModes(user);
+  const { settings, updateSetting } = useSettings(user);
 
   // Album waiting for a mode choice; null = no modal shown
   const [pendingAlbumId, setPendingAlbumId] = useState(null);
@@ -335,6 +339,7 @@ export default function App() {
               autoStartScore={autoStartScore}
               autoStartSongIndex={autoStartSongIndex}
               onAutoStartConsumed={() => { setAutoStartScore(false); setAutoStartSongIndex(null); }}
+              showCategoryBars={settings.showCategoryBars}
             />
           ) : (
             <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 14, padding: '60px 0' }}>
@@ -349,6 +354,13 @@ export default function App() {
             getAlbumScore={getAlbumScore}
             activeCategories={activeCategories}
             ratings={ratings}
+          />
+        )}
+
+        {activeTab === 'settings' && (
+          <Settings
+            settings={settings}
+            updateSetting={updateSetting}
           />
         )}
 
