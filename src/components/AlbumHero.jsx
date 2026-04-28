@@ -55,7 +55,7 @@ export default function AlbumHero({
             style={{
               width: 76,
               height: 76,
-              borderRadius: 14,
+              borderRadius: 8,
               objectFit: 'cover',
               flexShrink: 0,
               boxShadow: '0 2px 8px rgba(0,0,0,0.12)',

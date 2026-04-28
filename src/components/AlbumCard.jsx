@@ -11,61 +11,52 @@ export default function AlbumCard({ album, ratedCount, albumScore, isSelected, o
     scoreLabel = album.year;
   }
 
-  // ── Art card: full-bleed square image with gradient overlay ──────────────
+  // ── Art card: clean image with name + score below (Spotify guidelines compliant)
+  // No overlays, text, or controls on top of the artwork.
+  // Corner radius 4px per Spotify small/medium device spec.
   if (spotifyArtUrl) {
     return (
       <button
         onClick={onClick}
         style={{
-          position: 'relative',
-          aspectRatio: '1',
           width: '100%',
           padding: 0,
-          border: isSelected ? '2px solid #a855f7' : '0.5px solid #e5e7eb',
-          borderRadius: 12,
-          overflow: 'hidden',
+          border: isSelected ? '2px solid #a855f7' : 'none',
+          borderRadius: isSelected ? 6 : 0,
+          background: 'none',
           cursor: 'pointer',
+          textAlign: 'left',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 6,
         }}
       >
         <img
           src={spotifyArtUrl}
           alt={album.name}
           style={{
-            position: 'absolute',
-            inset: 0,
             width: '100%',
-            height: '100%',
+            aspectRatio: '1',
             objectFit: 'cover',
+            borderRadius: 4,
+            display: 'block',
           }}
         />
-        {/* Gradient overlay so text is readable over any album colour */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)',
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: '8px 8px 7px',
-          textAlign: 'left',
-        }}>
+        <div style={{ paddingLeft: 2, paddingRight: 2 }}>
           <div style={{
             fontSize: 11,
             fontWeight: 600,
-            color: '#ffffff',
+            color: '#111827',
             lineHeight: 1.3,
             overflow: 'hidden',
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
-            marginBottom: 2,
+            marginBottom: 1,
           }}>
             {album.name}
           </div>
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.75)' }}>
+          <div style={{ fontSize: 10, color: '#6b7280' }}>
             {scoreLabel}
           </div>
         </div>
