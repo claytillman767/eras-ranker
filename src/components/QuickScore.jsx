@@ -800,23 +800,7 @@ export default function QuickScore({
         padding: '12px 20px',
         flexShrink: 0,
       }}>
-        <button
-          onClick={goBack}
-          disabled={isFirstStep}
-          style={{
-            background: 'none',
-            border: '0.5px solid #e5e7eb',
-            borderRadius: 8,
-            padding: '5px 12px',
-            cursor: isFirstStep ? 'default' : 'pointer',
-            fontSize: 13,
-            color: '#6b7280',
-            opacity: isFirstStep ? 0 : 1,
-            pointerEvents: isFirstStep ? 'none' : 'auto',
-          }}
-        >
-          ← Back
-        </button>
+        <div style={{ width: 60 }} />
         <div style={{ fontSize: 12, color: '#9ca3af' }}>
           {isSingleSong ? '\u00a0' : `Song ${songPos + 1} of ${songs.length}`}
         </div>
@@ -963,21 +947,41 @@ export default function QuickScore({
             labels={STAR_LABELS[currentCat?.id] ?? null}
           />
 
-          {/* Skip */}
-          <button
-            onClick={advance}
-            style={{
-              marginTop: 28,
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: 13,
-              color: '#9ca3af',
-              padding: '8px 20px',
-            }}
-          >
-            Skip →
-          </button>
+          {/* Back + Skip buttons */}
+          <div style={{ display: 'flex', gap: 10, marginTop: 28 }}>
+            <button
+              onClick={goBack}
+              disabled={isFirstStep}
+              style={{
+                padding: '9px 22px',
+                borderRadius: 22,
+                border: '1px solid #e5e7eb',
+                background: '#ffffff',
+                fontSize: 13,
+                fontWeight: 500,
+                color: '#6b7280',
+                cursor: isFirstStep ? 'default' : 'pointer',
+                opacity: isFirstStep ? 0.3 : 1,
+              }}
+            >
+              ← Back
+            </button>
+            <button
+              onClick={advance}
+              style={{
+                padding: '9px 22px',
+                borderRadius: 22,
+                border: '1px solid #e5e7eb',
+                background: '#ffffff',
+                fontSize: 13,
+                fontWeight: 500,
+                color: '#6b7280',
+                cursor: 'pointer',
+              }}
+            >
+              Skip →
+            </button>
+          </div>
 
           </div>
         </div>
