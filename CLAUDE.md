@@ -245,5 +245,29 @@ Do **not** add a user-facing setting for this. It is intentionally developer-con
 
 **Remaining Spotify work:**
 - Apply for Extended Quota Mode before user count exceeds 25
-- Consider adding a progress bar to the mini player
+- Consider adding a progress bar to the mini player with a bridge marker pin
 - Playlist creation — let Pro users export their top-rated songs as a Spotify playlist
+
+### Synchronized Lyrics Display (future — needs licensing decision first)
+
+Displaying time-synced lyrics (line-by-line highlighted as the song plays) is technically feasible using the existing Spotify integration. The playback position is already available from the SDK's `player_state_changed` event (`state.position` in ms).
+
+**Why it's on hold:** Displaying lyrics in a commercial app requires a licensing agreement. Two options evaluated:
+
+#### Option A — lrclib.net (free, currently used for bridge timestamps)
+- Already integrated via `find_bridge_times.py` — returns LRC format with per-line timestamps
+- Could be used client-side at runtime with no extra API key
+- **Legal risk:** Community-sourced, no commercial license. Acceptable gray area at small scale but not defensible long-term for a commercial product.
+
+#### Option B — Musixmatch (licensed, industry standard)
+- Used by Spotify, Apple Music, Amazon Music, YouTube Music
+- Returns time-synced lyrics via `track.subtitle.get` endpoint
+- Requires **"Grow" plan at $199/month** — includes 2,000 lyrics calls/day
+- **Call budget math:**
+  - Without caching: ~133 full album rating sessions/day (15 songs × 133 = ~2k calls)
+  - With localStorage caching: ~10 completely new users fully onboarded/day; returning users cost $0
+  - Sustainable once Pro revenue covers the $199/month baseline
+- **App Store certificate included** — but this covers mobile apps; confirm web app coverage before signing
+- Requires a new `VITE_MUSIXMATCH_KEY` env var in `.env` and Vercel
+
+**Recommendation:** Use lrclib at small scale, switch to Musixmatch when ready to monetize seriously. Do not build the UI until the licensing path is decided.
