@@ -61,6 +61,9 @@ export default function App() {
     customCategories,
     addCustomCategory,
     removeCustomCategory,
+    disabledCustoms,
+    toggleCustom,
+    setCustomCategoryType,
     categoryWeights,
     setCategoryWeight,
     resetCategoryWeights,
@@ -73,6 +76,13 @@ export default function App() {
   const { getAlbumMode, setAlbumMode } = useAlbumModes(user);
   const { settings, updateSetting } = useSettings(user);
   const spotify = useSpotify();
+
+  // Sync stored volume to the Spotify player whenever it becomes ready
+  useEffect(() => {
+    if (spotify.playerReady) {
+      spotify.setVolume(settings.spotifyVolume ?? 0.8);
+    }
+  }, [spotify.playerReady]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [pendingAlbumId, setPendingAlbumId] = useState(null);
   const [autoStartScore, setAutoStartScore] = useState(false);
@@ -394,8 +404,11 @@ export default function App() {
               showCategoryBars={settings.showCategoryBars}
               spotify={isPro ? spotify : null}
               spotifyAutoplay={settings.spotifyAutoplay}
+              spotifyBridgeAutoplay={settings.spotifyBridgeAutoplay}
               spotifyAlbumArt={isPro ? spotify.albumArt : null}
               onGoToSpotifySettings={() => setActiveTab('settings')}
+              confirmExit={settings.confirmQuickScoreExit}
+              updateSetting={updateSetting}
             />
           ) : (
             <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 14, padding: '60px 0' }}>
@@ -417,12 +430,15 @@ export default function App() {
           <Settings
             settings={settings}
             updateSetting={updateSetting}
-            spotify={spotify}
+            spotify={isPro ? spotify : null}
             isPro={isPro}
             unlockPro={unlockPro}
             user={user}
             signIn={signIn}
             signOut={signOut}
+            ratings={ratings}
+            activeCategories={activeCategories}
+            customCategories={customCategories}
           />
         )}
 
@@ -435,6 +451,9 @@ export default function App() {
             customCategories={customCategories}
             addCustomCategory={addCustomCategory}
             removeCustomCategory={removeCustomCategory}
+            disabledCustoms={disabledCustoms}
+            toggleCustom={toggleCustom}
+            setCustomCategoryType={setCustomCategoryType}
             activeCategories={activeCategories}
             categoryWeights={categoryWeights}
             setCategoryWeight={setCategoryWeight}

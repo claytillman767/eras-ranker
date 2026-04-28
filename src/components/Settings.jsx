@@ -1,8 +1,57 @@
 import { useState } from 'react';
+import { ALL_ALBUMS, SONGS } from '../data/albums';
+import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
 
 // Settings tab — app-wide display and behaviour preferences.
-export default function Settings({ settings, updateSetting, spotify, isPro, unlockPro, user, signIn, signOut }) {
+export default function Settings({
+  settings, updateSetting, spotify, isPro, unlockPro,
+  user, signIn, signOut,
+  ratings, activeCategories, customCategories,
+}) {
   const [showProModal, setShowProModal] = useState(false);
+
+  function handleExportRatings() {
+    const allCats = [
+      ...DEFAULT_CATEGORIES,
+      ...EXTRA_CATEGORIES,
+      ...(customCategories || []),
+    ];
+
+    // Collect every category ID that appears in any rating
+    const catIdSet = new Set();
+    Object.values(ratings || {}).forEach(r => Object.keys(r).forEach(id => catIdSet.add(id)));
+    const catIds = [...catIdSet];
+
+    const catName = id => allCats.find(c => c.id === id)?.name ?? id;
+
+    const rows = [['Album', 'Song', ...catIds.map(catName)]];
+
+    for (const [key, songRatings] of Object.entries(ratings || {})) {
+      const parts = key.split('_');
+      // Key format: albumId_songIndex — albumId may contain underscores (none currently, but safe)
+      const songIndex = Number(parts[parts.length - 1]);
+      const albumId = parts.slice(0, -1).join('_');
+      const album = ALL_ALBUMS.find(a => a.id === albumId);
+      const songName = SONGS[albumId]?.[songIndex] ?? key;
+      rows.push([
+        album?.name ?? albumId,
+        songName,
+        ...catIds.map(id => songRatings[id] ?? ''),
+      ]);
+    }
+
+    const csv = rows
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'eras-ranker-ratings.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   function handleUnlockPro() {
     unlockPro();
@@ -138,6 +187,13 @@ export default function Settings({ settings, updateSetting, spotify, isPro, unlo
           value={settings.showCategoryBars}
           onChange={v => updateSetting('showCategoryBars', v)}
         />
+        <div style={{ height: '0.5px', background: '#f3f4f6', margin: '0 16px' }} />
+        <SettingRow
+          label="Confirm before exiting QuickScore"
+          description="Ask for confirmation before closing the rating screen mid-session."
+          value={settings.confirmQuickScoreExit ?? true}
+          onChange={v => updateSetting('confirmQuickScoreExit', v)}
+        />
       </div>
 
       {/* ── Spotify section ── */}
@@ -256,6 +312,39 @@ export default function Settings({ settings, updateSetting, spotify, isPro, unlo
                 value={settings.spotifyAutoplay}
                 onChange={v => updateSetting('spotifyAutoplay', v)}
               />
+              <div style={{ height: '0.5px', background: '#f3f4f6', margin: '0 16px' }} />
+              <SettingRow
+                label="Auto-play bridge"
+                description="Seek to the bridge automatically when the Bridge category appears."
+                value={settings.spotifyBridgeAutoplay ?? false}
+                onChange={v => updateSetting('spotifyBridgeAutoplay', v)}
+              />
+              <div style={{ height: '0.5px', background: '#f3f4f6', margin: '0 16px' }} />
+              {/* Volume slider */}
+              <div style={{ padding: '14px 16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>Volume</div>
+                    <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>In-app Spotify playback volume</div>
+                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#a855f7', minWidth: 36, textAlign: 'right' }}>
+                    {Math.round((settings.spotifyVolume ?? 0.8) * 100)}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={settings.spotifyVolume ?? 0.8}
+                  onChange={e => {
+                    const v = Number(e.target.value);
+                    updateSetting('spotifyVolume', v);
+                    spotify?.setVolume(v);
+                  }}
+                  style={{ width: '100%', accentColor: '#1DB954', cursor: 'pointer' }}
+                />
+              </div>
 
             </>
           ) : (
@@ -335,6 +424,42 @@ export default function Settings({ settings, updateSetting, spotify, isPro, unlo
           Go to spotify.com/premium
         </a>{' '}
         to try it for free.
+      </div>
+
+      {/* ── Data section ── */}
+      <SectionHeader>Data</SectionHeader>
+      <div style={{
+        background: '#ffffff',
+        border: '0.5px solid #e5e7eb',
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 28,
+      }}>
+        <div style={{ padding: '14px 16px' }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: '#111827', marginBottom: 2 }}>
+            Export ratings
+          </div>
+          <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.5, marginBottom: 12 }}>
+            Download all your ratings as a spreadsheet (.csv) — one row per song, one column per category.
+          </div>
+          <button
+            onClick={handleExportRatings}
+            disabled={!ratings || Object.keys(ratings).length === 0}
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: 10,
+              border: '0.5px solid #e5e7eb',
+              background: ratings && Object.keys(ratings).length > 0 ? '#ffffff' : '#f9fafb',
+              fontSize: 13,
+              fontWeight: 500,
+              color: ratings && Object.keys(ratings).length > 0 ? '#111827' : '#9ca3af',
+              cursor: ratings && Object.keys(ratings).length > 0 ? 'pointer' : 'default',
+            }}
+          >
+            Download CSV
+          </button>
+        </div>
       </div>
 
       {/* ── Disclaimer ── */}

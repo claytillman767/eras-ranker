@@ -168,12 +168,14 @@ async function searchTrackUri(songName, albumName, token) {
     const items = data.tracks?.items ?? [];
     if (!items.length) return null;
 
-    // Prefer a result from the same album (loose match)
-    const shortAlbum = albumName.toLowerCase().replace(/[^a-z0-9 ]/g, '').slice(0, 12);
-    const match = items.find(t =>
-      t.album.name.toLowerCase().replace(/[^a-z0-9 ]/g, '').includes(shortAlbum)
-    );
-    const best = match ?? items[0];
+    // Prefer a result from the same album — try exact match first, then prefix, then loose.
+    // This avoids picking acoustic/deluxe editions over the original when both appear in results.
+    const cleanAlbum = albumName.toLowerCase().replace(/[^a-z0-9 ]/g, '');
+    const itemAlbum  = t => t.album.name.toLowerCase().replace(/[^a-z0-9 ]/g, '');
+    const exact   = items.find(t => itemAlbum(t) === cleanAlbum);
+    const prefix  = items.find(t => itemAlbum(t).startsWith(cleanAlbum));
+    const loose   = items.find(t => itemAlbum(t).includes(cleanAlbum.slice(0, 12)));
+    const best = exact ?? prefix ?? loose ?? items[0];
     const images = best.album.images;
     // Prefer medium size (index 1 ~300px); fall back to largest if only one size
     const imageUrl = (images[1] ?? images[0])?.url ?? null;
@@ -356,6 +358,12 @@ export function useSpotify() {
     playerRef.current   = null;
     deviceIdRef.current = null;
     clearTokens();
+    // Clear art + track caches so reconnecting always re-fetches with fresh data
+    localStorage.removeItem(ART_KEY);
+    localStorage.removeItem(CACHE_KEY);
+    artCache.current   = {};
+    trackCache.current = {};
+    setAlbumArt({});
     setIsConnected(false);
     setPlayerReady(false);
     setIsPlaying(false);
@@ -415,6 +423,10 @@ export function useSpotify() {
     if (isPlaying) pause(); else resume();
   }, [isPlaying, pause, resume]);
 
+  const setVolume = useCallback((value) => {
+    playerRef.current?.setVolume(value);
+  }, []);
+
   return {
     isConnected,
     isLoading,
@@ -429,5 +441,6 @@ export function useSpotify() {
     pause,
     resume,
     togglePlay,
+    setVolume,
   };
 }

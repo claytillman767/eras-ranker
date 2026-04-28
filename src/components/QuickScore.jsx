@@ -615,6 +615,51 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick }) {
   );
 }
 
+// ── Yes/No binary picker — used for custom categories with type 'yesno' ──────
+function YesNoPicker({ currentRating, onRate }) {
+  return (
+    <div style={{ display: 'flex', gap: 20 }}>
+      <button
+        onClick={() => onRate(5)}
+        style={{
+          background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+          border: 'none',
+          borderRadius: 16,
+          padding: '20px 44px',
+          fontSize: 17,
+          fontWeight: 700,
+          color: '#ffffff',
+          cursor: 'pointer',
+          opacity: currentRating === 1 ? 0.5 : 1,
+          boxShadow: '0 4px 20px rgba(168,85,247,0.35)',
+          WebkitTapHighlightColor: 'transparent',
+          transition: 'opacity 0.15s ease',
+        }}
+      >
+        Yes
+      </button>
+      <button
+        onClick={() => onRate(1)}
+        style={{
+          background: '#f9fafb',
+          border: '1.5px solid #e5e7eb',
+          borderRadius: 16,
+          padding: '20px 44px',
+          fontSize: 17,
+          fontWeight: 700,
+          color: '#6b7280',
+          cursor: 'pointer',
+          opacity: currentRating === 5 ? 0.5 : 1,
+          WebkitTapHighlightColor: 'transparent',
+          transition: 'opacity 0.15s ease',
+        }}
+      >
+        No
+      </button>
+    </div>
+  );
+}
+
 // ── Main QuickScore overlay ───────────────────────────────────────────────────
 // songs         — displaySongs array [{name, index}] from SongList
 // albumId       — used to look up bridge lyrics and ratings
@@ -623,9 +668,15 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick }) {
 // ratings       — raw ratings object from useRatings
 // onRate(songIndex, catId, val) — saves a rating
 // onClose       — dismisses the overlay
-// spotify       — object from useSpotify (optional; omit to disable Spotify features)
-// spotifyAutoplay — boolean; when true, song plays automatically on each advance
+// spotify            — object from useSpotify (optional; omit to disable Spotify features)
+// spotifyAutoplay    — boolean; when true, song plays automatically on each advance
+// spotifyBridgeAutoplay — boolean; when true, bridge plays automatically when Bridge category appears
+// confirmExit        — boolean; when true, shows confirmation dialog before closing
 // onGoToSpotifySettings — callback to navigate the user to the Settings tab
+// updateSetting      — updateSetting function from useSettings (for bridge autoplay suggestion)
+const BRIDGE_PLAY_COUNT_KEY = 'eras_bridge_play_count';
+const BRIDGE_AUTOPLAY_NUDGE_KEY = 'eras_bridge_autoplay_nudged';
+
 export default function QuickScore({
   songs,
   albumId,
@@ -638,12 +689,18 @@ export default function QuickScore({
   initialSongPos = 0,
   spotify,
   spotifyAutoplay = true,
+  spotifyBridgeAutoplay = false,
+  confirmExit = true,
   onGoToSpotifySettings,
+  updateSetting,
 }) {
   const [songPos, setSongPos] = useState(initialSongPos);
   const [catPos, setCatPos] = useState(0);
   const [done, setDone] = useState(false);
   const [showTrees, setShowTrees] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showBridgeSuggestion, setShowBridgeSuggestion] = useState(false);
+  const [bridgeSuggestionToggle, setBridgeSuggestionToggle] = useState(true);
 
   const isSingleSong = songs.length === 1;
 
@@ -655,6 +712,19 @@ export default function QuickScore({
     spotify.playTrack(albumId, song.index, song.name, albumName, 'shuffle');
   }, [songPos, spotify?.playerReady]); // eslint-disable-line react-hooks/exhaustive-deps
 
+
+  // ── Bridge autoplay: seek to bridge timestamp when Bridge category appears ─
+  useEffect(() => {
+    if (
+      currentCat?.id === 'bridge' &&
+      spotifyBridgeAutoplay &&
+      spotify?.isConnected &&
+      spotify?.playerReady &&
+      showBridgeLyrics
+    ) {
+      spotify.playTrack(albumId, currentSong.index, currentSong.name, albumName, 'bridge');
+    }
+  }, [songPos, catPos]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pause when QuickScore closes ─────────────────────────────────────────
   useEffect(() => {
@@ -805,7 +875,13 @@ export default function QuickScore({
           {isSingleSong ? '\u00a0' : `Song ${songPos + 1} of ${songs.length}`}
         </div>
         <button
-          onClick={onClose}
+          onClick={() => {
+            if (confirmExit && completedSteps > 0) {
+              setShowExitConfirm(true);
+            } else {
+              onClose();
+            }
+          }}
           style={{
             background: 'none',
             border: '0.5px solid #e5e7eb',
@@ -910,10 +986,20 @@ export default function QuickScore({
                 "{bridgeLyrics}"
               </div>
 
-              {/* Play Bridge button — only shown when Spotify is connected */}
-              {spotify?.isConnected && spotify?.playerReady && (
+              {/* Play Bridge button — only shown when Spotify is connected and autoplay is off */}
+              {spotify?.isConnected && spotify?.playerReady && !spotifyBridgeAutoplay && (
                 <button
-                  onClick={() => spotify.playTrack(albumId, currentSong.index, currentSong.name, albumName, 'bridge')}
+                  onClick={() => {
+                    spotify.playTrack(albumId, currentSong.index, currentSong.name, albumName, 'bridge');
+                    const prev = Number(localStorage.getItem(BRIDGE_PLAY_COUNT_KEY) || 0);
+                    const next = prev + 1;
+                    localStorage.setItem(BRIDGE_PLAY_COUNT_KEY, String(next));
+                    const alreadyNudged = localStorage.getItem(BRIDGE_AUTOPLAY_NUDGE_KEY) === 'true';
+                    if (next === 11 && !alreadyNudged) {
+                      localStorage.setItem(BRIDGE_AUTOPLAY_NUDGE_KEY, 'true');
+                      setShowBridgeSuggestion(true);
+                    }
+                  }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -941,13 +1027,21 @@ export default function QuickScore({
             </>
           )}
 
-          {/* Stars */}
-          <StarPicker
-            key={`${songPos}-${catPos}`}
-            currentRating={currentRating}
-            onRate={handleRate}
-            labels={STAR_LABELS[currentCat?.id] ?? null}
-          />
+          {/* Stars or Yes/No depending on category type */}
+          {currentCat?.type === 'yesno' ? (
+            <YesNoPicker
+              key={`${songPos}-${catPos}`}
+              currentRating={currentRating}
+              onRate={handleRate}
+            />
+          ) : (
+            <StarPicker
+              key={`${songPos}-${catPos}`}
+              currentRating={currentRating}
+              onRate={handleRate}
+              labels={STAR_LABELS[currentCat?.id] ?? null}
+            />
+          )}
 
           {/* Back + Skip buttons */}
           <div style={{ display: 'flex', gap: 10, marginTop: 28 }}>
@@ -1007,6 +1101,155 @@ export default function QuickScore({
           }} />
         </div>
       </div>
+
+      {/* ── Exit confirmation dialog ── */}
+      {showExitConfirm && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.5)',
+          zIndex: 1100,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '0 32px',
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: 16,
+            padding: '24px',
+            width: '100%',
+            maxWidth: 320,
+          }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 8 }}>
+              Stop rating?
+            </div>
+            <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 20 }}>
+              Your ratings so far are saved. You can pick up where you left off any time.
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => setShowExitConfirm(false)}
+                style={{
+                  flex: 1,
+                  padding: '11px',
+                  borderRadius: 10,
+                  border: '0.5px solid #e5e7eb',
+                  background: '#ffffff',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: '#6b7280',
+                  cursor: 'pointer',
+                }}
+              >
+                Keep rating
+              </button>
+              <button
+                onClick={onClose}
+                style={{
+                  flex: 1,
+                  padding: '11px',
+                  borderRadius: 10,
+                  border: 'none',
+                  background: '#111827',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#ffffff',
+                  cursor: 'pointer',
+                }}
+              >
+                Exit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Bridge autoplay suggestion (shown on 11th manual bridge play) ── */}
+      {showBridgeSuggestion && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.5)',
+          zIndex: 1100,
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '20px 20px 0 0',
+            padding: '24px 24px 40px',
+            width: '100%',
+            maxWidth: 480,
+          }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: '#111827', marginBottom: 6 }}>
+              You love the bridge!
+            </div>
+            <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 20 }}>
+              You've played bridge sections 10+ times. Want the bridge to start playing automatically when you reach that category?
+            </div>
+
+            {/* Toggle */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: '#f9fafb',
+              borderRadius: 12,
+              padding: '14px 16px',
+              marginBottom: 20,
+            }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>Auto-play bridge</span>
+              <div
+                onClick={() => setBridgeSuggestionToggle(v => !v)}
+                style={{
+                  width: 44,
+                  height: 26,
+                  borderRadius: 13,
+                  background: bridgeSuggestionToggle ? '#a855f7' : '#d1d5db',
+                  position: 'relative',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  transition: 'background 0.2s',
+                }}
+              >
+                <div style={{
+                  position: 'absolute',
+                  top: 3,
+                  left: bridgeSuggestionToggle ? 21 : 3,
+                  width: 20,
+                  height: 20,
+                  borderRadius: '50%',
+                  background: '#ffffff',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                  transition: 'left 0.2s',
+                }} />
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                if (updateSetting) updateSetting('spotifyBridgeAutoplay', bridgeSuggestionToggle);
+                setShowBridgeSuggestion(false);
+              }}
+              style={{
+                width: '100%',
+                padding: '13px',
+                borderRadius: 12,
+                border: 'none',
+                background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+                color: '#ffffff',
+                fontSize: 15,
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Save preference
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

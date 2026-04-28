@@ -58,6 +58,10 @@ src/
                              Album art URLs cached in localStorage 'eras_spotify_album_art' (albumId → image URL)
                              On connect: proactively fetches art for all 12 albums via Search API
                              searchTrackUri() returns { uri, imageUrl } — art also captured as side effect of playTrack()
+                             ALBUM ART MATCHING: searchTrackUri uses exact → prefix → loose album name matching
+                               (exact = full cleaned name match; avoids picking acoustic/deluxe editions over originals)
+                               If wrong art appears for an album, disconnect + reconnect Spotify to clear the cache
+                             disconnect() clears BOTH the art cache and track URI cache so reconnecting re-fetches fresh
                              playTrack(albumId, songIndex, songName, albumName, screen)
                                screen='shuffle' → uses SPOTIFY_START_TIMES; screen='bridge' → uses SPOTIFY_BRIDGE_TIMES
                              Exposes: isConnected, isLoading, playerReady, isPlaying, currentSongName, albumArt,

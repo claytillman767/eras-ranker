@@ -34,8 +34,12 @@ export default function SongList({
   // Spotify playback (optional — omit to hide the feature entirely)
   spotify,
   spotifyAutoplay,
+  spotifyBridgeAutoplay,
   spotifyAlbumArt,
   onGoToSpotifySettings,
+  // Rating behavior
+  confirmExit,
+  updateSetting,
 }) {
   // Which song row is expanded (showing action buttons)
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -215,6 +219,9 @@ export default function SongList({
           onClose={() => setQuickScoreSongs(null)}
           spotify={spotify}
           spotifyAutoplay={spotifyAutoplay}
+          spotifyBridgeAutoplay={spotifyBridgeAutoplay}
+          confirmExit={confirmExit}
+          updateSetting={updateSetting}
           onGoToSpotifySettings={onGoToSpotifySettings}
         />
       )}
