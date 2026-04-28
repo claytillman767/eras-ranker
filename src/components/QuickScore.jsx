@@ -373,6 +373,8 @@ const SPOTS = [
 // Floating lyrics scattered across the background — used on every screen.
 // animating=true triggers the pulse-out transition instead of the fade-in.
 function FloatingLyrics({ lyrics, animating = false }) {
+  if (window.innerWidth < 768) return null;
+
   const lines = lyrics
     ? lyrics.split('\n').map(l => l.trim()).filter(l => l.length > 2).slice(0, 10)
     : [];
