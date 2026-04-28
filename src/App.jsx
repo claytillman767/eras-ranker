@@ -6,6 +6,7 @@ import { useManualOrder } from './hooks/useManualOrder';
 import { useAlbumModes } from './hooks/useAlbumModes';
 import { useSettings } from './hooks/useSettings';
 import { useSpotify } from './hooks/useSpotify';
+import BetaGate from './components/BetaGate';
 import Home from './components/Home';
 import AlbumGrid from './components/AlbumGrid';
 import AlbumModeModal from './components/AlbumModeModal';
@@ -33,6 +34,44 @@ export default function App() {
 
   // Auth
   const { user, authLoading, signIn, signOut } = useAuth();
+
+  // ── Beta gate ────────────────────────────────────────────────────────────────
+  const BETA_KEY = 'eras_beta_unlocked';
+  const [betaUnlocked, setBetaUnlocked] = useState(() => localStorage.getItem(BETA_KEY) === 'true');
+  const [betaRejected, setBetaRejected] = useState(false);
+
+  // When a Google sign-in completes, check the allowlist.
+  useEffect(() => {
+    if (betaUnlocked || authLoading || !user) return;
+    const allowedRaw = import.meta.env.VITE_BETA_EMAILS ?? '';
+    const allowed = allowedRaw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+    // Empty list = allow any signed-in Google account
+    if (allowed.length === 0 || allowed.includes(user.email?.toLowerCase())) {
+      localStorage.setItem(BETA_KEY, 'true');
+      setBetaUnlocked(true);
+      setBetaRejected(false);
+    } else {
+      setBetaRejected(true);
+      signOut();
+    }
+  }, [user, authLoading, betaUnlocked]);
+
+  function handleBetaPassword() {
+    localStorage.setItem(BETA_KEY, 'true');
+    setBetaUnlocked(true);
+  }
+
+  if (!betaUnlocked) {
+    return (
+      <BetaGate
+        onSignIn={signIn}
+        onPassword={handleBetaPassword}
+        loading={authLoading}
+        rejected={betaRejected}
+      />
+    );
+  }
+  // ────────────────────────────────────────────────────────────────────────────
 
   // Data hooks
   const {
