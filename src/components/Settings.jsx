@@ -212,6 +212,22 @@ export default function Settings({ settings, updateSetting, spotify, isPro, unlo
         </div>
       )}
 
+      {/* ── Disclaimer ── */}
+      <div style={{
+        marginTop: 32,
+        padding: '12px 14px',
+        background: '#f9fafb',
+        border: '0.5px solid #e5e7eb',
+        borderRadius: 10,
+        fontSize: 11,
+        color: '#9ca3af',
+        lineHeight: 1.5,
+        textAlign: 'center',
+      }}>
+        This app is a fan-made project and is not affiliated with, endorsed by,
+        or connected to Taylor Swift or TAS Rights Management, LLC.
+      </div>
+
     </div>
   );
 }
