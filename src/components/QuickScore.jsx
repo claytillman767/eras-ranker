@@ -874,7 +874,7 @@ export default function QuickScore({
               trackUri={spotify?.currentTrackUri}
               onTogglePlay={spotify?.togglePlay}
               onGoToSettings={onGoToSpotifySettings}
-              style={{ margin: `0 0 ${currentCat?.id === 'lyrics' ? 16 : 32}px`, width: '100%' }}
+              style={{ margin: `0 0 ${currentCat?.id === 'lyrics' ? 16 : 32}px`, width: '100%', maxWidth: 300 }}
             />
           ) : (
             <div style={{ fontSize: 22, fontWeight: 700, color: '#111827', lineHeight: 1.3, marginBottom: currentCat?.id === 'lyrics' ? 16 : 32, maxWidth: 320 }}>
