@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -21,3 +21,8 @@ const app = firebaseReady ? initializeApp(firebaseConfig) : null;
 export const auth           = firebaseReady ? getAuth(app)      : null;
 export const db             = firebaseReady ? getFirestore(app) : null;
 export const googleProvider = firebaseReady ? new GoogleAuthProvider() : null;
+
+// Explicitly lock auth to local persistence so login survives tab/browser closes.
+// Firebase defaults to local but can silently fall back to session in strict
+// browser environments — setting it explicitly prevents that.
+if (auth) setPersistence(auth, browserLocalPersistence).catch(() => {});
