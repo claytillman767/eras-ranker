@@ -368,6 +368,7 @@ export default function App() {
             updateSetting={updateSetting}
             spotify={spotify}
             isPro={isPro}
+            unlockPro={unlockPro}
           />
         )}
 
