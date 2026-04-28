@@ -49,7 +49,10 @@ src/
     useSpotify.js          — Spotify Web Playback SDK integration (Pro-only)
                              PKCE OAuth flow; token storage in localStorage; SDK script loaded dynamically
                              Track URIs found via Spotify Search API + cached in localStorage 'eras_spotify_tracks'
-                             Exposes: isConnected, isLoading, playerReady, isPlaying, currentTrackUri,
+                             Album art URLs cached in localStorage 'eras_spotify_album_art' (albumId → image URL)
+                             On connect: proactively fetches art for all 12 albums via Search API
+                             searchTrackUri() returns { uri, imageUrl } — art also captured as side effect of playTrack()
+                             Exposes: isConnected, isLoading, playerReady, isPlaying, currentSongName, albumArt,
                                error, connect, disconnect, playTrack, pause, resume, togglePlay
                              connect() redirects to Spotify OAuth; callback detected on app load via ?code=&state=eras_spotify
                              Requires VITE_SPOTIFY_CLIENT_ID env var; redirect URIs must be registered in Spotify dashboard
@@ -57,11 +60,13 @@ src/
                              DEFAULTS: { showCategoryBars: true, spotifyAutoplay: true }
                              Note: Spotify start time is NOT in settings — it's developer-set in spotifyStartTimes.js
   components/
-    AlbumGrid / AlbumCard  — album picker with score badges
+    AlbumGrid / AlbumCard  — album picker with score badges; AlbumCard accepts spotifyArtUrl — shows real
+                             cover art image when provided, falls back to emoji/color otherwise
     AlbumModeModal.jsx     — bottom-sheet shown on first album visit; "Vibe Check" (auto-starts QuickScore)
                              or "Sort It Yourself"; choice saved via useAlbumModes
     SongList.jsx           — song list for one album; owns drag, QuickScore, AlbumCompleteCard state
-                             receives spotify, spotifyAutoplay, onGoToSpotifySettings props → passed to QuickScore
+                             receives spotify, spotifyAutoplay, spotifyAlbumArt, onGoToSpotifySettings props
+                             spotifyAlbumArt passed to AlbumHero; spotify/spotifyAutoplay passed to QuickScore
     SongRow.jsx            — drag handle (⠿) + position # + title + score
     RatingPanel.jsx        — full star breakdown per category (currently unused in main flow)
     QuickScore.jsx         — full-screen rapid scoring overlay
@@ -232,7 +237,13 @@ export const SPOTIFY_START_TIMES = {
 
 Do **not** add a user-facing setting for this. It is intentionally developer-controlled.
 
+**What's built:**
+- OAuth connect/disconnect in Settings tab (Pro-gated)
+- Autoplay in QuickScore with play/pause mini player
+- Developer-controlled per-song start positions (`spotifyStartTimes.js`)
+- Album cover art shown in album grid and album hero for connected Pro users
+
 **Remaining Spotify work:**
 - Apply for Extended Quota Mode before user count exceeds 25
 - Consider adding a progress bar to the mini player
-- The autoplay toggle is in Settings → Spotify; could also add it directly in the QuickScore overlay
+- Playlist creation — let Pro users export their top-rated songs as a Spotify playlist
