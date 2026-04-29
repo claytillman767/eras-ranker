@@ -10,13 +10,11 @@ const STYLE = `
 }
 `;
 
-// Sports-broadcast vocabulary: Final, Semis, QF, otherwise R{n}.
 function getRoundLabel(roundIndex, totalRounds) {
   const remaining = totalRounds - roundIndex;
   if (remaining === 1) return 'Final';
-  if (remaining === 2) return 'Semis';
-  if (remaining === 3) return 'QF';
-  return `R${roundIndex + 1}`;
+  if (remaining === 2) return 'Semi-Final';
+  return `Round ${roundIndex + 1}`;
 }
 
 // "R1 · 16 → 8" sub-label for the column header.
@@ -29,18 +27,22 @@ function getRoundSubLabel(roundIndex, totalRounds) {
 
 function TreeNode({ song, status, highlight, small }) {
   // status: 'won' | 'lost' | 'pending' | 'live' | 'tbd'
+  // 'pending' = song is here but matchup not yet played → show in color
+  // 'tbd'     = slot not yet filled (no song)           → show gray placeholder
   const colors = song ? getEraColors(song.albumId) : null;
-  const isLost    = status === 'lost';
-  const isPending = status === 'pending' || status === 'tbd';
-  const isLive    = status === 'live';
+  const isLost = status === 'lost';
+  const isTbd  = status === 'tbd';
+  const isLive = status === 'live';
 
   const w = small ? 100 : 120;
   const h = small ? 30 : 36;
 
+  const hasColor = colors && !isTbd;
+
   let background = '#ffffff';
-  if (colors && !isPending) {
+  if (hasColor) {
     background = `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`;
-  } else if (isPending) {
+  } else if (isTbd) {
     background = '#f9fafb';
   }
 
@@ -50,7 +52,7 @@ function TreeNode({ song, status, highlight, small }) {
       height: h,
       borderRadius: 8,
       background,
-      border: isPending ? '1px dashed #d1d5db' : '1px solid #e5e7eb',
+      border: isTbd ? '1px dashed #d1d5db' : '1px solid #e5e7eb',
       display: 'flex',
       alignItems: 'center',
       gap: 6,
@@ -60,7 +62,7 @@ function TreeNode({ song, status, highlight, small }) {
       animation: isLive ? 'tree-live-pulse 1.4s ease-in-out infinite' : undefined,
       boxShadow: highlight && !isLive ? '0 0 0 2px #f59e0b' : undefined,
     }}>
-      {colors && !isPending ? (
+      {hasColor ? (
         <span style={{
           width: small ? 10 : 12,
           height: small ? 10 : 12,
@@ -82,7 +84,7 @@ function TreeNode({ song, status, highlight, small }) {
       <span style={{
         fontSize: small ? 10 : 11,
         fontWeight: 500,
-        color: colors && !isPending ? colors.text : '#9ca3af',
+        color: hasColor ? colors.text : '#9ca3af',
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
@@ -171,12 +173,18 @@ export default function Tree({
     scrollerRef.current.scrollLeft = targetLeft;
   }, [view, liveRound]);
 
-  // Spacing between matchups widens as the rounds advance (classic bracket fan).
-  function pairGapForRound(r) {
-    return [10, 32, 76, 168][Math.min(r, 3)] ?? 10 + r * 22;
-  }
-  function paddingTopForRound(r) {
-    return [0, 16, 48, 112][Math.min(r, 3)] ?? r * 28;
+  // Derive spacing so each round's pairs are vertically centered between the two
+  // source pairs from the previous round — gives a proper bracket fan.
+  // nodeH=30 (small), intraGap=2, pairH=62, baseGap=10 → slotH doubles each round.
+  function computeRoundLayout(r) {
+    const pairH = 62; // nodeH*2 + intraGap = 30*2 + 2
+    let slotH = 72;   // pairH + baseGap = 62 + 10
+    let paddingTop = 0;
+    for (let i = 0; i < r; i++) {
+      paddingTop += slotH / 2;
+      slotH *= 2;
+    }
+    return { interGap: slotH - pairH, paddingTop };
   }
 
   const showCTA = !isComplete && liveMatchup &&
@@ -289,8 +297,8 @@ export default function Tree({
                     <div style={{
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: pairGapForRound(index),
-                      paddingTop: paddingTopForRound(index),
+                      gap: computeRoundLayout(index).interGap,
+                      paddingTop: computeRoundLayout(index).paddingTop,
                     }}>
                       {round.map((m, mIdx) => {
                         const isLive = !isFuture &&
