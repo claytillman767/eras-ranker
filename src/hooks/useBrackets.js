@@ -74,6 +74,53 @@ export function useBrackets(user) {
     setWeeklyState(next);
   }, [user]);
 
+  // Initialize weekly + daily on mount so they're ready before the user taps anything.
+  // This avoids calling state-setters from the render phase (which React forbids).
+  useEffect(() => {
+    const wk = getCurrentWeekNumber();
+
+    // Weekly — reset if it's a new week
+    setWeeklyState(prev => {
+      if (prev && prev.weekNumber === wk) return prev;
+      const seed = wk * 999983;
+      const generated = generateBracket('most-devastating', 'all', seed);
+      if (!generated) return prev;
+      const next = {
+        weekNumber: wk,
+        categoryName: getWeeklyCategoryName(wk),
+        seed,
+        status: 'in-progress',
+        currentRound: 0,
+        currentMatchupIndex: 0,
+        contestants: generated.contestants,
+        rounds: generated.rounds,
+        votes: [],
+        winner: null,
+      };
+      saveToStorage(WEEKLY_KEY, next);
+      return next;
+    });
+
+    // Daily — reset if it's a new day
+    const today = Math.floor(Date.now() / 86400000).toString();
+    setDailyState(prev => {
+      if (prev && prev.dayKey === today) return prev;
+      const seed = parseInt(today) * 777;
+      const generated = generateBracket('most-devastating', 'all', seed);
+      if (!generated) return prev;
+      const next = {
+        dayKey: today,
+        contestants: generated.contestants,
+        matchups: generated.rounds[0].slice(0, 3),
+        currentIndex: 0,
+        votes: [],
+        done: false,
+      };
+      saveToStorage(DAILY_KEY, next);
+      return next;
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Create a new personal bracket
   const createBracket = useCallback((categoryId, scope = 'all') => {
     const seed = Date.now();
@@ -163,32 +210,6 @@ export function useBrackets(user) {
 
   const weekNumber = getCurrentWeekNumber();
 
-  // Initialize or reset weekly bracket if week changed
-  const getOrInitWeekly = useCallback(() => {
-    if (weeklyState && weeklyState.weekNumber === weekNumber) {
-      return weeklyState;
-    }
-    // New week — generate fresh weekly bracket
-    const seed = weekNumber * 999983;
-    const generated = generateBracket('most-devastating', 'all', seed);
-    if (!generated) return null;
-
-    const w = {
-      weekNumber,
-      categoryName: getWeeklyCategoryName(weekNumber),
-      seed,
-      status: 'in-progress',
-      currentRound: 0,
-      currentMatchupIndex: 0,
-      contestants: generated.contestants,
-      rounds: generated.rounds,
-      votes: [], // { roundIndex, matchupIndex, winnerId } user's votes
-      winner: null,
-    };
-    persistWeekly(w);
-    return w;
-  }, [weeklyState, weekNumber, persistWeekly]);
-
   const recordWeeklyVote = useCallback((roundIndex, matchupIndex, winner) => {
     const w = weeklyState;
     if (!w || w.weekNumber !== weekNumber) return;
@@ -244,28 +265,6 @@ export function useBrackets(user) {
 
   const todayKey = Math.floor(Date.now() / 86400000).toString();
 
-  const getOrInitDaily = useCallback(() => {
-    if (dailyState && dailyState.dayKey === todayKey) {
-      return dailyState;
-    }
-    const seed = parseInt(todayKey) * 777;
-    const generated = generateBracket('most-devastating', 'all', seed);
-    if (!generated) return null;
-
-    // Daily only shows the first 3 matchups
-    const d = {
-      dayKey: todayKey,
-      contestants: generated.contestants,
-      matchups: generated.rounds[0].slice(0, 3),
-      currentIndex: 0,
-      votes: [],
-      done: false,
-    };
-    saveToStorage(DAILY_KEY, d);
-    setDailyState(d);
-    return d;
-  }, [dailyState, todayKey]);
-
   const recordDailyVote = useCallback((matchupIndex, winner) => {
     const d = dailyState;
     if (!d) return;
@@ -298,11 +297,9 @@ export function useBrackets(user) {
     // Weekly
     weekNumber,
     weeklyState,
-    getOrInitWeekly,
     recordWeeklyVote,
     // Daily
     dailyState,
-    getOrInitDaily,
     recordDailyVote,
     todayKey,
   };

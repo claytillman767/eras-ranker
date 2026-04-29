@@ -8,9 +8,7 @@ import WeeklyBracket from './WeeklyBracket';
 import WinnerReveal from './WinnerReveal';
 import DailyMatchup from './DailyMatchup';
 
-// Screens: 'home' | 'matchup' | 'transition' | 'results' | 'weekly' | 'reveal' | 'daily'
-
-export default function Brackets({ user }) {
+export default function Brackets({ user, spotify, isPro }) {
   const {
     brackets,
     createBracket,
@@ -19,10 +17,8 @@ export default function Brackets({ user }) {
     getBracket,
     weekNumber,
     weeklyState,
-    getOrInitWeekly,
     recordWeeklyVote,
     dailyState,
-    getOrInitDaily,
     recordDailyVote,
   } = useBrackets(user);
 
@@ -42,24 +38,13 @@ export default function Brackets({ user }) {
   function handleContinueBracket(bracketId) {
     const b = getBracket(bracketId);
     if (!b) return;
-    if (b.status === 'complete') {
-      setActiveBracketId(bracketId);
-      setScreen('results');
-    } else {
-      setActiveBracketId(bracketId);
-      setScreen('matchup');
-    }
+    setActiveBracketId(bracketId);
+    setScreen(b.status === 'complete' ? 'results' : 'matchup');
   }
 
   function handleOpenWeekly() {
-    getOrInitWeekly();
-    const w = weeklyState;
-    // If completed, show reveal; otherwise vote
-    if (w && w.status === 'complete') {
-      setScreen('reveal');
-    } else {
-      setScreen('weekly');
-    }
+    if (!weeklyState) return;
+    setScreen(weeklyState.status === 'complete' ? 'reveal' : 'weekly');
   }
 
   function handleOpenResults(bracketId) {
@@ -71,47 +56,31 @@ export default function Brackets({ user }) {
     if (!activeBracketId) return;
     recordWinner(activeBracketId, roundIndex, matchupIndex, winner);
 
-    // Re-fetch bracket to check new state
     const updated = getBracket(activeBracketId);
     if (!updated) return;
 
-    // Check if we just finished a round (but not the whole bracket)
     const completedRound = updated.rounds[roundIndex];
     const allDone = completedRound && completedRound.every(m => m.winner !== null);
-    const isLastMatchup = completedRound && completedRound.length === 1;
+    const isFinal = completedRound && completedRound.length === 1;
 
     if (updated.status === 'complete') {
       setScreen('results');
-    } else if (allDone && !isLastMatchup) {
+    } else if (allDone && !isFinal) {
       setTransitionRound(roundIndex);
       setScreen('transition');
     }
-    // otherwise stay on matchup screen — it will auto-advance to next matchup
-  }
-
-  function handleTransitionContinue() {
-    setTransitionRound(null);
-    setScreen('matchup');
   }
 
   function handleWeeklyVote(roundIndex, matchupIndex, winner) {
     recordWeeklyVote(roundIndex, matchupIndex, winner);
-    // Check if the weekly bracket just completed
-    const w = weeklyState;
-    if (w && w.status === 'complete') {
+    if (weeklyState && weeklyState.status === 'complete') {
       setTimeout(() => setScreen('reveal'), 800);
     }
   }
 
-  function handleDailyVote(matchupIndex, winner) {
-    recordDailyVote(matchupIndex, winner);
-  }
-
   const activeBracket = activeBracketId ? getBracket(activeBracketId) : null;
-  // Get current weekly state (initializing if needed)
-  const currentWeekly = weeklyState;
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // ── Screens ──────────────────────────────────────────────────────────────────
 
   if (screen === 'matchup' && activeBracket) {
     return (
@@ -130,7 +99,7 @@ export default function Brackets({ user }) {
       <RoundTransition
         bracket={activeBracket}
         completedRoundIndex={transitionRound}
-        onContinue={handleTransitionContinue}
+        onContinue={() => { setTransitionRound(null); setScreen('matchup'); }}
       />
     );
   }
@@ -145,11 +114,10 @@ export default function Brackets({ user }) {
     );
   }
 
-  if (screen === 'weekly') {
-    const w = currentWeekly || getOrInitWeekly();
+  if (screen === 'weekly' && weeklyState) {
     return (
       <WeeklyBracket
-        weeklyState={w}
+        weeklyState={weeklyState}
         onVote={handleWeeklyVote}
         onClose={() => setScreen('home')}
       />
@@ -159,29 +127,24 @@ export default function Brackets({ user }) {
   if (screen === 'reveal') {
     return (
       <WinnerReveal
-        weeklyState={currentWeekly}
+        weeklyState={weeklyState}
         onClose={() => setScreen('home')}
       />
     );
   }
 
-  // ── Home screen (default) ───────────────────────────────────────────────────
-  const daily = dailyState || getOrInitDaily();
-
+  // ── Home (default) ───────────────────────────────────────────────────────────
   return (
     <div>
-      {/* Daily matchup floater — shows at top if today's daily not done */}
-      {daily && !daily.done && (
+      {dailyState && !dailyState.done && (
         <div style={{ marginBottom: 16 }}>
           {dailyOpen ? (
             <DailyMatchup
-              dailyState={daily}
-              onVote={handleDailyVote}
+              dailyState={dailyState}
+              onVote={recordDailyVote}
               onClose={() => setDailyOpen(false)}
-              onKeepGoing={() => {
-                setDailyOpen(false);
-                handleStartBracket('most-devastating');
-              }}
+              onKeepGoing={() => { setDailyOpen(false); handleStartBracket('most-devastating'); }}
+              spotify={isPro ? spotify : null}
             />
           ) : (
             <div
@@ -199,12 +162,8 @@ export default function Brackets({ user }) {
             >
               <div style={{ fontSize: 24 }}>☀️</div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#fbbf24' }}>
-                  Daily Matchup
-                </div>
-                <div style={{ fontSize: 12, color: '#64748b' }}>
-                  Quick vote — 3 matchups · Tap to play
-                </div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#fbbf24' }}>Daily Matchup</div>
+                <div style={{ fontSize: 12, color: '#64748b' }}>Quick vote · 3 matchups · Tap to play</div>
               </div>
               <div style={{ fontSize: 20, color: '#64748b' }}>›</div>
             </div>
