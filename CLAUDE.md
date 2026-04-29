@@ -25,7 +25,8 @@ git add . && git commit -m "message" && git push   # Vercel auto-deploys on push
 ```
 src/
   main.jsx                 — entry point; wraps <App> in <ErrorBoundary>; registers service worker
-  App.jsx                  — root; 6 tabs: Home, Albums, Rate songs, Rankings, Categories, Settings
+  App.jsx                  — root; 5 tabs: Home, Albums, Brackets, Rankings, Settings
+                             Categories is now a section inside Settings (not its own tab)
                              ALL hooks must be declared before the beta gate early return (Rules of Hooks)
                              Beta gate check: if 'eras_beta_unlocked' not in localStorage, renders BetaGate
                              Passes user/signIn/signOut to Settings; passes isPro ? spotify.albumArt : null to grid/songlist
@@ -119,7 +120,8 @@ src/
     Categories.jsx         — Pro unlock + category toggles + weight sliders + custom creator
     ScoreBar.jsx           — visual score bar used in Rankings
     PaywallCard.jsx        — Pro upgrade prompt (used in Categories)
-    Settings.jsx           — Sections: Account, Display, Spotify, Disclaimer
+    Settings.jsx           — Sections: Account, Display, Spotify, Rating Categories, Data, Disclaimer
+                             Rating Categories section renders the full Categories component inline
                              Account: shows avatar/name/email/sign-out when logged in; sign-in prompt when not
                              Display: category bars toggle
                              Spotify: Pro-gated connect/disconnect + autoplay toggle
@@ -340,3 +342,26 @@ Displaying time-synced lyrics (line-by-line highlighted as the song plays) is te
 - Requires a new `VITE_MUSIXMATCH_KEY` env var in `.env` and Vercel
 
 **Recommendation:** Use lrclib at small scale, switch to Musixmatch when ready to monetize seriously. Do not build the UI until the licensing path is decided.
+
+### Bracket Feature — Remaining Work
+
+#### Community bracket vote tallies (Firestore counters)
+**Current state:** The "X% of Swifties agree" feedback shown after each bracket vote is simulated using a seeded deterministic random function (`getCommunityVotePercent` in `bracketCategories.js`). Every user sees the same percentages for the same matchup — there is no real aggregation.
+
+**What needs to be built:**
+- A shared Firestore collection (e.g. `bracketVotes/{weekNumber}_r{round}_m{matchup}`) with atomic counter increments for song1 and song2
+- Security rules: allow increment writes but not reads-then-writes to prevent stuffing
+- In `useBrackets.js`, replace the simulated percent with a real Firestore read after each vote
+- The weekly bracket winner should be derived from the Firestore tallies, not the seeded random
+
+**Do not build this until the bracket design is finalized** — schema and security rules are easy to add once the UX is stable.
+
+#### Spotify playback in bracket matchup cards
+**Current state:** The MatchupScreen (`src/components/brackets/MatchupScreen.jsx`) shows era-colored song cards with lyric snippets, but does not play audio. Placeholder comments mark where Spotify calls would go.
+
+**What needs to be built:**
+- Pass `spotify` prop from `Brackets.jsx` → `MatchupScreen.jsx`
+- On each new matchup, call `spotify.playTrack(albumId, songIndex, songName, albumName, 'shuffle')` to auto-play the currently focused song (or both songs briefly)
+- Show a `SpotifyMiniPlayer` inline in the matchup card for whichever song is highlighted
+- For "Best Bridge" category, use `screen='bridge'` to seek to bridge timestamp
+- Gate behind `isPro` check — non-Pro users see cards without audio

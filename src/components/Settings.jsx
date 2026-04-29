@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
+import Categories from './Categories';
 
 // Settings tab — app-wide display and behaviour preferences.
 export default function Settings({
   settings, updateSetting, spotify, isPro, unlockPro,
   user, signIn, signOut,
   ratings, activeCategories, customCategories,
+  enabledExtras, toggleExtra,
+  addCustomCategory, removeCustomCategory, disabledCustoms, toggleCustom, setCustomCategoryType,
+  categoryWeights, setCategoryWeight, resetCategoryWeights,
 }) {
   const [showProModal, setShowProModal] = useState(false);
 
@@ -425,6 +429,25 @@ export default function Settings({
         </a>{' '}
         to try it for free.
       </div>
+
+      {/* ── Rating Categories section ── */}
+      <SectionHeader>Rating Categories</SectionHeader>
+      <Categories
+        isPro={isPro}
+        unlockPro={unlockPro}
+        enabledExtras={enabledExtras}
+        toggleExtra={toggleExtra}
+        customCategories={customCategories}
+        addCustomCategory={addCustomCategory}
+        removeCustomCategory={removeCustomCategory}
+        disabledCustoms={disabledCustoms}
+        toggleCustom={toggleCustom}
+        setCustomCategoryType={setCustomCategoryType}
+        activeCategories={activeCategories}
+        categoryWeights={categoryWeights}
+        setCategoryWeight={setCategoryWeight}
+        resetCategoryWeights={resetCategoryWeights}
+      />
 
       {/* ── Data section ── */}
       <SectionHeader>Data</SectionHeader>
