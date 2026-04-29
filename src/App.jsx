@@ -14,15 +14,16 @@ import SongList from './components/SongList';
 import Rankings from './components/Rankings';
 import Categories from './components/Categories';
 import Settings from './components/Settings';
+import Brackets from './components/brackets/Brackets';
 import { ALL_ALBUMS } from './data/albums';
 
-// Tab definitions — Home is first
+// Tab definitions — Categories lives inside Settings
 const TABS = [
-  { id: 'home',       label: 'Home' },
-  { id: 'albums',     label: 'Albums' },
-  { id: 'rankings',   label: 'Rankings' },
-  { id: 'categories', label: 'Categories' },
-  { id: 'settings',   label: 'Settings' },
+  { id: 'home',     label: 'Home' },
+  { id: 'albums',   label: 'Albums' },
+  { id: 'brackets', label: 'Brackets' },
+  { id: 'rankings', label: 'Rankings' },
+  { id: 'settings', label: 'Settings' },
 ];
 
 const BETA_KEY = 'eras_beta_unlocked';
@@ -417,6 +418,10 @@ export default function App() {
           )
         )}
 
+        {activeTab === 'brackets' && (
+          <Brackets user={user} />
+        )}
+
         {activeTab === 'rankings' && (
           <Rankings
             getCompositeScore={getCompositeScore}
@@ -439,22 +444,13 @@ export default function App() {
             ratings={ratings}
             activeCategories={activeCategories}
             customCategories={customCategories}
-          />
-        )}
-
-        {activeTab === 'categories' && (
-          <Categories
-            isPro={isPro}
-            unlockPro={unlockPro}
             enabledExtras={enabledExtras}
             toggleExtra={toggleExtra}
-            customCategories={customCategories}
             addCustomCategory={addCustomCategory}
             removeCustomCategory={removeCustomCategory}
             disabledCustoms={disabledCustoms}
             toggleCustom={toggleCustom}
             setCustomCategoryType={setCustomCategoryType}
-            activeCategories={activeCategories}
             categoryWeights={categoryWeights}
             setCategoryWeight={setCategoryWeight}
             resetCategoryWeights={resetCategoryWeights}
