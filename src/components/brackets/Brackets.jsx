@@ -1,95 +1,142 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useBrackets } from '../../hooks/useBrackets';
-import BracketHome from './BracketHome';
-import MatchupScreen from './MatchupScreen';
+import { getCurrentWeekNumber, getWeeklyCategoryName, BRACKET_CATEGORIES } from '../../constants/bracketCategories';
+import Landing from './Landing';
+import Tree from './Tree';
+import Matchup from './Matchup';
 import RoundTransition from './RoundTransition';
 import BracketResults from './BracketResults';
-import WeeklyBracket from './WeeklyBracket';
 import WinnerReveal from './WinnerReveal';
 import DailyMatchup from './DailyMatchup';
 
 export default function Brackets({ user, spotify, isPro }) {
   const {
-    brackets,
-    createBracket,
-    recordWinner,
-    deleteBracket,
-    getBracket,
-    weekNumber,
-    weeklyState,
-    recordWeeklyVote,
-    dailyState,
-    recordDailyVote,
+    brackets, createBracket, recordWinner, getBracket,
+    weeklyState, recordWeeklyVote,
+    dailyState, recordDailyVote,
   } = useBrackets(user);
 
-  const [screen, setScreen] = useState('home');
+  // Screens: 'landing' | 'tree' | 'matchup' | 'transition' | 'results' | 'reveal' | 'daily'
+  const [screen, setScreen] = useState('landing');
   const [activeBracketId, setActiveBracketId] = useState(null);
+  const [activeMode, setActiveMode] = useState(null); // 'personal' | 'weekly'
   const [transitionRound, setTransitionRound] = useState(null);
-  const [dailyOpen, setDailyOpen] = useState(false);
 
-  function handleStartBracket(categoryId) {
-    const id = createBracket(categoryId, 'all');
+  const weekNumber = getCurrentWeekNumber();
+  const weeklyCategoryName = getWeeklyCategoryName(weekNumber);
+  const personalInProgress = brackets.find(b => b.status === 'in-progress') || null;
+  const recentlyCrowned = brackets.filter(b => b.status === 'complete').slice(-5).reverse();
+
+  const isWeekly = activeMode === 'weekly';
+  const activeBracket = isWeekly
+    ? weeklyState
+    : (activeBracketId ? getBracket(activeBracketId) : null);
+
+  const weekLabel = isWeekly
+    ? `${weeklyCategoryName} · Wk ${weekNumber + 1}`
+    : (activeBracket
+        ? (BRACKET_CATEGORIES.find(c => c.id === activeBracket.categoryId)?.name || 'Bracket')
+        : '');
+
+  // Auto-route off the matchup screen when the active bracket completes.
+  useEffect(() => {
+    if (screen !== 'matchup' || !activeBracket) return;
+    if (activeBracket.status === 'complete') {
+      setScreen(isWeekly ? 'reveal' : 'results');
+    }
+  }, [activeBracket?.status, screen, isWeekly]);
+
+  function backToLanding() {
+    setActiveBracketId(null);
+    setActiveMode(null);
+    setScreen('landing');
+  }
+
+  function openWeekly() {
+    if (!weeklyState) return;
+    if (weeklyState.status === 'complete') { setScreen('reveal'); return; }
+    setActiveMode('weekly');
+    setScreen('matchup');
+  }
+
+  function continuePersonal() {
+    if (!personalInProgress) return;
+    setActiveBracketId(personalInProgress.id);
+    setActiveMode('personal');
+    setScreen(personalInProgress.status === 'complete' ? 'results' : 'matchup');
+  }
+
+  // Builder (Screen 5) doesn't exist yet — for now this still default-creates a
+  // "most-devastating" bracket so the empty state still produces a working flow.
+  function buildPersonal() {
+    const id = createBracket('most-devastating', 'all');
     if (id) {
       setActiveBracketId(id);
+      setActiveMode('personal');
       setScreen('matchup');
     }
   }
 
-  function handleContinueBracket(bracketId) {
-    const b = getBracket(bracketId);
-    if (!b) return;
+  function openCrowned(bracketId) {
     setActiveBracketId(bracketId);
-    setScreen(b.status === 'complete' ? 'results' : 'matchup');
-  }
-
-  function handleOpenWeekly() {
-    if (!weeklyState) return;
-    setScreen(weeklyState.status === 'complete' ? 'reveal' : 'weekly');
-  }
-
-  function handleOpenResults(bracketId) {
-    setActiveBracketId(bracketId);
+    setActiveMode('personal');
     setScreen('results');
   }
 
-  function handleMatchupPick(roundIndex, matchupIndex, winner) {
-    if (!activeBracketId) return;
-    recordWinner(activeBracketId, roundIndex, matchupIndex, winner);
-
-    const updated = getBracket(activeBracketId);
-    if (!updated) return;
-
-    const completedRound = updated.rounds[roundIndex];
-    const allDone = completedRound && completedRound.every(m => m.winner !== null);
-    const isFinal = completedRound && completedRound.length === 1;
-
-    if (updated.status === 'complete') {
-      setScreen('results');
-    } else if (allDone && !isFinal) {
-      setTransitionRound(roundIndex);
-      setScreen('transition');
+  function handleVote(winnerSong) {
+    if (!activeBracket) return;
+    if (isWeekly) {
+      recordWeeklyVote(activeBracket.currentRound, activeBracket.currentMatchupIndex, winnerSong);
+    } else {
+      const ri = activeBracket.currentRound;
+      const mi = activeBracket.currentMatchupIndex;
+      recordWinner(activeBracket.id, ri, mi, winnerSong);
+      // Synchronously check the about-to-be-updated state for round transition.
+      const completed = activeBracket.rounds[ri];
+      const wasLastInRound = mi === completed.length - 1;
+      const isFinal = completed.length === 1;
+      if (wasLastInRound && !isFinal) {
+        setTransitionRound(ri);
+        setScreen('transition');
+      }
     }
   }
 
-  function handleWeeklyVote(roundIndex, matchupIndex, winner) {
-    recordWeeklyVote(roundIndex, matchupIndex, winner);
-    if (weeklyState && weeklyState.status === 'complete') {
-      setTimeout(() => setScreen('reveal'), 800);
-    }
-  }
-
-  const activeBracket = activeBracketId ? getBracket(activeBracketId) : null;
-
-  // ── Screens ──────────────────────────────────────────────────────────────────
+  // ── Routes ─────────────────────────────────────────────────────────────────
 
   if (screen === 'matchup' && activeBracket) {
+    const round = activeBracket.rounds[activeBracket.currentRound];
+    const matchup = round?.[activeBracket.currentMatchupIndex];
+    if (matchup?.song1 && matchup?.song2) {
+      const totalRounds = Math.log2(activeBracket.contestants.length);
+      return (
+        <Matchup
+          song1={matchup.song1}
+          song2={matchup.song2}
+          categoryId={activeBracket.categoryId || 'most-devastating'}
+          weekLabel={weekLabel}
+          roundIndex={activeBracket.currentRound}
+          totalRounds={totalRounds}
+          matchupIndex={activeBracket.currentMatchupIndex}
+          matchupsInRound={round.length}
+          spotify={spotify}
+          onVote={handleVote}
+          onClose={() => setScreen('tree')}
+          onSeeBracket={() => setScreen('tree')}
+        />
+      );
+    }
+    // No current matchup (bracket just ran out of songs) — let the effect route.
+    return null;
+  }
+
+  if (screen === 'tree' && activeBracket) {
     return (
-      <MatchupScreen
+      <Tree
         bracket={activeBracket}
-        categoryId={activeBracket.categoryId}
-        onPick={handleMatchupPick}
-        onBack={() => setScreen('home')}
-        onExit={() => setScreen('home')}
+        weekLabel={weekLabel}
+        onClose={backToLanding}
+        onOpenMatchup={() => setScreen('matchup')}
       />
     );
   }
@@ -108,76 +155,42 @@ export default function Brackets({ user, spotify, isPro }) {
     return (
       <BracketResults
         bracket={activeBracket}
-        onTryAnother={() => setScreen('home')}
-        onClose={() => setScreen('home')}
-      />
-    );
-  }
-
-  if (screen === 'weekly' && weeklyState) {
-    return (
-      <WeeklyBracket
-        weeklyState={weeklyState}
-        onVote={handleWeeklyVote}
-        onClose={() => setScreen('home')}
+        onTryAnother={backToLanding}
+        onClose={backToLanding}
       />
     );
   }
 
   if (screen === 'reveal') {
+    return <WinnerReveal weeklyState={weeklyState} onClose={backToLanding} />;
+  }
+
+  if (screen === 'daily' && dailyState) {
     return (
-      <WinnerReveal
-        weeklyState={weeklyState}
-        onClose={() => setScreen('home')}
+      <DailyMatchup
+        dailyState={dailyState}
+        onVote={recordDailyVote}
+        onClose={() => setScreen('landing')}
+        onKeepGoing={() => { setScreen('landing'); buildPersonal(); }}
+        spotify={isPro ? spotify : null}
       />
     );
   }
 
-  // ── Home (default) ───────────────────────────────────────────────────────────
+  // Default: Landing
   return (
-    <div>
-      {dailyState && !dailyState.done && (
-        <div style={{ marginBottom: 16 }}>
-          {dailyOpen ? (
-            <DailyMatchup
-              dailyState={dailyState}
-              onVote={recordDailyVote}
-              onClose={() => setDailyOpen(false)}
-              onKeepGoing={() => { setDailyOpen(false); handleStartBracket('most-devastating'); }}
-              spotify={isPro ? spotify : null}
-            />
-          ) : (
-            <div
-              onClick={() => setDailyOpen(true)}
-              style={{
-                background: 'linear-gradient(135deg, #1e293b, #0f172a)',
-                border: '1.5px solid rgba(212,175,55,0.4)',
-                borderRadius: 14,
-                padding: '14px 16px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-              }}
-            >
-              <div style={{ fontSize: 24 }}>☀️</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#fbbf24' }}>Daily Matchup</div>
-                <div style={{ fontSize: 12, color: '#64748b' }}>Quick vote · 3 matchups · Tap to play</div>
-              </div>
-              <div style={{ fontSize: 20, color: '#64748b' }}>›</div>
-            </div>
-          )}
-        </div>
-      )}
-
-      <BracketHome
-        brackets={brackets}
-        onStartBracket={handleStartBracket}
-        onContinueBracket={handleContinueBracket}
-        onOpenWeekly={handleOpenWeekly}
-        onOpenResults={handleOpenResults}
-      />
-    </div>
+    <Landing
+      weekNumber={weekNumber}
+      weeklyState={weeklyState}
+      weeklyCategoryName={weeklyCategoryName}
+      dailyState={dailyState}
+      personalInProgress={personalInProgress}
+      recentlyCrowned={recentlyCrowned}
+      onOpenWeekly={openWeekly}
+      onContinuePersonal={continuePersonal}
+      onBuildPersonal={buildPersonal}
+      onOpenDaily={() => setScreen('daily')}
+      onOpenCrowned={openCrowned}
+    />
   );
 }
