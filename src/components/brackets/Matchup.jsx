@@ -228,12 +228,16 @@ export default function Matchup({
   // the community that voted for song1. When null, the result strip is muted.
   communityPercentSong1,
 }) {
+  // isConnected gates the phase state machine; playerReady gates actual playTrack calls.
+  // playerReady arrives async (SDK ~1s after mount), so using it for initial phase would
+  // lock the machine to 'ready' before Spotify has had a chance to initialize.
+  const isSpotifyConnected = !!(spotify?.isConnected);
   const hasSpotify = !!(spotify?.isConnected && spotify?.playerReady);
 
   // Reset whenever the matchup changes (parent rotates song1/song2 through the bracket).
   const matchupKey = `${song1.albumId}_${song1.songIndex}__${song2.albumId}_${song2.songIndex}`;
 
-  const [phase, setPhase] = useState(hasSpotify ? 'intro' : 'ready');
+  const [phase, setPhase] = useState(isSpotifyConnected ? 'intro' : 'ready');
   const [pickedSong, setPickedSong] = useState(null);
   const [progress1, setProgress1] = useState(0);
   const [progress2, setProgress2] = useState(0);
@@ -262,7 +266,7 @@ export default function Matchup({
     setPickedSong(null);
     setProgress1(0);
     setProgress2(0);
-    setPhase(hasSpotify ? 'intro' : 'ready');
+    setPhase(isSpotifyConnected ? 'intro' : 'ready');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchupKey]);
 
