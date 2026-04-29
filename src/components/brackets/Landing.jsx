@@ -143,6 +143,44 @@ export default function Landing({
         paddingBottom: 24,
       }}>
 
+        {/* ── Daily Matchup ──────────────────────────────────────────────── */}
+        {dailyState && (
+          <div style={{
+            marginBottom: 12,
+            borderRadius: 12,
+            padding: '12px 14px',
+            background: '#1a1a2e',
+            color: '#ffffff',
+            display: 'flex', alignItems: 'center', gap: 12,
+          }}>
+            <div style={{ fontSize: 22, lineHeight: 1 }}>☀</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                fontSize: 15, fontWeight: 500, color: '#fbbf24',
+              }}>Daily Matchup</div>
+              <div style={{ fontSize: 10, color: '#94a3b8' }}>
+                {dailyState.done
+                  ? '✓ Done · come back tomorrow'
+                  : 'One quick vote · 3 rounds · ~30 sec'}
+              </div>
+            </div>
+            {!dailyState.done && (
+              <button
+                onClick={onOpenDaily}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: 14,
+                  border: 'none',
+                  background: '#fbbf24',
+                  color: '#1a1a2e',
+                  fontSize: 12, fontWeight: 700,
+                  cursor: 'pointer', flexShrink: 0,
+                }}
+              >Play</button>
+            )}
+          </div>
+        )}
+
         {/* ── Weekly Hero ───────────────────────────────────────────────── */}
         {weeklyState && (
           <div style={{
@@ -349,44 +387,6 @@ export default function Landing({
             </>
           )}
         </div>
-
-        {/* ── Daily Matchup ──────────────────────────────────────────────── */}
-        {dailyState && (
-          <div style={{
-            marginBottom: 16,
-            borderRadius: 12,
-            padding: '12px 14px',
-            background: '#1a1a2e',
-            color: '#ffffff',
-            display: 'flex', alignItems: 'center', gap: 12,
-          }}>
-            <div style={{ fontSize: 22, lineHeight: 1 }}>☀</div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{
-                fontSize: 15, fontWeight: 500, color: '#fbbf24',
-              }}>Daily Matchup</div>
-              <div style={{ fontSize: 10, color: '#94a3b8' }}>
-                {dailyState.done
-                  ? '✓ Done · come back tomorrow'
-                  : 'One quick vote · 3 rounds · ~30 sec'}
-              </div>
-            </div>
-            {!dailyState.done && (
-              <button
-                onClick={onOpenDaily}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: 14,
-                  border: 'none',
-                  background: '#fbbf24',
-                  color: '#1a1a2e',
-                  fontSize: 12, fontWeight: 700,
-                  cursor: 'pointer', flexShrink: 0,
-                }}
-              >Play</button>
-            )}
-          </div>
-        )}
 
         {/* ── Recently Crowned ───────────────────────────────────────────── */}
         {/* OPEN QUESTION (README §5): "Recently crowned" should source from the
