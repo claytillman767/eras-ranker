@@ -408,18 +408,34 @@ export default function Matchup({
           flexShrink: 0,
         }}>
           <div style={{ fontSize: 16, fontWeight: 500 }}>{weekLabel}</div>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            style={{
-              width: 26, height: 26, borderRadius: 13,
-              border: '1px solid #111827',
-              background: 'transparent',
-              cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 12, color: '#111827', padding: 0, lineHeight: 1,
-            }}
-          >✕</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {isSpotifyConnected && phase !== 'intro' && (
+              <button
+                onClick={() => spotify?.togglePlay?.()}
+                aria-label={spotify?.isPlaying ? 'Pause' : 'Play'}
+                style={{
+                  width: 26, height: 26, borderRadius: 13,
+                  border: '1px solid #a855f7',
+                  background: '#f3e8ff',
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 11, color: '#a855f7', padding: 0, lineHeight: 1,
+                }}
+              >{spotify?.isPlaying ? '⏸' : '▶'}</button>
+            )}
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              style={{
+                width: 26, height: 26, borderRadius: 13,
+                border: '1px solid #111827',
+                background: 'transparent',
+                cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 12, color: '#111827', padding: 0, lineHeight: 1,
+              }}
+            >✕</button>
+          </div>
         </div>
 
         {/* Round dots + label */}
