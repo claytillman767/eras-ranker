@@ -14,12 +14,14 @@ import SongList from './components/SongList';
 import Rankings from './components/Rankings';
 import Categories from './components/Categories';
 import Settings from './components/Settings';
+import Brackets from './components/brackets/Brackets';
 import { ALL_ALBUMS } from './data/albums';
 
 // Tab definitions — Home is first
 const TABS = [
   { id: 'home',       label: 'Home' },
   { id: 'albums',     label: 'Albums' },
+  { id: 'brackets',   label: 'Brackets' },
   { id: 'rankings',   label: 'Rankings' },
   { id: 'categories', label: 'Categories' },
   { id: 'settings',   label: 'Settings' },
@@ -415,6 +417,10 @@ export default function App() {
               Go to Albums and tap one to start rating.
             </div>
           )
+        )}
+
+        {activeTab === 'brackets' && (
+          <Brackets user={user} />
         )}
 
         {activeTab === 'rankings' && (
