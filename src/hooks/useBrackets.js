@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import {
@@ -35,6 +35,11 @@ export function useBrackets(user) {
   const [weeklyState, setWeeklyState] = useState(() => loadFromStorage(WEEKLY_KEY) || null);
   const [dailyState, setDailyState] = useState(() => loadFromStorage(DAILY_KEY) || null);
 
+  // Ref that always points to the latest weeklyState — used by recordWeeklyVote
+  // to avoid stale closures without using a functional updater (which crashed in StrictMode).
+  const weeklyStateRef = useRef(weeklyState);
+  weeklyStateRef.current = weeklyState;
+
   // Sync brackets to Firestore when user logs in
   useEffect(() => {
     if (!user) return;
@@ -50,9 +55,23 @@ export function useBrackets(user) {
         }
       }
       if (snap.exists() && snap.data().weeklyBracket) {
-        const w = snap.data().weeklyBracket;
-        setWeeklyState(w);
-        saveToStorage(WEEKLY_KEY, w);
+        const raw = snap.data().weeklyBracket;
+        // rounds is serialized as a JSON string to work around Firestore's nested-array restriction
+        const w = typeof raw.rounds === 'string'
+          ? { ...raw, rounds: JSON.parse(raw.rounds) }
+          : raw;
+        const currentWk = getCurrentWeekNumber();
+        setWeeklyState(prev => {
+          // Keep local state if it's the same week and has at least as many votes —
+          // prevents a stale Firestore read (e.g. from StrictMode double-effect) from
+          // reverting votes the user just cast.
+          if (
+            prev && prev.weekNumber === currentWk && w.weekNumber === currentWk &&
+            (prev.votes?.length ?? 0) >= (w.votes?.length ?? 0)
+          ) return prev;
+          saveToStorage(WEEKLY_KEY, w);
+          return w;
+        });
       }
     }).catch(() => {});
   }, [user]);
@@ -64,14 +83,6 @@ export function useBrackets(user) {
       setDoc(doc(db, 'users', user.uid), { brackets: next }, { merge: true }).catch(() => {});
     }
     setBrackets(next);
-  }, [user]);
-
-  const persistWeekly = useCallback((next) => {
-    saveToStorage(WEEKLY_KEY, next);
-    if (user) {
-      setDoc(doc(db, 'users', user.uid), { weeklyBracket: next }, { merge: true }).catch(() => {});
-    }
-    setWeeklyState(next);
   }, [user]);
 
   // Initialize weekly + daily on mount so they're ready before the user taps anything.
@@ -210,9 +221,13 @@ export function useBrackets(user) {
 
   const weekNumber = getCurrentWeekNumber();
 
-  const recordWeeklyVote = useCallback((roundIndex, matchupIndex, winner) => {
-    const w = weeklyState;
-    if (!w || w.weekNumber !== weekNumber) return;
+  const recordWeeklyVote = useCallback((_roundIndex, _matchupIndex, winner) => {
+    const w = weeklyStateRef.current;
+    if (!w || !w.rounds || w.weekNumber !== getCurrentWeekNumber()) return;
+
+    // Always use the authoritative position from state — never trust params from stale closures.
+    const roundIndex = w.currentRound;
+    const matchupIndex = w.currentMatchupIndex;
 
     const rounds = w.rounds.map((round, ri) => {
       if (ri !== roundIndex) return round;
@@ -223,6 +238,7 @@ export function useBrackets(user) {
     });
 
     const currentRound = rounds[roundIndex];
+    if (!currentRound) return;
     const allDone = currentRound.every(m => m.winner !== null);
 
     let newRounds = rounds;
@@ -245,12 +261,13 @@ export function useBrackets(user) {
       }
     }
 
+    const prevVotes = w.votes || [];
     const votes = [
-      ...w.votes.filter(v => !(v.roundIndex === roundIndex && v.matchupIndex === matchupIndex)),
+      ...prevVotes.filter(v => !(v.roundIndex === roundIndex && v.matchupIndex === matchupIndex)),
       { roundIndex, matchupIndex, winnerId: `${winner.albumId}_${winner.songIndex}` },
     ];
 
-    persistWeekly({
+    const next = {
       ...w,
       rounds: newRounds,
       currentRound: newCurrentRound,
@@ -258,8 +275,21 @@ export function useBrackets(user) {
       status,
       winner: bracketWinner,
       votes,
-    });
-  }, [weeklyState, weekNumber, persistWeekly]);
+    };
+
+    saveToStorage(WEEKLY_KEY, next);
+    if (user) {
+      // Firestore doesn't support nested arrays (rounds is array-of-arrays).
+      // Serialize rounds to JSON string so the document is valid.
+      try {
+        const firestoreNext = { ...next, rounds: JSON.stringify(next.rounds) };
+        setDoc(doc(db, 'users', user.uid), { weeklyBracket: firestoreNext }, { merge: true }).catch(() => {});
+      } catch {
+        // skip Firestore sync if serialization fails
+      }
+    }
+    setWeeklyState(next);
+  }, [user]);
 
   // ── Daily bracket ───────────────────────────────────────────────────────────
 
@@ -282,7 +312,7 @@ export function useBrackets(user) {
       matchups,
       currentIndex: newIndex,
       done,
-      votes: [...d.votes, { matchupIndex, winnerId: `${winner.albumId}_${winner.songIndex}` }],
+      votes: [...(d.votes || []), { matchupIndex, winnerId: `${winner.albumId}_${winner.songIndex}` }],
     };
     saveToStorage(DAILY_KEY, next);
     setDailyState(next);

@@ -69,6 +69,17 @@ src/
                                error, connect, disconnect, playTrack, pause, resume, togglePlay
                              connect() redirects to Spotify OAuth; callback detected on app load via ?code=&state=eras_spotify
                              Requires VITE_SPOTIFY_CLIENT_ID env var; redirect URIs must be registered in Spotify dashboard
+    useBrackets.js         — all bracket state: personal brackets, weekly community bracket, daily matchup
+                             localStorage keys: 'eras_brackets', 'eras_weekly_bracket', 'eras_daily_bracket'
+                             weeklyState synced to Firestore field 'weeklyBracket' on users/{uid}
+                             FIRESTORE CONSTRAINT: rounds is an array-of-arrays → Firestore rejects nested arrays.
+                               Fix: serialize rounds as JSON.stringify(rounds) before writing to Firestore;
+                               parse back with JSON.parse when reading. See recordWeeklyVote + Firestore sync effect.
+                             STALE CLOSURE: recordWeeklyVote ignores the roundIndex/matchupIndex params passed in;
+                               reads w.currentRound / w.currentMatchupIndex from weeklyStateRef.current instead.
+                               weeklyStateRef is updated every render: weeklyStateRef.current = weeklyState.
+                             FIRESTORE SYNC GUARD: on login, Firestore weeklyBracket only overwrites local state
+                               if Firestore has MORE votes than local (prevents stale cloud read from reverting votes).
     useSettings.js         — app-wide settings; localStorage 'eras_settings' + Firestore sync
                              DEFAULTS: { showCategoryBars: true, spotifyAutoplay: true }
                              Note: Spotify start time is NOT in settings — it's developer-set in spotifyStartTimes.js
@@ -342,6 +353,18 @@ Displaying time-synced lyrics (line-by-line highlighted as the song plays) is te
 - Requires a new `VITE_MUSIXMATCH_KEY` env var in `.env` and Vercel
 
 **Recommendation:** Use lrclib at small scale, switch to Musixmatch when ready to monetize seriously. Do not build the UI until the licensing path is decided.
+
+### Bracket Feature — Architecture Notes
+
+#### Weekly bracket data model
+- State shape: `{ weekNumber, categoryName, seed, status, currentRound, currentMatchupIndex, contestants, rounds, votes, winner }`
+- `rounds` is an array of rounds; each round is an array of matchup objects `{ song1, song2, winner }`
+- `votes` is `[{ roundIndex, matchupIndex, winnerId }]` — tracks which matchups have been voted on
+- localStorage key: `eras_weekly_bracket`; Firestore field: `weeklyBracket` on `users/{uid}`
+- **Firestore nested-array constraint:** `rounds` must be serialized as `JSON.stringify(rounds)` before writing to Firestore, and `JSON.parse`d after reading. This is handled in `recordWeeklyVote` (write) and the Firestore sync `useEffect` (read) in `useBrackets.js`.
+
+#### Why the weekly bracket had a hard-to-find advancement bug
+Firestore's `setDoc` throws **synchronously** when data contains nested arrays. The `.catch()` on the returned Promise only handles async rejections — it doesn't catch a sync throw. So if the user is logged in, the sync throw aborted `recordWeeklyVote` before `setWeeklyState` could run, causing the same matchup to reload. The fix wraps the `setDoc` call in `try/catch` and serializes `rounds` to avoid the error entirely.
 
 ### Bracket Feature — Remaining Work
 
