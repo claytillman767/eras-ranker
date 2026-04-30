@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { SONGS } from '../data/albums';
-import { getBridgeLyrics } from '../data/bridgeLyrics';
+import { hasBridge } from '../data/lyricsAccess';
 
 // Key used to store all ratings in localStorage
 const STORAGE_KEY = 'eras_ratings';
@@ -154,9 +154,9 @@ export function useRatings(user) {
     if (!songRatings || !activeCategories) return null;
 
     // For bridgeless songs, combine bridge weight into lyrics weight
-    const hasBridge = getBridgeLyrics(albumId, songIndex) !== null;
+    const songHasBridge = hasBridge(albumId, songIndex);
     let effectiveCategories = activeCategories;
-    if (!hasBridge) {
+    if (!songHasBridge) {
       const bridgeCat = activeCategories.find(c => c.id === 'bridge');
       if (bridgeCat) {
         effectiveCategories = activeCategories

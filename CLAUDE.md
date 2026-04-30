@@ -56,6 +56,17 @@ src/
     snippetLyrics.js       — DO NOT edit by hand; regenerate: python parse_snippets.py
                              Best lyric snippet per song (bridge > chorus > verse 1)
                              Used as floating BG on shuffle screen + scroller on Lyrics screen
+    lyricsAccess.js        — Developer kill switch for ALL displayed lyric text in the app.
+                             Holds `LYRICS_DISPLAY_ENABLED` constant (currently `false` for
+                             copyright compliance — no lyrics shown until proper licensing).
+                             EVERY component that displays lyrics imports from here, NOT from
+                             bridgeLyrics.js / snippetLyrics.js directly. When the flag is off,
+                             getBridgeLyrics() and getSnippetLyrics() return null so all
+                             `lyric && (...)` UI blocks gracefully render nothing.
+                             Also exports hasBridge() / hasSnippet() — pure data checks that
+                             bypass the gate (used for auto-skip logic, score weighting, and
+                             the "Best Bridge" bracket eligibility filter).
+                             To re-enable lyrics: flip the constant to `true` and redeploy.
     spotifyStartTimes.js   — Developer-controlled Spotify playback start positions (NOT user-facing)
                              Key: "albumId_songIndex", Value: milliseconds into the track
                              Songs not listed start from 0. Edit this file to set per-song start points.

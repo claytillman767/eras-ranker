@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ALL_ALBUMS } from '../../data/albums';
 import { getEraColors } from '../../constants/eraColors';
-import { getSnippetLyrics } from '../../data/snippetLyrics';
-import { getBridgeLyrics } from '../../data/bridgeLyrics';
+import { getSnippetLyrics, getBridgeLyrics } from '../../data/lyricsAccess';
 import { BRACKET_CATEGORIES } from '../../constants/bracketCategories';
 
 // Length of each Spotify clip — matches the wireframe's "~15s clip" copy.

@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getBridgeLyrics } from '../data/bridgeLyrics';
-import { getSnippetLyrics } from '../data/snippetLyrics';
+import { getBridgeLyrics, getSnippetLyrics, hasBridge } from '../data/lyricsAccess';
 import SpotifyMiniPlayer from './SpotifyMiniPlayer';
 
 // Calibration phrases for each category × star level (index 0 = ★1).
@@ -760,7 +759,7 @@ export default function QuickScore({
   // • Replay (Skip on shuffle?) is always sorted to the front when present.
   const songsWithCats = songs.map(song => {
     let cats = activeCategories.map(cat =>
-      cat.id === 'bridge' && getBridgeLyrics(albumId, song.index) === null
+      cat.id === 'bridge' && !hasBridge(albumId, song.index)
         ? { ...cat, noBridge: true }
         : cat
     );

@@ -1,5 +1,5 @@
 import { SONGS } from '../data/albums';
-import { getBridgeLyrics } from '../data/bridgeLyrics';
+import { hasBridge } from '../data/lyricsAccess';
 
 // Bracket categories — each defines a head-to-head competition theme.
 // lyricsContext: which lyric section is most relevant to show during matchups.
@@ -13,7 +13,7 @@ export const BRACKET_CATEGORIES = [
     lyricsContext: 'bridge',
     spotifyContext: 'bridge',
     estimatedMinutes: 8,
-    songFilter: (albumId, songIndex) => getBridgeLyrics(albumId, songIndex) !== null,
+    songFilter: (albumId, songIndex) => hasBridge(albumId, songIndex),
   },
   {
     id: 'most-devastating',

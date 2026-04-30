@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react';
 import StarRating from './StarRating';
-import { getBridgeLyrics } from '../data/bridgeLyrics';
+import { getBridgeLyrics } from '../data/lyricsAccess';
 
 // Full scoring panel — opens below the selected song's action bar.
 export default function RatingPanel({ song, albumId, albumName, year, songRatings, activeCategories, compositeScore, onRate }) {

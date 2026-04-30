@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getEraColors } from '../../constants/eraColors';
-import { getSnippetLyrics } from '../../data/snippetLyrics';
-import { getBridgeLyrics } from '../../data/bridgeLyrics';
+import { getSnippetLyrics, getBridgeLyrics } from '../../data/lyricsAccess';
 import { BRACKET_CATEGORIES } from '../../constants/bracketCategories';
 import { ALBUMS } from '../../data/albums';
 
