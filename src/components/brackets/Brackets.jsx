@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useBrackets } from '../../hooks/useBrackets';
 import BracketHome from './BracketHome';
+import BracketTree from './BracketTree';
 import MatchupScreen from './MatchupScreen';
 import RoundTransition from './RoundTransition';
 import BracketResults from './BracketResults';
@@ -31,7 +32,7 @@ export default function Brackets({ user, spotify, isPro }) {
     const id = createBracket(categoryId, 'all');
     if (id) {
       setActiveBracketId(id);
-      setScreen('matchup');
+      setScreen('tree');
     }
   }
 
@@ -39,7 +40,7 @@ export default function Brackets({ user, spotify, isPro }) {
     const b = getBracket(bracketId);
     if (!b) return;
     setActiveBracketId(bracketId);
-    setScreen(b.status === 'complete' ? 'results' : 'matchup');
+    setScreen(b.status === 'complete' ? 'results' : 'tree');
   }
 
   function handleOpenWeekly() {
@@ -82,13 +83,23 @@ export default function Brackets({ user, spotify, isPro }) {
 
   // ── Screens ──────────────────────────────────────────────────────────────────
 
+  if (screen === 'tree' && activeBracket) {
+    return (
+      <BracketTree
+        bracket={activeBracket}
+        onStartVoting={() => setScreen('matchup')}
+        onClose={() => setScreen('home')}
+      />
+    );
+  }
+
   if (screen === 'matchup' && activeBracket) {
     return (
       <MatchupScreen
         bracket={activeBracket}
         categoryId={activeBracket.categoryId}
         onPick={handleMatchupPick}
-        onBack={() => setScreen('home')}
+        onBack={() => setScreen('tree')}
         onExit={() => setScreen('home')}
       />
     );

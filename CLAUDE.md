@@ -388,3 +388,19 @@ Firestore's `setDoc` throws **synchronously** when data contains nested arrays. 
 - Show a `SpotifyMiniPlayer` inline in the matchup card for whichever song is highlighted
 - For "Best Bridge" category, use `screen='bridge'` to seek to bridge timestamp
 - Gate behind `isPro` check — non-Pro users see cards without audio
+
+---
+
+## Pre-launch checklist
+**Must be done before the app is launched publicly. Do not skip.**
+
+### Verify bracket "Did you know?" trivia facts
+**Where:** `TRIVIA` array in `src/components/brackets/RoundTransition.jsx` (lines ~18–29), plus the default fallback fact below it.
+
+**Why this matters:** The 10 trivia facts shown between bracket rounds were written from general knowledge during feature development and have **not been fact-checked**. Specific claims (Grammy wins/categories, chart-week counts, certification milestones, songwriting backstories) need verification against authoritative sources before they're shown to real users — a wrong fact in a commercial Taylor Swift app is both a credibility hit and, depending on the claim, a defamation/misinformation risk.
+
+**What to do:**
+- Verify each of the 10 facts against a reliable source (official Grammy site, Billboard, RIAA, Taylor's verified interviews, etc.)
+- Fix or replace any that are inaccurate
+- Verify the default fallback fact too ("over 200 million records worldwide")
+- Consider expanding the list once verified — 10 facts is thin if a user plays many brackets

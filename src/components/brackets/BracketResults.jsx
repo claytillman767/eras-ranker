@@ -127,7 +127,7 @@ function drawResultCard(canvas, bracket, categoryId) {
   ctx.fillText('The Eras Ranker · erasranker.app', W / 2, 1010);
 }
 
-// Simplified bracket diagram
+// Simplified bracket diagram with responsive scaling
 function BracketDiagram({ bracket }) {
   const colors = {
     winner: '#d4af37',
@@ -135,61 +135,87 @@ function BracketDiagram({ bracket }) {
     text: '#f1f5f9',
   };
 
+  // Determine if a round is complete (all matchups have winners)
+  const isRoundComplete = (round) => round.every(m => m.winner !== null);
+
+  // Find if any rounds are incomplete (current/future)
+  const currentRoundIndex = bracket.rounds.findIndex(r => !isRoundComplete(r));
+  const hasCurrentRound = currentRoundIndex !== -1;
+
   return (
     <div style={{ width: '100%', overflowX: 'auto' }}>
-      {bracket.rounds.map((round, ri) => (
-        <div key={ri} style={{ marginBottom: 20 }}>
-          <div style={{
-            fontSize: 11,
-            fontWeight: 700,
-            color: '#64748b',
-            letterSpacing: '0.08em',
-            marginBottom: 8,
-          }}>
-            {ri === bracket.rounds.length - 1 ? 'FINAL' : `ROUND ${ri + 1}`}
+      {bracket.rounds.map((round, ri) => {
+        const isCurrent = hasCurrentRound && ri === currentRoundIndex;
+        const isPast = ri < currentRoundIndex;
+        const isFuture = ri > currentRoundIndex;
+
+        // Scale factors: current round large, past/future rounds small
+        const scale = isCurrent ? 1 : isFuture ? 0.65 : 0.8;
+        const marginBottom = isCurrent ? 24 : 16;
+        const gap = isCurrent ? 10 : 6;
+        const fontSize = isCurrent ? 12 : 10;
+        const padding = isCurrent ? '10px 12px' : '6px 8px';
+        const labelFontSize = isCurrent ? 12 : 10;
+        const opacity = isFuture ? 0.5 : 1;
+
+        return (
+          <div key={ri} style={{ marginBottom, opacity, transform: `scale(${scale})`, transformOrigin: 'top left', transition: 'all 0.2s ease' }}>
+            <div style={{
+              fontSize: labelFontSize,
+              fontWeight: 700,
+              color: isCurrent ? '#d4af37' : '#64748b',
+              letterSpacing: '0.08em',
+              marginBottom: isCurrent ? 10 : 6,
+            }}>
+              {ri === bracket.rounds.length - 1 ? 'FINAL' : `ROUND ${ri + 1}`}{isCurrent && ' ← CURRENT'}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap }}>
+              {round.map((m, mi) => (
+                <div key={mi} style={{
+                  display: 'flex',
+                  gap: isCurrent ? 8 : 4,
+                  alignItems: 'center',
+                }}>
+                  {[m.song1, m.song2].map((song, si) => {
+                    const isWinner = m.winner &&
+                      m.winner.albumId === song.albumId &&
+                      m.winner.songIndex === song.songIndex;
+                    const isPlaceholder = !song.name; // Future round, no opponent yet
+                    const albumColors = getEraColors(song.albumId);
+
+                    return (
+                      <div
+                        key={si}
+                        style={{
+                          flex: 1,
+                          padding,
+                          borderRadius: 8,
+                          background: isWinner
+                            ? `${albumColors.primary}33`
+                            : isPlaceholder
+                              ? 'rgba(255,255,255,0.02)'
+                              : 'rgba(255,255,255,0.04)',
+                          border: isWinner
+                            ? `1.5px solid ${albumColors.primary}88`
+                            : '1.5px solid rgba(255,255,255,0.08)',
+                          fontSize,
+                          fontWeight: isWinner ? 700 : 400,
+                          color: isPlaceholder ? '#334155' : (isWinner ? '#f1f5f9' : '#64748b'),
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {isWinner && '👑 '}{isPlaceholder ? '?' : song.name}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {round.map((m, mi) => (
-              <div key={mi} style={{
-                display: 'flex',
-                gap: 6,
-                alignItems: 'center',
-              }}>
-                {[m.song1, m.song2].map((song, si) => {
-                  const isWinner = m.winner &&
-                    m.winner.albumId === song.albumId &&
-                    m.winner.songIndex === song.songIndex;
-                  const albumColors = getEraColors(song.albumId);
-                  return (
-                    <div
-                      key={si}
-                      style={{
-                        flex: 1,
-                        padding: '7px 10px',
-                        borderRadius: 8,
-                        background: isWinner
-                          ? `${albumColors.primary}33`
-                          : 'rgba(255,255,255,0.04)',
-                        border: isWinner
-                          ? `1.5px solid ${albumColors.primary}88`
-                          : '1.5px solid rgba(255,255,255,0.08)',
-                        fontSize: 11,
-                        fontWeight: isWinner ? 700 : 400,
-                        color: isWinner ? '#f1f5f9' : '#64748b',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      {isWinner && '👑 '}{song.name}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
