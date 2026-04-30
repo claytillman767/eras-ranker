@@ -2,8 +2,11 @@ import { useState } from 'react';
 import Categories from './Categories';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
 
-// Compute the top-N rated songs across all albums by composite score.
-function getTopSongs(getCompositeScore, activeCategories, n = 10) {
+// Compute ALL rated songs across all albums, sorted by composite score
+// descending, with each item carrying its rank (1-indexed). Captures the
+// whole ranked universe so the preview can tell the user "Tim McGraw was
+// #29, now it's #8" for songs that climbed up from outside the top 10.
+function getAllRankedSongs(getCompositeScore, activeCategories) {
   const all = [];
   for (const album of ALL_ALBUMS) {
     const songs = SONGS[album.id] || [];
@@ -20,11 +23,12 @@ function getTopSongs(getCompositeScore, activeCategories, n = 10) {
       }
     }
   }
-  return all.sort((a, b) => b.score - a.score).slice(0, n);
+  all.sort((a, b) => b.score - a.score);
+  return all.map((s, i) => ({ ...s, rank: i + 1 }));
 }
 
-// Compute the top-N rated albums by album-level score.
-function getTopAlbums(getAlbumScore, activeCategories, n = 5) {
+// Compute ALL rated albums, sorted by album-level score, with rank.
+function getAllRankedAlbums(getAlbumScore, activeCategories) {
   return ALL_ALBUMS
     .map(album => ({
       id: album.id,
@@ -35,59 +39,76 @@ function getTopAlbums(getAlbumScore, activeCategories, n = 5) {
     }))
     .filter(a => a.score !== null)
     .sort((a, b) => b.score - a.score)
-    .slice(0, n);
+    .map((a, i) => ({ ...a, rank: i + 1 }));
 }
 
-// For each item in newList, look up its position in oldList. Returns
-// new array with `delta` (positions moved up: positive, down: negative,
-// or string 'new' for entries that weren't on the old list).
-function annotateDiff(oldList, newList) {
-  const oldMap = new Map(oldList.map((item, idx) => [item.id, idx]));
-  return newList.map((item, idx) => {
-    const oldPos = oldMap.get(item.id);
-    let delta;
-    if (oldPos === undefined) delta = 'new';
-    else delta = oldPos - idx; // + means moved up (lower idx)
-    return { ...item, oldPos, delta };
+// For each item in the new top-N, look up its old rank+score so we can
+// show "was #29 · +23 pts" style annotations. If the song wasn't rated
+// before, oldRank/oldScore/rankDelta/scoreDelta are all null.
+function annotateTopChanges(oldList, newList, topN) {
+  const oldMap = new Map(oldList.map(item => [item.id, item]));
+  return newList.slice(0, topN).map(item => {
+    const old = oldMap.get(item.id);
+    return {
+      ...item,
+      oldRank: old?.rank ?? null,
+      oldScore: old?.score ?? null,
+      rankDelta: old ? old.rank - item.rank : null,        // + = moved up (lower rank #)
+      scoreDelta: old ? item.score - old.score : null,     // + = score went up
+    };
   });
 }
 
-// Items present in oldList but absent from newList.
-function findDropouts(oldList, newList) {
-  const newIds = new Set(newList.map(i => i.id));
-  return oldList.filter(i => !newIds.has(i.id));
+// Items that WERE in the old top-N but no longer are. Each gets its new
+// rank/score so the dropouts list can say "was #4, now #15 · -12 pts".
+function findDropouts(oldList, newList, topN) {
+  const newMap = new Map(newList.map(item => [item.id, item]));
+  return oldList.slice(0, topN).filter(item => {
+    const newPos = newMap.get(item.id);
+    return !newPos || newPos.rank > topN;
+  }).map(oldItem => {
+    const newItem = newMap.get(oldItem.id);
+    return {
+      ...oldItem,
+      newRank: newItem?.rank ?? null,
+      newScore: newItem?.score ?? null,
+      scoreDelta: newItem ? newItem.score - oldItem.score : null,
+    };
+  });
 }
 
-// Visual delta indicator for a row in the preview.
-function DeltaBadge({ delta }) {
-  if (delta === 'new') {
-    return (
-      <span style={{
-        fontSize: 10, fontWeight: 700,
-        color: '#a855f7',
-        background: '#f3e8ff',
-        borderRadius: 4,
-        padding: '2px 6px',
-        letterSpacing: '0.04em',
-      }}>NEW</span>
-    );
+// Builds the "was #29 · +23 pts" or "was newly rated · score 70" change text
+// shown under each row of the preview. Returns null when nothing changed
+// (dash treatment).
+function changeLineParts(item) {
+  // Brand-new song that wasn't rated before this session
+  // (oldRank null because the song had no composite score at snapshot time)
+  if (item.oldRank == null) {
+    return [{ text: 'newly rated', color: '#a855f7' }];
   }
-  if (delta === 0) {
-    return <span style={{ fontSize: 11, color: '#9ca3af' }}>—</span>;
+  const parts = [];
+  if (item.oldRank !== item.rank) {
+    parts.push({ text: `was #${item.oldRank}`, color: '#6b7280' });
   }
-  if (delta > 0) {
-    return <span style={{ fontSize: 11, color: '#16a34a', fontWeight: 600 }}>↑{delta}</span>;
+  if (item.scoreDelta !== 0) {
+    const positive = item.scoreDelta > 0;
+    parts.push({
+      text: `${positive ? '+' : '−'}${Math.abs(item.scoreDelta)} pts`,
+      color: positive ? '#16a34a' : '#dc2626',
+    });
   }
-  return <span style={{ fontSize: 11, color: '#dc2626', fontWeight: 600 }}>↓{Math.abs(delta)}</span>;
+  if (parts.length === 0) return null; // truly unchanged
+  return parts;
 }
 
 function PreviewRow({ rank, item, isAlbum }) {
+  const changes = changeLineParts(item);
   return (
     <div style={{
       display: 'flex',
       alignItems: 'center',
       gap: 10,
-      padding: '8px 0',
+      padding: '10px 0',
       borderBottom: '0.5px solid #f3f4f6',
     }}>
       <span style={{ fontSize: 12, color: '#9ca3af', width: 22, textAlign: 'center', fontWeight: 500 }}>
@@ -102,15 +123,54 @@ function PreviewRow({ rank, item, isAlbum }) {
             ? `${item.icon} ${item.name}`
             : item.name}
         </div>
-        {!isAlbum && (
-          <div style={{ fontSize: 11, color: '#9ca3af' }}>
-            {item.albumIcon} {item.albumName}
-          </div>
-        )}
+        <div style={{
+          fontSize: 11, color: '#9ca3af',
+          display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6,
+          marginTop: 2,
+        }}>
+          {!isAlbum && <span>{item.albumIcon} {item.albumName}</span>}
+          {changes && (
+            <>
+              {!isAlbum && <span style={{ color: '#d1d5db' }}>·</span>}
+              {changes.map((part, i) => (
+                <span key={i} style={{ color: part.color, fontWeight: 500 }}>
+                  {part.text}
+                  {i < changes.length - 1 && <span style={{ color: '#d1d5db', marginLeft: 6 }}>·</span>}
+                </span>
+              ))}
+            </>
+          )}
+          {!changes && <span style={{ color: '#9ca3af' }}>unchanged</span>}
+        </div>
       </div>
-      <DeltaBadge delta={item.delta} />
-      <span style={{ fontSize: 13, fontWeight: 500, color: '#a855f7', width: 28, textAlign: 'right' }}>
+      <span style={{ fontSize: 14, fontWeight: 600, color: '#a855f7', width: 32, textAlign: 'right' }}>
         {item.score}
+      </span>
+    </div>
+  );
+}
+
+// One row in the "Off the top N" dropout list. Shows the song's old rank,
+// new rank (if still ranked), and score delta.
+function DropoutRow({ item, isAlbum }) {
+  return (
+    <div style={{ fontSize: 12, color: '#6b7280', padding: '4px 0', lineHeight: 1.4 }}>
+      • {isAlbum ? `${item.icon} ${item.name}` : item.name}
+      {!isAlbum && <span style={{ color: '#9ca3af' }}> ({item.albumName})</span>}
+      <span style={{ color: '#9ca3af' }}>
+        {' '}— was #{item.rank}
+        {item.newRank != null
+          ? `, now #${item.newRank}`
+          : ', no longer ranked'}
+        {item.scoreDelta != null && item.scoreDelta !== 0 && (
+          <span style={{
+            color: item.scoreDelta > 0 ? '#16a34a' : '#dc2626',
+            fontWeight: 500,
+            marginLeft: 6,
+          }}>
+            {item.scoreDelta > 0 ? '+' : '−'}{Math.abs(item.scoreDelta)} pts
+          </span>
+        )}
       </span>
     </div>
   );
@@ -162,12 +222,7 @@ function Preview({ songDiff, albumDiff, songDropouts, albumDropouts, onDone }) {
                   Off the top {songDiff.length}:
                 </div>
                 {songDropouts.map(s => (
-                  <div key={s.id} style={{
-                    fontSize: 12, color: '#6b7280',
-                    padding: '3px 0',
-                  }}>
-                    • {s.name} <span style={{ color: '#9ca3af' }}>({s.albumName})</span>
-                  </div>
+                  <DropoutRow key={s.id} item={s} isAlbum={false} />
                 ))}
               </div>
             )}
@@ -193,12 +248,7 @@ function Preview({ songDiff, albumDiff, songDropouts, albumDropouts, onDone }) {
                   Off the top {albumDiff.length}:
                 </div>
                 {albumDropouts.map(a => (
-                  <div key={a.id} style={{
-                    fontSize: 12, color: '#6b7280',
-                    padding: '3px 0',
-                  }}>
-                    • {a.icon} {a.name}
-                  </div>
+                  <DropoutRow key={a.id} item={a} isAlbum />
                 ))}
               </div>
             )}
@@ -245,33 +295,39 @@ export default function CategoriesEditor({
   // ...everything Categories needs (forwarded as a single object below)
   ...categoriesProps
 }) {
-  // Snapshot once on first render — captures the rankings BEFORE any edits.
+  // Snapshot the FULL ranked universe (not just top 10) once on first render.
+  // Capturing every song lets the preview say "Tim McGraw was #29" rather
+  // than just "NEW" — which is meaningless if you're trying to understand
+  // how much your tweaks moved a song.
   const [snapshot] = useState(() => ({
-    songs: getTopSongs(getCompositeScore, categoriesProps.activeCategories, 10),
-    albums: getTopAlbums(getAlbumScore, categoriesProps.activeCategories, 5),
+    songs: getAllRankedSongs(getCompositeScore, categoriesProps.activeCategories),
+    albums: getAllRankedAlbums(getAlbumScore, categoriesProps.activeCategories),
   }));
 
   const [preview, setPreview] = useState(null);
 
   function handleDone() {
     // Use the LATEST activeCategories (after user's edits) to recompute.
-    const newSongs = getTopSongs(getCompositeScore, categoriesProps.activeCategories, 10);
-    const newAlbums = getTopAlbums(getAlbumScore, categoriesProps.activeCategories, 5);
+    const newAllSongs = getAllRankedSongs(getCompositeScore, categoriesProps.activeCategories);
+    const newAllAlbums = getAllRankedAlbums(getAlbumScore, categoriesProps.activeCategories);
 
-    const songDiff = annotateDiff(snapshot.songs, newSongs);
-    const albumDiff = annotateDiff(snapshot.albums, newAlbums);
-    const songDropouts = findDropouts(snapshot.songs, newSongs);
-    const albumDropouts = findDropouts(snapshot.albums, newAlbums);
+    const TOP_SONGS = 10;
+    const TOP_ALBUMS = 5;
+    const songDiff = annotateTopChanges(snapshot.songs, newAllSongs, TOP_SONGS);
+    const albumDiff = annotateTopChanges(snapshot.albums, newAllAlbums, TOP_ALBUMS);
+    const songDropouts = findDropouts(snapshot.songs, newAllSongs, TOP_SONGS);
+    const albumDropouts = findDropouts(snapshot.albums, newAllAlbums, TOP_ALBUMS);
 
-    // If neither the top-songs ordering nor the top-albums ordering changed,
-    // skip the preview screen entirely — it would have nothing useful to show.
-    const orderingUnchanged =
-      songDiff.every(s => s.delta === 0) &&
-      albumDiff.every(a => a.delta === 0) &&
+    // Skip preview only if literally nothing changed — every top item kept its
+    // exact rank AND its exact score, with no dropouts. Any score drift (even
+    // without rank movement) is worth showing.
+    const literallyNoChange =
+      songDiff.every(s => s.rankDelta === 0 && s.scoreDelta === 0) &&
+      albumDiff.every(a => a.rankDelta === 0 && a.scoreDelta === 0) &&
       songDropouts.length === 0 &&
       albumDropouts.length === 0;
 
-    if (orderingUnchanged) {
+    if (literallyNoChange) {
       onClose();
       return;
     }
