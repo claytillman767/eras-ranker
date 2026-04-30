@@ -14,6 +14,10 @@ const TREE_STYLE = `
 function InteractiveBracketTree({ bracket, onMatchupClick, currentRoundIndex, currentMatchupIndex }) {
   const isRoundComplete = (round) => round.every(m => m.winner !== null);
 
+  if (!bracket || !bracket.rounds || bracket.rounds.length === 0) {
+    return <div style={{ color: '#94a3b8', padding: '20px' }}>No bracket data available</div>;
+  }
+
   return (
     <div style={{ width: '100%', overflowX: 'auto' }}>
       {bracket.rounds.map((round, ri) => {
