@@ -2,11 +2,12 @@ import { useState, useCallback } from 'react';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
 
 // localStorage keys
-const KEY_IS_PRO           = 'eras_is_pro';
-const KEY_ENABLED_EXTRAS   = 'eras_enabled_extras';
-const KEY_CUSTOM_CATS      = 'eras_custom_categories';
-const KEY_WEIGHTS          = 'eras_category_weights';
-const KEY_DISABLED_CUSTOMS = 'eras_disabled_customs';
+const KEY_IS_PRO            = 'eras_is_pro';
+const KEY_ENABLED_EXTRAS    = 'eras_enabled_extras';
+const KEY_CUSTOM_CATS       = 'eras_custom_categories';
+const KEY_WEIGHTS           = 'eras_category_weights';
+const KEY_DISABLED_CUSTOMS  = 'eras_disabled_customs';
+const KEY_DISABLED_DEFAULTS = 'eras_disabled_defaults';
 
 export const CUSTOM_CAT_LIMIT = 13;
 
@@ -27,6 +28,10 @@ function loadDisabledCustoms() {
   try { return new Set(JSON.parse(localStorage.getItem(KEY_DISABLED_CUSTOMS) || '[]')); }
   catch { return new Set(); }
 }
+function loadDisabledDefaults() {
+  try { return new Set(JSON.parse(localStorage.getItem(KEY_DISABLED_DEFAULTS) || '[]')); }
+  catch { return new Set(); }
+}
 
 export function usePro() {
   const [isPro, setIsPro]               = useState(loadPro);
@@ -34,6 +39,7 @@ export function usePro() {
   const [customCategories, setCustomCategories] = useState(loadCustom);
   const [categoryWeights, setCategoryWeightsState] = useState(loadWeights);
   const [disabledCustoms, setDisabledCustoms] = useState(loadDisabledCustoms);
+  const [disabledDefaults, setDisabledDefaults] = useState(loadDisabledDefaults);
 
   // Mock unlock — sets isPro immediately without any payment.
   // Replace this with Stripe Checkout in production.
@@ -58,6 +64,18 @@ export function usePro() {
       const next = new Set(prev);
       if (next.has(id)) { next.delete(id); } else { next.add(id); }
       localStorage.setItem(KEY_DISABLED_CUSTOMS, JSON.stringify([...next]));
+      return next;
+    });
+  }, []);
+
+  // Toggle a default category on/off. Stored star ratings are preserved —
+  // turning the category off just removes it from the active set so it stops
+  // counting toward composite scores. Turning it back on re-applies them.
+  const toggleDefault = useCallback((id) => {
+    setDisabledDefaults(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      localStorage.setItem(KEY_DISABLED_DEFAULTS, JSON.stringify([...next]));
       return next;
     });
   }, []);
@@ -113,7 +131,7 @@ export function usePro() {
   const getActiveCategories = useCallback(() => {
     // Collect all active categories, using stored weight overrides when present
     const active = [
-      ...DEFAULT_CATEGORIES.map(c => ({ ...c, weight: categoryWeights[c.id] ?? c.weight })),
+      ...DEFAULT_CATEGORIES.filter(c => !disabledDefaults.has(c.id)).map(c => ({ ...c, weight: categoryWeights[c.id] ?? c.weight })),
       ...EXTRA_CATEGORIES.filter(c => enabledExtras.has(c.id)).map(c => ({ ...c, weight: categoryWeights[c.id] ?? 10 })),
       ...customCategories.filter(c => !disabledCustoms.has(c.id)).map(c => ({ ...c, weight: categoryWeights[c.id] ?? c.weight })),
     ];
@@ -137,7 +155,7 @@ export function usePro() {
     }
 
     return scaled;
-  }, [enabledExtras, customCategories, categoryWeights, disabledCustoms]);
+  }, [enabledExtras, customCategories, categoryWeights, disabledCustoms, disabledDefaults]);
 
   return {
     isPro,
@@ -149,6 +167,8 @@ export function usePro() {
     removeCustomCategory,
     disabledCustoms,
     toggleCustom,
+    disabledDefaults,
+    toggleDefault,
     setCustomCategoryType,
     categoryWeights,
     setCategoryWeight,

@@ -3,7 +3,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
-import Categories from './Categories';
+import CategoriesEditor from './CategoriesEditor';
 
 // Settings tab — app-wide display and behaviour preferences.
 export default function Settings({
@@ -11,10 +11,13 @@ export default function Settings({
   user, signIn, signOut,
   ratings, activeCategories, customCategories,
   enabledExtras, toggleExtra,
-  addCustomCategory, removeCustomCategory, disabledCustoms, toggleCustom, setCustomCategoryType,
+  addCustomCategory, removeCustomCategory, disabledCustoms, toggleCustom,
+  disabledDefaults, toggleDefault, setCustomCategoryType,
   categoryWeights, setCategoryWeight, resetCategoryWeights,
+  getCompositeScore, getAlbumScore,
 }) {
   const [showProModal, setShowProModal] = useState(false);
+  const [showCategoriesEditor, setShowCategoriesEditor] = useState(false);
 
   // Dev/test utility — wipes all bracket data so the flow can be replayed.
   async function handleClearBracketData() {
@@ -459,22 +462,57 @@ export default function Settings({
 
       {/* ── Rating Categories section ── */}
       <SectionHeader>Rating Categories</SectionHeader>
-      <Categories
-        isPro={isPro}
-        unlockPro={unlockPro}
-        enabledExtras={enabledExtras}
-        toggleExtra={toggleExtra}
-        customCategories={customCategories}
-        addCustomCategory={addCustomCategory}
-        removeCustomCategory={removeCustomCategory}
-        disabledCustoms={disabledCustoms}
-        toggleCustom={toggleCustom}
-        setCustomCategoryType={setCustomCategoryType}
-        activeCategories={activeCategories}
-        categoryWeights={categoryWeights}
-        setCategoryWeight={setCategoryWeight}
-        resetCategoryWeights={resetCategoryWeights}
-      />
+      <button
+        onClick={() => setShowCategoriesEditor(true)}
+        style={{
+          width: '100%',
+          background: '#ffffff',
+          border: '0.5px solid #e5e7eb',
+          borderRadius: 12,
+          padding: '14px 16px',
+          marginBottom: 28,
+          textAlign: 'left',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: '#111827', marginBottom: 2 }}>
+            Edit categories &amp; weights
+          </div>
+          <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4 }}>
+            {activeCategories.length} active · turn defaults on/off, tune weights, see how your top songs and albums shift.
+          </div>
+        </div>
+        <span style={{ fontSize: 18, color: '#a855f7', flexShrink: 0 }}>→</span>
+      </button>
+
+      {showCategoriesEditor && (
+        <CategoriesEditor
+          onClose={() => setShowCategoriesEditor(false)}
+          isPro={isPro}
+          unlockPro={unlockPro}
+          enabledExtras={enabledExtras}
+          toggleExtra={toggleExtra}
+          customCategories={customCategories}
+          addCustomCategory={addCustomCategory}
+          removeCustomCategory={removeCustomCategory}
+          disabledCustoms={disabledCustoms}
+          toggleCustom={toggleCustom}
+          disabledDefaults={disabledDefaults}
+          toggleDefault={toggleDefault}
+          setCustomCategoryType={setCustomCategoryType}
+          activeCategories={activeCategories}
+          categoryWeights={categoryWeights}
+          setCategoryWeight={setCategoryWeight}
+          resetCategoryWeights={resetCategoryWeights}
+          getCompositeScore={getCompositeScore}
+          getAlbumScore={getAlbumScore}
+        />
+      )}
 
       {/* ── Data section ── */}
       <SectionHeader>Data</SectionHeader>

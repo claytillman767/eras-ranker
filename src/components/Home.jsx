@@ -2,6 +2,7 @@
 // Sections: signed-out backup warning, catalog progress hero, continue card,
 // daily prompt, and an album checklist sorted by user state.
 import { ALBUMS, ALL_ALBUMS, SONGS } from '../data/albums';
+import SpotifyAttribution from './SpotifyAttribution';
 
 // Google "G" SVG — same one used in App.jsx
 function GoogleIcon() {
@@ -59,6 +60,7 @@ export default function Home({
   onContinueRating,
   onSelectAlbum,
   onGoToAlbums,
+  spotifyAlbumArt,
 }) {
   // ── Computed totals ──────────────────────────────────────────────
   const totalSongs = ALL_ALBUMS.reduce((sum, a) => sum + (SONGS[a.id]?.length || 0), 0);
@@ -455,6 +457,12 @@ export default function Home({
           </div>
         </div>
 
+        {/* Spotify attribution — only shown when album art is being displayed */}
+        <SpotifyAttribution
+          visible={!!spotifyAlbumArt && Object.keys(spotifyAlbumArt).length > 0}
+          style={{ marginBottom: 8 }}
+        />
+
         {sortedAlbums.slice(0, 6).map(album => {
           const total = SONGS[album.id]?.length || 0;
           const rated = getRatedCount(album.id);
@@ -480,15 +488,24 @@ export default function Home({
                 width: 40,
                 height: 40,
                 borderRadius: 8,
-                background: album.color,
+                background: spotifyAlbumArt?.[album.id] ? '#000' : album.color,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: 18,
                 flexShrink: 0,
                 position: 'relative',
+                overflow: 'hidden',
               }}>
-                {album.icon}
+                {spotifyAlbumArt?.[album.id] ? (
+                  <img
+                    src={spotifyAlbumArt[album.id]}
+                    alt={album.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                ) : (
+                  album.icon
+                )}
                 {done && (
                   <div style={{
                     position: 'absolute',

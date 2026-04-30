@@ -64,6 +64,8 @@ export default function App() {
     removeCustomCategory,
     disabledCustoms,
     toggleCustom,
+    disabledDefaults,
+    toggleDefault,
     setCustomCategoryType,
     categoryWeights,
     setCategoryWeight,
@@ -368,6 +370,7 @@ export default function App() {
             onContinueRating={handleContinueRating}
             onSelectAlbum={handleSelectAlbum}
             onGoToAlbums={() => setActiveTab('albums')}
+            spotifyAlbumArt={isPro ? spotify.albumArt : null}
           />
         )}
 
@@ -428,6 +431,7 @@ export default function App() {
             getAlbumScore={getAlbumScore}
             activeCategories={activeCategories}
             ratings={ratings}
+            spotifyAlbumArt={isPro ? spotify.albumArt : null}
           />
         )}
 
@@ -450,10 +454,14 @@ export default function App() {
             removeCustomCategory={removeCustomCategory}
             disabledCustoms={disabledCustoms}
             toggleCustom={toggleCustom}
+            disabledDefaults={disabledDefaults}
+            toggleDefault={toggleDefault}
             setCustomCategoryType={setCustomCategoryType}
             categoryWeights={categoryWeights}
             setCategoryWeight={setCategoryWeight}
             resetCategoryWeights={resetCategoryWeights}
+            getCompositeScore={getCompositeScore}
+            getAlbumScore={getAlbumScore}
           />
         )}
       </div>

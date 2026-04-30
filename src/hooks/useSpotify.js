@@ -188,8 +188,15 @@ async function searchTrackUri(songName, albumName, token) {
 // ── Main hook ─────────────────────────────────────────────────────────────────
 
 export function useSpotify() {
-  // Whether a valid token exists in localStorage
-  const [isConnected, setIsConnected]     = useState(() => !!loadToken());
+  // Persistent connection: treat the user as connected if EITHER
+  //   - a still-valid access token is in localStorage, OR
+  //   - a refresh token is in localStorage (the SDK's getOAuthToken callback
+  //     will use it to mint a fresh access token automatically).
+  // Without this, an expired access token would force the user to re-link
+  // Spotify on every visit even though Spotify's refresh token is still good.
+  const [isConnected, setIsConnected]     = useState(() => {
+    return !!loadToken() || !!localStorage.getItem(REFRESH_KEY);
+  });
   const [isLoading, setIsLoading]         = useState(false);
   const [playerReady, setPlayerReady]     = useState(false);
   const [isPlaying, setIsPlaying]         = useState(false);

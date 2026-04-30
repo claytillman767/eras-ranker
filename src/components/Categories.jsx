@@ -64,6 +64,8 @@ export default function Categories({
   removeCustomCategory,
   disabledCustoms,
   toggleCustom,
+  disabledDefaults,
+  toggleDefault,
   setCustomCategoryType,
   activeCategories,
   categoryWeights,
@@ -161,30 +163,46 @@ export default function Categories({
           </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {DEFAULT_CATEGORIES.map(cat => (
-            <div key={cat.id} style={{
-              background: '#ffffff',
-              border: '0.5px solid #e5e7eb',
-              borderRadius: 8,
-              padding: '10px 12px',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{cat.name}</span>
-                {!isPro && (
-                  <span style={{ fontSize: 12, color: '#9ca3af' }}>{normalizedPct(cat.id)}%</span>
+          {DEFAULT_CATEGORIES.map(cat => {
+            const isOn = !disabledDefaults?.has(cat.id);
+            return (
+              <div key={cat.id} style={{
+                background: '#ffffff',
+                border: '0.5px solid #e5e7eb',
+                borderRadius: 8,
+                padding: '10px 12px',
+                opacity: isOn ? 1 : 0.55,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <input
+                    type="checkbox"
+                    checked={isOn}
+                    onChange={() => toggleDefault?.(cat.id)}
+                    style={{ accentColor: '#a855f7', width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{cat.name}</span>
+                      {!isPro && isOn && (
+                        <span style={{ fontSize: 12, color: '#9ca3af' }}>{normalizedPct(cat.id)}%</span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
+                      {isOn ? cat.description : 'Off — your existing ratings are saved and will reapply if turned back on.'}
+                    </div>
+                  </div>
+                </div>
+                {isPro && isOn && (
+                  <WeightSlider
+                    catId={cat.id}
+                    rawWeight={rawWeight(cat)}
+                    normalizedPct={normalizedPct(cat.id)}
+                    onChange={setCategoryWeight}
+                  />
                 )}
               </div>
-              <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{cat.description}</div>
-              {isPro && (
-                <WeightSlider
-                  catId={cat.id}
-                  rawWeight={rawWeight(cat)}
-                  normalizedPct={normalizedPct(cat.id)}
-                  onChange={setCategoryWeight}
-                />
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

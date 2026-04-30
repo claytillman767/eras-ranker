@@ -2,9 +2,10 @@ import { useState } from 'react';
 import ScoreBar from './ScoreBar';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
 import RankingCard from './RankingCard';
+import SpotifyAttribution from './SpotifyAttribution';
 
 // Rankings tab — shows top songs or top albums sorted by composite score.
-export default function Rankings({ getCompositeScore, getAlbumScore, activeCategories, ratings }) {
+export default function Rankings({ getCompositeScore, getAlbumScore, activeCategories, ratings, spotifyAlbumArt }) {
   const [view, setView] = useState('songs'); // 'songs' | 'albums'
 
   // Build top songs list: all rated songs across all albums, sorted desc, max 20
@@ -105,30 +106,64 @@ export default function Rankings({ getCompositeScore, getAlbumScore, activeCateg
         </div>
       ))}
 
+      {/* Spotify attribution — only when viewing albums and at least one cover is available */}
+      {view === 'albums' && (
+        <SpotifyAttribution
+          visible={!!spotifyAlbumArt && Object.keys(spotifyAlbumArt).length > 0}
+          style={{ marginBottom: 6 }}
+        />
+      )}
+
       {/* Albums leaderboard */}
-      {view === 'albums' && topAlbums.map((album, i) => (
-        <div key={album.id} style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          padding: '8px 0',
-          borderBottom: '0.5px solid #f3f4f6',
-        }}>
-          <span style={{ fontSize: i < 3 ? 16 : 12, color: '#9ca3af', width: 28, textAlign: 'center' }}>
-            {rankIcon(i)}
-          </span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 500, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {album.icon} {album.name}
+      {view === 'albums' && topAlbums.map((album, i) => {
+        const artUrl = spotifyAlbumArt?.[album.id];
+        return (
+          <div key={album.id} style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '8px 0',
+            borderBottom: '0.5px solid #f3f4f6',
+          }}>
+            <span style={{ fontSize: i < 3 ? 16 : 12, color: '#9ca3af', width: 28, textAlign: 'center' }}>
+              {rankIcon(i)}
+            </span>
+            {/* Album art tile (Spotify art when connected, color/emoji otherwise) */}
+            <div style={{
+              width: 36,
+              height: 36,
+              borderRadius: 6,
+              background: artUrl ? '#000' : album.color,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 16,
+              flexShrink: 0,
+              overflow: 'hidden',
+            }}>
+              {artUrl ? (
+                <img
+                  src={artUrl}
+                  alt={album.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+              ) : (
+                album.icon
+              )}
             </div>
-            <div style={{ fontSize: 11, color: '#9ca3af' }}>{album.year}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 500, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {album.name}
+              </div>
+              <div style={{ fontSize: 11, color: '#9ca3af' }}>{album.year}</div>
+            </div>
+            <ScoreBar score={album.score} maxScore={maxScore} />
+            <span style={{ fontSize: 13, fontWeight: 500, color: '#a855f7', width: 28, textAlign: 'right' }}>
+              {album.score}
+            </span>
           </div>
-          <ScoreBar score={album.score} maxScore={maxScore} />
-          <span style={{ fontSize: 13, fontWeight: 500, color: '#a855f7', width: 28, textAlign: 'right' }}>
-            {album.score}
-          </span>
-        </div>
-      ))}
+        );
+      })}
 
       {/* Shareable ranking card */}
       <RankingCard
