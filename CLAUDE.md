@@ -260,7 +260,7 @@ service cloud.firestore {
 - **Config keys:** stored in `.env` as `VITE_FIREBASE_*` variables
 
 ## Service worker (`public/sw.js`)
-- Cache name: `eras-ranker-v2` (bump version to force cache clear on all devices after major deploys)
+- Cache name: `eras-ranker-v3` (bump version to force cache clear on all devices after major deploys)
 - Navigation requests (`mode === 'navigate'`): **network first**, falls back to cached index.html only if offline
   — this ensures users always get the latest `index.html` after a Vercel deploy without needing hard refresh
 - Static assets (same-origin JS/CSS/images): cache first, fall back to network
