@@ -1,7 +1,7 @@
 // Home tab — progress-first dashboard shown when the app opens.
 // Sections: signed-out backup warning, catalog progress hero, continue card,
 // daily prompt, and an album checklist sorted by user state.
-import { ALBUMS, SONGS } from '../data/albums';
+import { ALBUMS, ALL_ALBUMS, SONGS } from '../data/albums';
 
 // Google "G" SVG — same one used in App.jsx
 function GoogleIcon() {
@@ -61,8 +61,8 @@ export default function Home({
   onGoToAlbums,
 }) {
   // ── Computed totals ──────────────────────────────────────────────
-  const totalSongs = ALBUMS.reduce((sum, a) => sum + (SONGS[a.id]?.length || 0), 0);
-  const totalRated = ALBUMS.reduce((sum, a) => sum + getRatedCount(a.id), 0);
+  const totalSongs = ALL_ALBUMS.reduce((sum, a) => sum + (SONGS[a.id]?.length || 0), 0);
+  const totalRated = ALL_ALBUMS.reduce((sum, a) => sum + getRatedCount(a.id), 0);
   const pct = totalSongs > 0 ? Math.round((totalRated / totalSongs) * 100) : 0;
 
   // ── User state detection ─────────────────────────────────────────

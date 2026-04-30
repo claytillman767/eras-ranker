@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getBridgeLyrics } from '../data/bridgeLyrics';
 import { getSnippetLyrics } from '../data/snippetLyrics';
 import SpotifyMiniPlayer from './SpotifyMiniPlayer';
@@ -703,6 +703,8 @@ export default function QuickScore({
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showBridgeSuggestion, setShowBridgeSuggestion] = useState(false);
   const [bridgeSuggestionToggle, setBridgeSuggestionToggle] = useState(true);
+  const [isVisible, setIsVisible] = useState(true);
+  const pendingRef = useRef(null);
 
   const isSingleSong = songs.length === 1;
 
@@ -734,6 +736,24 @@ export default function QuickScore({
       spotify?.pause?.();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Fade transition: after content fades out, commit pending state, fade back in ─
+  useEffect(() => {
+    if (!isVisible && pendingRef.current) {
+      const t = setTimeout(() => {
+        const next = pendingRef.current;
+        pendingRef.current = null;
+        if (next.done) {
+          setDone(true);
+        } else {
+          if (next.songPos !== undefined) setSongPos(next.songPos);
+          setCatPos(next.catPos ?? 0);
+        }
+        setIsVisible(true);
+      }, 150);
+      return () => clearTimeout(t);
+    }
+  }, [isVisible]);
 
   // Pre-compute effective categories per song.
   // • Bridge is skipped for songs without bridge lyrics.
@@ -781,28 +801,34 @@ export default function QuickScore({
   const isFirstStep = songPos === 0 && catPos === 0;
 
   function goBack() {
-    if (catPos > 0) {
-      setCatPos(catPos - 1);
-    } else if (songPos > 0) {
-      const prevSong = songsWithCats[songPos - 1];
-      setSongPos(songPos - 1);
-      setCatPos(prevSong.cats.length - 1);
-    }
+    if (isFirstStep) return;
+    pendingRef.current = catPos > 0
+      ? { catPos: catPos - 1 }
+      : { songPos: songPos - 1, catPos: songsWithCats[songPos - 1].cats.length - 1 };
+    setIsVisible(false);
   }
 
   function advance() {
     const nextCat = catPos + 1;
-    if (nextCat >= currentSong.cats.length) {
-      const nextSong = songPos + 1;
-      if (nextSong >= songsWithCats.length) {
-        setDone(true);
-      } else {
-        setSongPos(nextSong);
-        setCatPos(0);
-      }
+    let next;
+    if (nextCat < currentSong.cats.length) {
+      next = { catPos: nextCat };
     } else {
-      setCatPos(nextCat);
+      const nextSong = songPos + 1;
+      next = nextSong < songsWithCats.length
+        ? { songPos: nextSong, catPos: 0 }
+        : { done: true };
     }
+
+    // ShuffleScreen already handles its own 720ms fade-out; update state directly
+    if (currentCat?.id === 'replay') {
+      if (next.done) { setDone(true); }
+      else { if (next.songPos !== undefined) setSongPos(next.songPos); setCatPos(next.catPos ?? 0); }
+      return;
+    }
+
+    pendingRef.current = next;
+    setIsVisible(false);
   }
 
   function handleRate(val) {
@@ -898,14 +924,7 @@ export default function QuickScore({
         </button>
       </div>
 
-      {/* ── No-bridge notice ── */}
-      {isNoBridgeNotice ? (
-        <NoBridgeScreen
-          key={`${songPos}-nobridge`}
-          songName={currentSong.name}
-          onContinue={advance}
-        />
-      ) : isShuffleQuestion ? (
+      {isShuffleQuestion ? (
         <ShuffleScreen
           key={`${songPos}-shuffle`}
           song={currentSong}
@@ -915,9 +934,29 @@ export default function QuickScore({
           onPick={handleShufflePick}
         />
       ) : (
+        /* ── Fading wrapper — covers both NoBridgeScreen and star questions ── */
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            opacity: isVisible ? 1 : 0,
+            transition: 'opacity 0.15s ease',
+            pointerEvents: isVisible ? 'auto' : 'none',
+          }}
+        >
+
+      {/* ── No-bridge notice ── */}
+      {isNoBridgeNotice ? (
+        <NoBridgeScreen
+          key={`${songPos}-nobridge`}
+          songName={currentSong.name}
+          onContinue={advance}
+        />
+      ) : (
         /* ── Normal star-rating question ── */
         <div
-          key={`${songPos}-${catPos}`}
           style={{
             position: 'relative',
             overflow: 'hidden',
@@ -1082,6 +1121,8 @@ export default function QuickScore({
           </div>
 
           </div>
+        </div>
+      )}
         </div>
       )}
 
