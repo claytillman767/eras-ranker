@@ -20,6 +20,9 @@ dist-ssr
 # Claude Code local settings (may contain API keys)
 .claude/settings.local.json
 
+# UI design handoffs from external AI design tool — reference only, not part of the app
+Claude Design/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

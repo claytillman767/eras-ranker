@@ -10,6 +10,18 @@ This is a **commercial product**, not a hobby or fan project. Treat every decisi
 - **Music lifecycle:** Any screen that plays music owns the full start-to-stop. Music begins when the screen opens (or a phase starts) and stops when the screen closes or unmounts. Never leave audio playing with no way to control it.
 - **Play/pause always visible:** Whenever audio is playing or has played on the current screen, a play/pause button must be visible without scrolling — typically pinned in the header. This rule applies to every screen that uses Spotify playback: Matchup, DailyMatchup, and any future screens that call `playTrack`.
 
+## Claude Design folder (reference only — not part of the app)
+The top-level `Claude Design/` folder holds UI design handoffs produced by a separate AI design tool. It is **not part of the running app** — nothing in `src/` imports from it, and Vite never builds it.
+
+- **Gitignored on purpose** — kept out of git so design experiments don't bloat the repo. Listed in `.gitignore`; never commit it.
+- **Reference for future UI work** — the user pulls these in when redesigning a screen. Treat the JSX/HTML inside as inspiration to translate into real components, not files to copy verbatim.
+- **Subfolder layout:**
+  - `design_handoff_brackets/` — wireframes and prototype JSX for the Bracket flow (Landing/Matchup/Tree)
+  - `design_handoff_home_and_album/` — wireframes and prototype JSX for Home and Album screens
+- Each subfolder contains an `.html` mockup, a `.jsx` prototype, a `tweaks-panel.jsx`, and a `README.md` with notes from the design tool.
+
+When the user references "the design" or "the wireframe" for a screen, look here first.
+
 ## Stack
 React 19 + Vite. All styling is **inline styles only** (no Tailwind classes in JSX).
 

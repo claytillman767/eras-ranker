@@ -51,6 +51,8 @@ function MatchupCard({
   progressPct,    // 0..100, used in 'playing'
   percent,        // 0..100, used in 'winner'/'loser'
   onTap,           // (song) => void  — only wired when card is tappable
+  onPlayPause,     // () => void  — toggles audio for this card; null when no Spotify
+  isAudible,       // true when this card's song is currently producing audio
 }) {
   const colors = getEraColors(song.albumId);
   const album = ALL_ALBUMS.find(a => a.id === song.albumId);
@@ -155,16 +157,38 @@ function MatchupCard({
       {(isPlaying || isPlayed) && (
         <div style={{ marginTop: 10 }}>
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            fontSize: 9, opacity: 0.75, marginBottom: 4,
+            display: 'flex', alignItems: 'center', gap: 8,
+            marginBottom: 6,
           }}>
-            <span style={{ fontSize: 11 }}>{isPlaying ? '♪' : '↺'}</span>
-            <span style={{ flex: 1 }}>
-              {isPlaying
-                ? `0:${String(Math.min(15, Math.round((progressPct / 100) * 15))).padStart(2, '0')} / 0:15`
-                : 'replay clip'}
-            </span>
-            <span style={{ letterSpacing: '0.04em' }}>Spotify</span>
+            {onPlayPause && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onPlayPause(); }}
+                aria-label={isAudible ? 'Pause' : 'Play'}
+                style={{
+                  width: 28, height: 28, borderRadius: 14,
+                  background: '#ffffff',
+                  border: 'none',
+                  color: '#111827',
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 12, padding: 0, lineHeight: 1,
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.18)',
+                  flexShrink: 0,
+                }}
+              >{isAudible ? '⏸' : '▶'}</button>
+            )}
+            <div style={{
+              flex: 1, fontSize: 9, opacity: 0.75,
+              display: 'flex', alignItems: 'center', gap: 6, minWidth: 0,
+            }}>
+              <span style={{ fontSize: 11 }}>{isPlaying ? '♪' : '↺'}</span>
+              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {isPlaying
+                  ? `0:${String(Math.min(15, Math.round((progressPct / 100) * 15))).padStart(2, '0')} / 0:15`
+                  : 'replay clip'}
+              </span>
+              <span style={{ letterSpacing: '0.04em' }}>Spotify</span>
+            </div>
           </div>
           <div style={{
             height: 4, borderRadius: 2,
@@ -241,6 +265,9 @@ export default function Matchup({
   const [pickedSong, setPickedSong] = useState(null);
   const [progress1, setProgress1] = useState(0);
   const [progress2, setProgress2] = useState(0);
+  // Which slot's song is currently loaded in the Spotify player. Drives the
+  // per-card play/pause icon and which action a tap fires (toggle vs replay).
+  const [lastPlayedSlot, setLastPlayedSlot] = useState(null);
 
   const album1 = ALL_ALBUMS.find(a => a.id === song1.albumId);
   const album2 = ALL_ALBUMS.find(a => a.id === song2.albumId);
@@ -266,6 +293,7 @@ export default function Matchup({
     setPickedSong(null);
     setProgress1(0);
     setProgress2(0);
+    setLastPlayedSlot(null);
     setPhase(isSpotifyConnected ? 'intro' : 'ready');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchupKey]);
@@ -287,6 +315,7 @@ export default function Matchup({
       const setProgress = isFirst ? setProgress1 : setProgress2;
 
       setProgress(0);
+      setLastPlayedSlot(isFirst ? 1 : 2);
       if (hasSpotify) {
         spotify.playTrack(
           targetSong.albumId,
@@ -347,6 +376,18 @@ export default function Matchup({
     const song = slot === 1 ? song1 : song2;
     const album = slot === 1 ? album1 : album2;
     spotify.playTrack(song.albumId, song.songIndex, song.name, album?.name, playbackScreen);
+    setLastPlayedSlot(slot);
+  }
+
+  // Per-card play/pause: toggles when the slot's song is already loaded;
+  // otherwise switches the player to that slot's song.
+  function handleSlotPlayPause(slot) {
+    if (!hasSpotify) return;
+    if (lastPlayedSlot === slot) {
+      spotify.togglePlay?.();
+    } else {
+      handleReplay(slot);
+    }
   }
 
   function handleVote(song) {
@@ -388,6 +429,10 @@ export default function Matchup({
   const pct2 = pct1 == null ? null : 100 - pct1;
   const userAgreementPct = pickedSong1 ? pct1 : pct2;
 
+  // A slot is "audible" when its song is loaded AND Spotify is actively playing.
+  const isAudible1 = lastPlayedSlot === 1 && !!spotify?.isPlaying;
+  const isAudible2 = lastPlayedSlot === 2 && !!spotify?.isPlaying;
+
   return (
     <>
       <style>{STYLE}</style>
@@ -408,34 +453,18 @@ export default function Matchup({
           flexShrink: 0,
         }}>
           <div style={{ fontSize: 16, fontWeight: 500 }}>{weekLabel}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {isSpotifyConnected && phase !== 'intro' && (
-              <button
-                onClick={() => spotify?.togglePlay?.()}
-                aria-label={spotify?.isPlaying ? 'Pause' : 'Play'}
-                style={{
-                  width: 26, height: 26, borderRadius: 13,
-                  border: '1px solid #a855f7',
-                  background: '#f3e8ff',
-                  cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 11, color: '#a855f7', padding: 0, lineHeight: 1,
-                }}
-              >{spotify?.isPlaying ? '⏸' : '▶'}</button>
-            )}
-            <button
-              onClick={onClose}
-              aria-label="Close"
-              style={{
-                width: 26, height: 26, borderRadius: 13,
-                border: '1px solid #111827',
-                background: 'transparent',
-                cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 12, color: '#111827', padding: 0, lineHeight: 1,
-              }}
-            >✕</button>
-          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              width: 26, height: 26, borderRadius: 13,
+              border: '1px solid #111827',
+              background: 'transparent',
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 12, color: '#111827', padding: 0, lineHeight: 1,
+            }}
+          >✕</button>
         </div>
 
         {/* Round dots + label */}
@@ -513,6 +542,8 @@ export default function Matchup({
                 progressPct={progress1}
                 percent={pct1}
                 onTap={phase === 'ready' ? handleVote : null}
+                onPlayPause={hasSpotify ? () => handleSlotPlayPause(1) : null}
+                isAudible={isAudible1}
               />
               <MatchupCard
                 song={song2}
@@ -522,6 +553,8 @@ export default function Matchup({
                 progressPct={progress2}
                 percent={pct2}
                 onTap={phase === 'ready' ? handleVote : null}
+                onPlayPause={hasSpotify ? () => handleSlotPlayPause(2) : null}
+                isAudible={isAudible2}
               />
             </div>
           )}

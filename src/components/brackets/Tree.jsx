@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getEraColors } from '../../constants/eraColors';
 
-const VIEW_KEY = 'eras_bracket_tree_view';
-
 const STYLE = `
 @keyframes tree-live-pulse {
   0%, 100% { box-shadow: 0 0 0 2px #f59e0b, 0 0 0 4px rgba(245,158,11,0.18); }
@@ -25,7 +23,7 @@ function getRoundSubLabel(roundIndex, totalRounds) {
   return `${songsIn} → ${songsOut}`;
 }
 
-function TreeNode({ song, status, highlight, small }) {
+function TreeNode({ song, status, highlight, small, width }) {
   // status: 'won' | 'lost' | 'pending' | 'live' | 'tbd'
   // 'pending' = song is here but matchup not yet played → show in color
   // 'tbd'     = slot not yet filled (no song)           → show gray placeholder
@@ -34,7 +32,7 @@ function TreeNode({ song, status, highlight, small }) {
   const isTbd  = status === 'tbd';
   const isLive = status === 'live';
 
-  const w = small ? 100 : 120;
+  const w = width !== undefined ? width : (small ? 100 : 120);
   const h = small ? 30 : 36;
 
   const hasColor = colors && !isTbd;
@@ -133,19 +131,23 @@ export default function Tree({
 }) {
   const totalRounds = Math.log2(bracket.contestants.length);
 
-  const [view, setView] = useState(() => {
-    return localStorage.getItem(VIEW_KEY) === 'stacked' ? 'stacked' : 'tree';
-  });
-
-  function chooseView(next) {
-    setView(next);
-    localStorage.setItem(VIEW_KEY, next);
-  }
-
   const liveRound = bracket.currentRound;
   const liveMatchupIdx = bracket.currentMatchupIndex;
   const liveMatchup = bracket.rounds[liveRound]?.[liveMatchupIdx] || null;
   const isComplete = bracket.status === 'complete';
+
+  // Which round is currently "expanded" in the tree view (wider, full song
+  // names visible). Defaults to the live round; clicking a round header
+  // overrides. Snaps back to the new live round when the bracket advances.
+  const [expandedRound, setExpandedRound] = useState(liveRound);
+  useEffect(() => {
+    setExpandedRound(liveRound);
+  }, [liveRound]);
+
+  const COL_W_EXPANDED = 200;
+  const COL_W_COMPRESSED = 78;
+  const COL_GAP = 14;
+  const colWidth = (idx) => idx === expandedRound ? COL_W_EXPANDED : COL_W_COMPRESSED;
 
   // Build a column per round — fill in placeholders for future rounds.
   const columns = [];
@@ -162,16 +164,19 @@ export default function Tree({
     }
   }
 
-  // Auto-scroll the tree viewport so the live matchup is visible on first paint.
+  // Auto-scroll the tree viewport so the expanded column is visible.
   const scrollerRef = useRef(null);
   useEffect(() => {
-    if (view !== 'tree' || !scrollerRef.current) return;
-    // Roughly: each column is ~140px wide. Scroll so the current round sits
-    // on the right side of the visible area.
-    const colWidth = 140;
-    const targetLeft = Math.max(0, (liveRound - 1) * colWidth);
-    scrollerRef.current.scrollLeft = targetLeft;
-  }, [view, liveRound]);
+    if (!scrollerRef.current) return;
+    let leftOffset = 0;
+    for (let i = 0; i < expandedRound; i++) {
+      leftOffset += COL_W_COMPRESSED + COL_GAP;
+    }
+    scrollerRef.current.scrollTo({
+      left: Math.max(0, leftOffset - 16),
+      behavior: 'smooth',
+    });
+  }, [expandedRound]);
 
   // Derive spacing so each round's pairs are vertically centered between the two
   // source pairs from the previous round — gives a proper bracket fan.
@@ -224,38 +229,42 @@ export default function Tree({
           >✕</button>
         </div>
 
-        {/* View toggle */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 6,
-          padding: '10px 16px 6px', flexShrink: 0,
-        }}>
-          <button
-            onClick={() => chooseView('tree')}
-            style={{
-              padding: '4px 12px', borderRadius: 14,
-              fontSize: 12, fontWeight: 500,
-              background: view === 'tree' ? '#111827' : '#ffffff',
-              color: view === 'tree' ? '#ffffff' : '#4b5563',
-              border: view === 'tree' ? '1px solid #111827' : '1px solid #e5e7eb',
-              cursor: 'pointer',
-            }}
-          >Tree</button>
-          <button
-            onClick={() => chooseView('stacked')}
-            style={{
-              padding: '4px 12px', borderRadius: 14,
-              fontSize: 12, fontWeight: 500,
-              background: view === 'stacked' ? '#111827' : '#ffffff',
-              color: view === 'stacked' ? '#ffffff' : '#4b5563',
-              border: view === 'stacked' ? '1px solid #111827' : '1px solid #e5e7eb',
-              cursor: 'pointer',
-            }}
-          >Stacked</button>
-          <span style={{ flex: 1 }} />
-          {view === 'tree' && (
-            <span style={{ fontSize: 10, color: '#9ca3af' }}>swipe →</span>
-          )}
-        </div>
+        {/* "Your turn" CTA — pinned at the top */}
+        {showCTA && (
+          <div style={{
+            borderBottom: '1px solid #e5e7eb',
+            padding: '10px 14px',
+            background: '#ffffff',
+            display: 'flex', alignItems: 'center', gap: 10,
+            flexShrink: 0,
+          }}>
+            <span style={{
+              width: 8, height: 8, borderRadius: 4,
+              background: '#a855f7',
+              flexShrink: 0,
+            }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>
+                Your turn — {getRoundLabel(liveRound, totalRounds)} matchup {liveMatchupIdx + 1}
+              </div>
+              <div style={{
+                fontSize: 11, color: '#6b7280',
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              }}>
+                {liveMatchup.song1.name} vs {liveMatchup.song2.name}
+              </div>
+            </div>
+            <button
+              onClick={() => onOpenMatchup?.(liveRound, liveMatchupIdx)}
+              style={{
+                padding: '8px 16px', borderRadius: 16,
+                background: '#a855f7', color: '#ffffff',
+                border: 'none', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer', flexShrink: 0,
+              }}
+            >Vote Now</button>
+          </div>
+        )}
 
         {/* Body */}
         <div style={{
@@ -263,7 +272,6 @@ export default function Tree({
           display: 'flex', flexDirection: 'column', minHeight: 0,
         }}>
 
-          {view === 'tree' ? (
             <div
               ref={scrollerRef}
               style={{
@@ -272,190 +280,152 @@ export default function Tree({
               }}
             >
               <div style={{
-                display: 'flex', gap: 16,
-                minWidth: totalRounds * 140,
+                display: 'flex', gap: COL_GAP,
+                minWidth:
+                  COL_W_EXPANDED +
+                  (totalRounds - 1) * COL_W_COMPRESSED +
+                  (totalRounds - 1) * COL_GAP,
               }}>
-                {columns.map(({ round, isFuture, index }) => (
-                  <div key={index} style={{
-                    display: 'flex', flexDirection: 'column', gap: 8,
-                    flexShrink: 0,
-                  }}>
-                    <div style={{
-                      fontSize: 9,
-                      color: '#9ca3af',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      fontWeight: 600,
+                {columns.map(({ round, isFuture, index }) => {
+                  const isExpanded = index === expandedRound;
+                  const w = colWidth(index);
+                  return (
+                    <div key={index} style={{
+                      display: 'flex', flexDirection: 'column', gap: 8,
+                      flexShrink: 0,
+                      width: w,
                     }}>
-                      {getRoundLabel(index, totalRounds)}
-                      {getRoundSubLabel(index, totalRounds) && (
-                        <span style={{ marginLeft: 6, opacity: 0.7 }}>
-                          · {getRoundSubLabel(index, totalRounds)}
-                        </span>
-                      )}
-                    </div>
-                    <div style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: computeRoundLayout(index).interGap,
-                      paddingTop: computeRoundLayout(index).paddingTop,
-                    }}>
-                      {round.map((m, mIdx) => {
-                        const isLive = !isFuture &&
-                          index === liveRound && mIdx === liveMatchupIdx &&
-                          m.song1 && m.song2 && !m.winner;
-                        return (
-                          <div
-                            key={mIdx}
-                            onClick={() => {
-                              if (isLive && onOpenMatchup) onOpenMatchup(index, mIdx);
-                            }}
-                            style={{
-                              display: 'flex', flexDirection: 'column', gap: 2,
-                              cursor: isLive ? 'pointer' : 'default',
-                            }}
-                          >
-                            <TreeNode
-                              song={m.song1}
-                              status={slotStatus(m, 'song1', isLive, totalRounds, index, isFuture)}
-                              highlight={isLive}
-                              small
-                            />
-                            <TreeNode
-                              song={m.song2}
-                              status={slotStatus(m, 'song2', isLive, totalRounds, index, isFuture)}
-                              highlight={isLive}
-                              small
-                            />
-                          </div>
-                        );
-                      })}
-                      {/* Final-column trophy slot when bracket isn't complete */}
-                      {index === totalRounds - 1 && !isComplete && (
-                        <div style={{
-                          marginTop: 12,
-                          padding: '8px 10px',
-                          border: '1.5px dashed #f59e0b',
-                          borderRadius: 8,
-                          textAlign: 'center',
-                          fontSize: 11,
-                          fontStyle: 'italic',
-                          color: '#b45309',
-                        }}>
-                          ♛ winner
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            // ── Stacked view ───────────────────────────────────────────────
-            <div style={{
-              flex: 1, overflowY: 'auto', padding: '8px 16px 16px',
-              display: 'flex', flexDirection: 'column', gap: 14,
-            }}>
-              {columns.map(({ round, isFuture, index }) => (
-                <div key={index}>
-                  <div style={{
-                    fontSize: 9, color: '#9ca3af',
-                    textTransform: 'uppercase', letterSpacing: '0.1em',
-                    fontWeight: 600, marginBottom: 6,
-                  }}>
-                    {getRoundLabel(index, totalRounds)}
-                    {getRoundSubLabel(index, totalRounds) && (
-                      <span style={{ marginLeft: 6, opacity: 0.7 }}>
-                        · {getRoundSubLabel(index, totalRounds)}
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {round.map((m, mIdx) => {
-                      const isLive = !isFuture &&
-                        index === liveRound && mIdx === liveMatchupIdx &&
-                        m.song1 && m.song2 && !m.winner;
-                      return (
-                        <div
-                          key={mIdx}
-                          onClick={() => {
-                            if (isLive && onOpenMatchup) onOpenMatchup(index, mIdx);
-                          }}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
+                      <button
+                        onClick={() => setExpandedRound(index)}
+                        title={isExpanded ? 'Currently showing full names' : 'Tap to expand this round'}
+                        style={{
+                          appearance: 'none',
+                          background: 'transparent',
+                          border: 'none',
+                          padding: 0,
+                          margin: 0,
+                          fontFamily: 'inherit',
+                          fontSize: 9,
+                          color: isExpanded ? '#111827' : '#9ca3af',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          fontWeight: isExpanded ? 700 : 600,
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          width: '100%',
+                          borderBottom: isExpanded
+                            ? '1px solid #111827'
+                            : '1px dashed transparent',
+                          paddingBottom: 2,
+                        }}
+                      >
+                        {getRoundLabel(index, totalRounds)}
+                        {getRoundSubLabel(index, totalRounds) && (
+                          <span style={{ marginLeft: 6, opacity: 0.7 }}>
+                            · {getRoundSubLabel(index, totalRounds)}
+                          </span>
+                        )}
+                      </button>
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: computeRoundLayout(index).interGap,
+                        paddingTop: computeRoundLayout(index).paddingTop,
+                      }}>
+                        {round.map((m, mIdx) => {
+                          const isLive = !isFuture &&
+                            index === liveRound && mIdx === liveMatchupIdx &&
+                            m.song1 && m.song2 && !m.winner;
+                          const isLastRound = index === totalRounds - 1;
+                          return (
+                            <div
+                              key={mIdx}
+                              onClick={() => {
+                                if (isLive && onOpenMatchup) onOpenMatchup(index, mIdx);
+                              }}
+                              style={{
+                                display: 'flex', flexDirection: 'column', gap: 2,
+                                cursor: isLive ? 'pointer' : 'default',
+                                position: 'relative',
+                              }}
+                            >
+                              <TreeNode
+                                song={m.song1}
+                                status={slotStatus(m, 'song1', isLive, totalRounds, index, isFuture)}
+                                highlight={isLive}
+                                small
+                                width={w}
+                              />
+                              <TreeNode
+                                song={m.song2}
+                                status={slotStatus(m, 'song2', isLive, totalRounds, index, isFuture)}
+                                highlight={isLive}
+                                small
+                                width={w}
+                              />
+                              {/* Bracket connector lines into the next round */}
+                              {!isLastRound && (
+                                <>
+                                  {/* Horizontal stub from upper box (centered on its row) */}
+                                  <div style={{
+                                    position: 'absolute', pointerEvents: 'none',
+                                    right: -7, top: 15,
+                                    width: 7, height: 1,
+                                    background: '#d1d5db',
+                                  }} />
+                                  {/* Horizontal stub from lower box */}
+                                  <div style={{
+                                    position: 'absolute', pointerEvents: 'none',
+                                    right: -7, bottom: 15,
+                                    width: 7, height: 1,
+                                    background: '#d1d5db',
+                                  }} />
+                                  {/* Vertical line connecting the two stubs */}
+                                  <div style={{
+                                    position: 'absolute', pointerEvents: 'none',
+                                    right: -7, top: 15, bottom: 15,
+                                    width: 1,
+                                    background: '#d1d5db',
+                                  }} />
+                                  {/* Horizontal line from midpoint extending to next column */}
+                                  <div style={{
+                                    position: 'absolute', pointerEvents: 'none',
+                                    right: -14, top: '50%',
+                                    width: 7, height: 1,
+                                    background: '#d1d5db',
+                                  }} />
+                                </>
+                              )}
+                            </div>
+                          );
+                        })}
+                        {/* Final-column trophy slot when bracket isn't complete */}
+                        {index === totalRounds - 1 && !isComplete && (
+                          <div style={{
+                            marginTop: 12,
                             padding: '8px 10px',
-                            borderRadius: 10,
-                            background: isLive ? '#fffbeb' : '#ffffff',
-                            border: isLive ? '1.5px solid #f59e0b' : '1px solid #e5e7eb',
-                            cursor: isLive ? 'pointer' : 'default',
-                          }}
-                        >
-                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                            <TreeNode
-                              song={m.song1}
-                              status={slotStatus(m, 'song1', isLive, totalRounds, index, isFuture)}
-                              highlight={isLive}
-                            />
-                            <TreeNode
-                              song={m.song2}
-                              status={slotStatus(m, 'song2', isLive, totalRounds, index, isFuture)}
-                              highlight={isLive}
-                            />
+                            border: '1.5px dashed #f59e0b',
+                            borderRadius: 8,
+                            textAlign: 'center',
+                            fontSize: isExpanded ? 11 : 10,
+                            fontStyle: 'italic',
+                            color: '#b45309',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}>
+                            ♛ winner
                           </div>
-                          {isLive && (
-                            <div style={{
-                              padding: '4px 10px', borderRadius: 12,
-                              background: '#a855f7', color: '#ffffff',
-                              fontSize: 11, fontWeight: 500, flexShrink: 0,
-                            }}>Vote</div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Pinned "Your turn" CTA */}
-          {showCTA && (
-            <div style={{
-              borderTop: '1px solid #e5e7eb',
-              padding: '10px 14px',
-              background: '#ffffff',
-              display: 'flex', alignItems: 'center', gap: 10,
-              flexShrink: 0,
-            }}>
-              <span style={{
-                width: 8, height: 8, borderRadius: 4,
-                background: '#a855f7',
-                flexShrink: 0,
-              }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>
-                  Your turn — {getRoundLabel(liveRound, totalRounds)} matchup {liveMatchupIdx + 1}
-                </div>
-                <div style={{
-                  fontSize: 11, color: '#6b7280',
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                }}>
-                  {liveMatchup.song1.name} vs {liveMatchup.song2.name}
-                </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              <button
-                onClick={() => onOpenMatchup?.(liveRound, liveMatchupIdx)}
-                style={{
-                  padding: '6px 14px', borderRadius: 14,
-                  background: '#a855f7', color: '#ffffff',
-                  border: 'none', fontSize: 12, fontWeight: 500,
-                  cursor: 'pointer', flexShrink: 0,
-                }}
-              >Vote →</button>
             </div>
-          )}
 
           {isComplete && (
             <div style={{

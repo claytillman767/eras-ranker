@@ -300,7 +300,7 @@ export default function Landing({
                 cursor: 'pointer',
               }}
             >
-              {weeklyComplete ? 'See winner →' : 'Vote now →'}
+              {weeklyComplete ? 'See winner →' : "See This Week's Bracket →"}
             </button>
           </div>
         )}

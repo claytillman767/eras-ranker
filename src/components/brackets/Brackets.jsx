@@ -56,7 +56,7 @@ export default function Brackets({ user, spotify, isPro }) {
     if (!weeklyState) return;
     if (weeklyState.status === 'complete') { setScreen('reveal'); return; }
     setActiveMode('weekly');
-    setScreen('matchup');
+    setScreen('tree');
   }
 
   function continuePersonal() {
