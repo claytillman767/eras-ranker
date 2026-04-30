@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
 import Categories from './Categories';
@@ -13,6 +15,31 @@ export default function Settings({
   categoryWeights, setCategoryWeight, resetCategoryWeights,
 }) {
   const [showProModal, setShowProModal] = useState(false);
+
+  // Dev/test utility — wipes all bracket data so the flow can be replayed.
+  async function handleClearBracketData() {
+    const ok = window.confirm(
+      'Clear all bracket data? This deletes your personal brackets, weekly votes, and daily matchup.'
+    );
+    if (!ok) return;
+
+    ['eras_brackets', 'eras_weekly_bracket', 'eras_daily_bracket']
+      .forEach(k => localStorage.removeItem(k));
+
+    if (user) {
+      try {
+        await setDoc(
+          doc(db, 'users', user.uid),
+          { brackets: [], weeklyBracket: null },
+          { merge: true }
+        );
+      } catch (e) {
+        console.error('Failed to clear cloud bracket data', e);
+      }
+    }
+
+    location.reload();
+  }
 
   function handleExportRatings() {
     const allCats = [
@@ -481,6 +508,30 @@ export default function Settings({
             }}
           >
             Download CSV
+          </button>
+        </div>
+        <div style={{ borderTop: '0.5px solid #e5e7eb', padding: '14px 16px' }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: '#111827', marginBottom: 2 }}>
+            Clear bracket data
+          </div>
+          <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.5, marginBottom: 12 }}>
+            Wipes personal brackets, weekly votes, and the daily matchup so you can replay the flow. Your ratings are not touched.
+          </div>
+          <button
+            onClick={handleClearBracketData}
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: 10,
+              border: '0.5px solid #fecaca',
+              background: '#ffffff',
+              fontSize: 13,
+              fontWeight: 500,
+              color: '#dc2626',
+              cursor: 'pointer',
+            }}
+          >
+            Clear bracket data
           </button>
         </div>
       </div>

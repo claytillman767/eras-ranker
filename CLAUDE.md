@@ -6,6 +6,10 @@ Not a developer. Use plain, simple language — no jargon.
 ## App intent
 This is a **commercial product**, not a hobby or fan project. Treat every decision — licensing, architecture, legal risk, monetization, scalability — accordingly. Do not assume small scale or low stakes.
 
+## Design rules
+- **Music lifecycle:** Any screen that plays music owns the full start-to-stop. Music begins when the screen opens (or a phase starts) and stops when the screen closes or unmounts. Never leave audio playing with no way to control it.
+- **Play/pause always visible:** Whenever audio is playing or has played on the current screen, a play/pause button must be visible without scrolling — typically pinned in the header. This rule applies to every screen that uses Spotify playback: Matchup, DailyMatchup, and any future screens that call `playTrack`.
+
 ## Stack
 React 19 + Vite. All styling is **inline styles only** (no Tailwind classes in JSX).
 
