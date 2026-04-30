@@ -274,6 +274,7 @@ service cloud.firestore {
 ## Deployment & version control
 - **GitHub:** private repo at `https://github.com/claytillman767/eras-ranker`
 - **Vercel:** auto-deploys on every push to `main`; live at `https://eras-ranker.vercel.app`
+- **Custom domain:** `https://erasranker.com` — already configured in Vercel and pointing to the same deployment as the `*.vercel.app` URL
 - **Local path:** `C:\Users\clayt\dev\eras-ranker` (moved out of OneDrive to avoid git conflicts)
 - **`.env`** contains (all gitignored, never commit):
   - `GENIUS_API_TOKEN` — Python lyrics scripts only, not needed at runtime
