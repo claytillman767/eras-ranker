@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
-import { drawCard } from './RankingCard';
+import { drawAlbumSpotlightCard } from './RankingCard';
 
 // Full-screen overlay shown when a user finishes ranking every song in an album.
-// Renders a live preview of their shareable card and lets them download it.
+// Renders the Album Spotlight share card (Card C from design) and lets them download/share it.
 export default function AlbumCompleteCard({
+  albumId,
   albumName,
   albumIcon,
   getCompositeScore,
@@ -13,32 +14,46 @@ export default function AlbumCompleteCard({
 }) {
   const [cardDataUrl, setCardDataUrl] = useState(null);
 
-  // Build the top-songs list across all albums (same logic as RankingCard)
-  const allRated = [];
-  for (const album of ALL_ALBUMS) {
-    const songs = SONGS[album.id] || [];
-    for (let i = 0; i < songs.length; i++) {
-      const score = getCompositeScore(album.id, i, activeCategories);
-      if (score !== null) {
-        allRated.push({ name: songs[i], albumName: album.name, albumIcon: album.icon, score });
-      }
-    }
-  }
-  allRated.sort((a, b) => b.score - a.score);
-
-  // Render the card to an off-screen canvas once on mount
   useEffect(() => {
+    const album = ALL_ALBUMS.find(a => a.id === albumId);
+    const songList = SONGS[albumId] || [];
+
+    // Top songs for this specific album, sorted by score
+    const topSongs = songList
+      .map((name, i) => ({ name, score: getCompositeScore(albumId, i, activeCategories) }))
+      .filter(s => s.score !== null)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+
+    // Album score = average of all song scores
+    const allScores = songList
+      .map((_, i) => getCompositeScore(albumId, i, activeCategories))
+      .filter(s => s !== null);
+    const albumScore = allScores.length > 0
+      ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length)
+      : 0;
+
     const canvas = document.createElement('canvas');
     canvas.width  = 1080;
     canvas.height = 1080;
-    drawCard(canvas.getContext('2d'), allRated.slice(0, 10));
+    drawAlbumSpotlightCard(
+      canvas.getContext('2d'),
+      {
+        name:      albumName,
+        icon:      albumIcon,
+        year:      album?.year ?? '',
+        songCount: songList.length,
+        score:     albumScore,
+      },
+      topSongs
+    );
     setCardDataUrl(canvas.toDataURL('image/png'));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleDownload() {
     if (!cardDataUrl) return;
     const link = document.createElement('a');
-    link.download = 'my-eras-rankings.png';
+    link.download = `my-${albumId}-ranking.png`;
     link.href = cardDataUrl;
     link.click();
   }
@@ -48,9 +63,9 @@ export default function AlbumCompleteCard({
     try {
       const res  = await fetch(cardDataUrl);
       const blob = await res.blob();
-      const file = new File([blob], 'my-eras-rankings.png', { type: 'image/png' });
+      const file = new File([blob], `my-${albumId}-ranking.png`, { type: 'image/png' });
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'My Eras Rankings' });
+        await navigator.share({ files: [file], title: `My ${albumName} Rankings` });
         return;
       }
     } catch { /* fall through to download */ }
@@ -113,7 +128,7 @@ export default function AlbumCompleteCard({
           flexShrink: 0,
         }}>
           {cardDataUrl
-            ? <img src={cardDataUrl} alt="Your rankings card" style={{ width: '100%', height: '100%', display: 'block' }} />
+            ? <img src={cardDataUrl} alt="Your album ranking card" style={{ width: '100%', height: '100%', display: 'block' }} />
             : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ width: 32, height: 32, border: '3px solid #a855f7', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
               </div>

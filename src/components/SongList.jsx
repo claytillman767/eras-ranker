@@ -197,6 +197,7 @@ export default function SongList({
       {/* Album completion card */}
       {showCompletionCard && (
         <AlbumCompleteCard
+          albumId={albumId}
           albumName={album.name}
           albumIcon={album.icon}
           getCompositeScore={getCompositeScore}
