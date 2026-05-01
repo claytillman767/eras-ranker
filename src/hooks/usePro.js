@@ -1,4 +1,6 @@
 import { useState, useCallback } from 'react';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
 
 // localStorage keys
@@ -33,7 +35,7 @@ function loadDisabledDefaults() {
   catch { return new Set(); }
 }
 
-export function usePro() {
+export function usePro(user) {
   const [isPro, setIsPro]               = useState(loadPro);
   const [enabledExtras, setEnabledExtras] = useState(loadExtras);
   const [customCategories, setCustomCategories] = useState(loadCustom);
@@ -43,10 +45,19 @@ export function usePro() {
 
   // Mock unlock — sets isPro immediately without any payment.
   // Replace this with Stripe Checkout in production.
+  // When a user is signed in, also records the upgrade timestamp on their
+  // Firestore doc so we can see Pro adoption pre-Stripe.
   const unlockPro = useCallback(() => {
     localStorage.setItem(KEY_IS_PRO, 'true');
     setIsPro(true);
-  }, []);
+    if (user && db) {
+      setDoc(
+        doc(db, 'users', user.uid),
+        { isPro: true, proUpgradedAt: serverTimestamp() },
+        { merge: true }
+      ).catch(() => {});
+    }
+  }, [user]);
 
   // Toggle an extra category on or off
   const toggleExtra = useCallback((id) => {

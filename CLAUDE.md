@@ -231,6 +231,17 @@ All user data lives in a single Firestore document: `users/{uid}`
 | `pro` | `{ isPro, enabledExtras: [], customCategories: [], categoryWeights: {} }` |
 | `manualOrder` | `{ albumId: [songIndex, ...] }` |
 | `albumModes` | `{ albumId: 'score' \| 'manual' }` |
+| `spotifyConnected` | `bool` — true when this user currently has Spotify linked |
+| `spotifyLastConnectedAt` | server timestamp — set on each connect (not cleared on disconnect) |
+| `lastActiveAt` | server timestamp — bumped each session start |
+| `sessionCount` | integer — increments by 1 each session start |
+| `totalRatings` | integer — count of unique songs rated (any category) |
+| `albumsCompleted` | integer — count of fully-rated albums |
+| `signedUpAt` | server timestamp — set ONCE on first session ever |
+| `signedUpVia` | `'google'` (password-bypass users have no Firebase user, so no field) |
+| `signupSource` | string — value of `?ref=<source>` URL param at first visit |
+| `referrer` | string — `document.referrer` at first visit |
+| `proUpgradedAt` | server timestamp — set when `unlockPro()` fires (mock today, Stripe later) |
 
 ### Sync behaviour
 - App loads instantly from **localStorage** (no flicker)
@@ -241,7 +252,7 @@ All user data lives in a single Firestore document: `users/{uid}`
 - On sign-out: app continues using whatever is in localStorage
 
 ### Firestore security rules
-Set in Firebase console → Firestore → Rules. Users can only read/write their own document:
+Set in Firebase console → Firestore → Rules. Users can only read/write their own document. The `launchWaitlist` collection is write-only from the client (BetaGate creates one doc when a rejected user opts in to be notified at launch); reads happen only via the Firebase console.
 ```
 rules_version = '2';
 service cloud.firestore {
@@ -249,9 +260,20 @@ service cloud.firestore {
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+    match /launchWaitlist/{email} {
+      // Authenticated user can create/update only their own waitlist record
+      // (doc ID must match their auth email).
+      allow create, update: if request.auth != null
+                            && email == request.auth.token.email
+                            && request.resource.data.email == request.auth.token.email;
+      allow read, delete: if false; // owner reads via Firebase console
+    }
   }
 }
 ```
+
+### Beta gate rejection → launch waitlist
+When a Google sign-in succeeds but the email isn't on `VITE_BETA_EMAILS`, BetaGate (instead of immediately signing the user out) shows a "we'll email you at launch" opt-in. Clicking it writes `{ email, name, photoURL, requestedAt }` to `launchWaitlist/{email}` in Firestore, then signs the user out. Owner views the list at Firebase console → Firestore → `launchWaitlist` collection.
 
 ### Firebase project
 - **Project ID:** `eras-8fd36`
@@ -500,6 +522,16 @@ Firestore's `setDoc` throws **synchronously** when data contains nested arrays. 
 - Show a `SpotifyMiniPlayer` inline in the matchup card for whichever song is highlighted
 - For "Best Bridge" category, use `screen='bridge'` to seek to bridge timestamp
 - Gate behind `isPro` check — non-Pro users see cards without audio
+
+#### Bracket completion-rate tracking
+**Current state:** `useBrackets.js` tracks bracket state (rounds, matchups, votes) but does not record bracket lifecycle events on the user's Firestore doc, so we can't tell how many users start a bracket vs. abandon mid-tournament.
+
+**What needs to be built:**
+- Add two integer counters to `users/{uid}`: `bracketsStarted` and `bracketsCompleted`
+- In `useBrackets.js`, increment `bracketsStarted` (Firestore `increment(1)`) when a user begins a new personal or weekly bracket
+- Increment `bracketsCompleted` when the final winner is set (i.e. the bracket transitions to a finished state)
+- These pair with the existing per-user analytics fields (`totalRatings`, `albumsCompleted`) so we can spot drop-offs in the bracket flow without scanning every user's full state
+- Same write pattern as `useUserStats` — silent failure on offline, no rules changes needed
 
 ---
 

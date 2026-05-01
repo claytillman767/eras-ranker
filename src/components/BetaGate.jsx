@@ -1,13 +1,53 @@
 import { useState } from 'react';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
 
 // Full-screen beta access gate.
 // Two paths: Google sign-in (checked against VITE_BETA_EMAILS allowlist)
 // or a dev bypass password (VITE_BETA_PASSWORD).
-export default function BetaGate({ onSignIn, onPassword, loading, rejected }) {
-  const [pw, setPw]         = useState('');
-  const [pwError, setPwError] = useState(false);
+//
+// When a Google sign-in succeeds but the email is NOT on the allowlist, we
+// keep the user signed in briefly so we can offer them a "notify me at launch"
+// opt-in. Their email is written to the launchWaitlist Firestore collection.
+export default function BetaGate({
+  onSignIn,
+  onPassword,
+  loading,
+  rejected,
+  rejectedUser,
+  onRejectedSignOut,
+}) {
+  const [pw, setPw]                         = useState('');
+  const [pwError, setPwError]               = useState(false);
+  const [waitlistState, setWaitlistState]   = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
 
   const hasPassword = !!import.meta.env.VITE_BETA_PASSWORD;
+
+  async function handleJoinWaitlist() {
+    if (!rejectedUser || !db) {
+      onRejectedSignOut?.();
+      return;
+    }
+    setWaitlistState('saving');
+    try {
+      // Doc ID = email so multiple clicks just upsert one record.
+      await setDoc(doc(db, 'launchWaitlist', rejectedUser.email), {
+        email:       rejectedUser.email,
+        name:        rejectedUser.displayName ?? '',
+        photoURL:    rejectedUser.photoURL    ?? '',
+        requestedAt: serverTimestamp(),
+      });
+      setWaitlistState('saved');
+    } catch (e) {
+      console.warn('Waitlist write failed:', e);
+      setWaitlistState('error');
+    }
+  }
+
+  function handleDone() {
+    setWaitlistState('idle');
+    onRejectedSignOut?.();
+  }
 
   function handlePasswordSubmit(e) {
     e.preventDefault();
@@ -60,26 +100,105 @@ export default function BetaGate({ onSignIn, onPassword, loading, rejected }) {
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             <div style={{ fontSize: 13, color: '#9ca3af', marginTop: 12 }}>Signing in…</div>
           </div>
-        ) : (
-          <>
-            {/* Rejected message */}
-            {rejected && (
+        ) : rejected && rejectedUser ? (
+          /* Launch waitlist screen — shown when a Google sign-in succeeded
+             but the email isn't on the allowlist. */
+          waitlistState === 'saved' ? (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>💌</div>
+              <div style={{ fontSize: 17, fontWeight: 600, color: '#111827', marginBottom: 8 }}>
+                You're on the list!
+              </div>
+              <div style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.5, marginBottom: 24 }}>
+                We'll email <b style={{ color: '#111827' }}>{rejectedUser.email}</b> the moment The Eras Ranker is open to everyone.
+              </div>
+              <button
+                onClick={handleDone}
+                style={{
+                  width: '100%',
+                  padding: '13px',
+                  background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: 12,
+                  fontSize: 15,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(168,85,247,0.3)',
+                }}
+              >
+                Done
+              </button>
+            </div>
+          ) : (
+            <div>
               <div style={{
-                background: '#fef2f2',
-                border: '0.5px solid #fecaca',
+                background: '#fef9c3',
+                border: '0.5px solid #fde68a',
                 borderRadius: 10,
                 padding: '12px 14px',
-                marginBottom: 20,
+                marginBottom: 18,
                 fontSize: 13,
-                color: '#dc2626',
+                color: '#92400e',
                 lineHeight: 1.5,
                 textAlign: 'center',
               }}>
-                That Google account isn't on the beta list.<br />
-                Try a different account or enter the password below.
+                <b>{rejectedUser.email}</b> isn't on the beta list yet.
               </div>
-            )}
 
+              <div style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.5, marginBottom: 18, textAlign: 'center' }}>
+                We're keeping the beta small while we polish things.<br />
+                Want us to email you the moment it's open?
+              </div>
+
+              {waitlistState === 'error' && (
+                <div style={{ fontSize: 12, color: '#dc2626', marginBottom: 10, textAlign: 'center' }}>
+                  Couldn't save your email. Please try again.
+                </div>
+              )}
+
+              <button
+                onClick={handleJoinWaitlist}
+                disabled={waitlistState === 'saving'}
+                style={{
+                  width: '100%',
+                  padding: '13px',
+                  background: waitlistState === 'saving'
+                    ? '#c4b5fd'
+                    : 'linear-gradient(135deg, #a855f7, #7c3aed)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: 12,
+                  fontSize: 15,
+                  fontWeight: 600,
+                  cursor: waitlistState === 'saving' ? 'default' : 'pointer',
+                  boxShadow: '0 4px 12px rgba(168,85,247,0.3)',
+                  marginBottom: 10,
+                }}
+              >
+                {waitlistState === 'saving' ? 'Saving…' : 'Notify me at launch'}
+              </button>
+
+              <button
+                onClick={onRejectedSignOut}
+                style={{
+                  width: '100%',
+                  padding: '11px',
+                  background: 'none',
+                  border: '0.5px solid #d1d5db',
+                  borderRadius: 12,
+                  fontSize: 14,
+                  color: '#4b5563',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                Try a different account
+              </button>
+            </div>
+          )
+        ) : (
+          <>
             {/* Google sign-in */}
             <button
               onClick={onSignIn}

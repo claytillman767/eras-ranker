@@ -11,6 +11,8 @@
 //
 // Users need a Spotify Premium account for Web Playback SDK.
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
 import { ALBUMS, SONGS } from '../data/albums';
 import { SPOTIFY_START_TIMES } from '../data/spotifyStartTimes';
 import { SPOTIFY_BRIDGE_TIMES } from '../data/spotifyBridgeTimes';
@@ -187,7 +189,7 @@ async function searchTrackUri(songName, albumName, token) {
 
 // ── Main hook ─────────────────────────────────────────────────────────────────
 
-export function useSpotify() {
+export function useSpotify(user) {
   // Persistent connection: treat the user as connected if EITHER
   //   - a still-valid access token is in localStorage, OR
   //   - a refresh token is in localStorage (the SDK's getOAuthToken callback
@@ -303,6 +305,17 @@ export function useSpotify() {
       }
     }
   }, [isConnected]);
+
+  // ── Sync connection state to Firestore so we can see who has linked Spotify ─
+  // Writes { spotifyConnected, spotifyLastConnectedAt } onto users/{uid}.
+  // No-op when there is no signed-in user (e.g. password-bypass beta path).
+  useEffect(() => {
+    if (!user || !db) return;
+    const update = isConnected
+      ? { spotifyConnected: true, spotifyLastConnectedAt: serverTimestamp() }
+      : { spotifyConnected: false };
+    setDoc(doc(db, 'users', user.uid), update, { merge: true }).catch(() => {});
+  }, [isConnected, user]);
 
   // ── Proactively fetch album art for all albums when connected ─────────────
   useEffect(() => {

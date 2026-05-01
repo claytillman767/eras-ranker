@@ -6,6 +6,7 @@ import { useManualOrder } from './hooks/useManualOrder';
 import { useAlbumModes } from './hooks/useAlbumModes';
 import { useSettings } from './hooks/useSettings';
 import { useSpotify } from './hooks/useSpotify';
+import { useUserStats } from './hooks/useUserStats';
 import BetaGate from './components/BetaGate';
 import Home from './components/Home';
 import AlbumGrid from './components/AlbumGrid';
@@ -78,7 +79,10 @@ export default function App() {
   const { getManualOrder, moveUp, moveDown, reorder, setOrder } = useManualOrder(user);
   const { getAlbumMode, setAlbumMode } = useAlbumModes(user);
   const { settings, updateSetting } = useSettings(user);
-  const spotify = useSpotify();
+  const spotify = useSpotify(user);
+
+  // Per-user analytics: lastActiveAt, sessionCount, totalRatings, albumsCompleted, signup origin
+  useUserStats(user, ratings);
 
   // Sync stored volume to the Spotify player whenever it becomes ready
   useEffect(() => {
@@ -104,8 +108,11 @@ export default function App() {
   }, [showUserMenu]);
 
   // When a Google sign-in completes, check the allowlist and unlock the gate.
+  // If rejected, leave the user signed in so BetaGate can show the launch
+  // waitlist screen (which needs their email). The waitlist screen signs them
+  // out itself once they decide.
   useEffect(() => {
-    if (betaUnlocked || authLoading || !user) return;
+    if (betaUnlocked || authLoading || !user || betaRejected) return;
     const allowedRaw = import.meta.env.VITE_BETA_EMAILS ?? '';
     const allowed = allowedRaw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
     // Empty list = allow any signed-in Google account
@@ -115,14 +122,18 @@ export default function App() {
       setBetaRejected(false);
     } else {
       setBetaRejected(true);
-      signOut();
     }
-  }, [user, authLoading, betaUnlocked]);
+  }, [user, authLoading, betaUnlocked, betaRejected]);
 
   // ── Gate check — safe to early-return now that all hooks are declared above ──
   function handleBetaPassword() {
     localStorage.setItem(BETA_KEY, 'true');
     setBetaUnlocked(true);
+  }
+
+  function handleRejectedSignOut() {
+    setBetaRejected(false);
+    signOut();
   }
 
   if (!betaUnlocked) {
@@ -132,6 +143,8 @@ export default function App() {
         onPassword={handleBetaPassword}
         loading={authLoading || (!!user && !betaRejected)}
         rejected={betaRejected}
+        rejectedUser={betaRejected ? user : null}
+        onRejectedSignOut={handleRejectedSignOut}
       />
     );
   }
