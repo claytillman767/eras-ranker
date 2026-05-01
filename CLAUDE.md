@@ -187,6 +187,7 @@ src/
 
 ## Pro system
 - `isPro` stored as `'eras_is_pro'` in localStorage; `unlockPro()` is a mock — no payment wired
+  (Lemon Squeezy subscription billing is the chosen replacement — see "Payment provider plan" below)
 - **Pro upgrades require a signed-in user.** `unlockPro()` no-ops and returns `false` if no user.
   Reason: a paid upgrade must be tied to identity so it survives device wipes and follows the user
   to other devices, and Stripe will need a customer record once real billing is wired up.
@@ -265,7 +266,7 @@ All user data lives in a single Firestore document: `users/{uid}`
 | `signedUpVia` | `'google'` (password-bypass users have no Firebase user, so no field) |
 | `signupSource` | string — value of `?ref=<source>` URL param at first visit |
 | `referrer` | string — `document.referrer` at first visit |
-| `proUpgradedAt` | server timestamp — set when `unlockPro()` fires (mock today, Stripe later) |
+| `proUpgradedAt` | server timestamp — set when `unlockPro()` fires (mock today, Lemon Squeezy planned) |
 
 ### Sync behaviour
 - App loads instantly from **localStorage** (no flicker)
@@ -441,7 +442,69 @@ Per-pick controls:
 
 ### ~~User Accounts~~ ✅ BUILT
 Google sign-in is live. Ratings, Pro settings, manual order, and album modes all sync to Firestore. See the **Authentication & Firestore** section above for full details.
-Remaining future work in this area: Stripe integration to move Pro status from a localStorage flag to a trusted Firestore field.
+Remaining future work in this area: real billing — see "Payment provider — Lemon Squeezy plan" below.
+
+### Payment provider — Lemon Squeezy plan (deferred — DO NOT begin without explicit user instruction)
+
+**Provider chosen:** Lemon Squeezy. We evaluated Stripe vs Lemon Squeezy and picked LS because it's a Merchant of Record (handles VAT, EU OSS, US state sales tax for us — Stripe is not), the ~0.7% fee premium is a fair trade for not maintaining tax registrations across 30+ jurisdictions as a one-person shop, and migrating LS → Stripe later is possible if we ever outgrow it.
+
+**Decisions locked in:**
+- **Launch as subscription** (NOT one-time → subscription later — that path forces every existing one-time customer to re-subscribe and loses 5–15% of them)
+- **Price: $4.99 / month**
+- **Annual option:** TBD (likely add later — common discount is ~2 months free, e.g. $49/yr)
+- **Free trial:** TBD
+- **Plan rename ("Pro" → something else):** TBD — user is considering it
+
+**Phase 1 — Lemon Squeezy account setup** (~30 min, no code)
+1. Sign up at lemonsqueezy.com → create a Store
+2. Create a Product → Variant: $4.99/month subscription
+3. Capture: API key, Store ID, Variant ID, and (after Phase 2) Webhook signing secret
+
+**Phase 2 — Backend infrastructure** (~2 hours, the riskiest step)
+The webhook is the only trusted "did they pay" source — never trust the browser.
+1. Create Vercel serverless function at `/api/lemon-webhook.js`:
+   - Verify LS HMAC-SHA256 signature against `LEMON_SQUEEZY_WEBHOOK_SECRET`
+   - On `subscription_created` / `subscription_resumed` → set `users/{uid}.isPro = true`
+   - On `subscription_cancelled` / `subscription_expired` / `payment_failed` (after grace) → set `users/{uid}.isPro = false`
+   - Persist `subscriptionId`, `subscriptionStatus`, `customerId`, `currentPeriodEnd` on the user doc
+   - Always return 200 OK (LS retries on non-200)
+2. Wire up **Firebase Admin SDK** in the function. NOT the same as the client SDK. Generate service account JSON in Firebase console → Project Settings → Service Accounts. Base64-encode and store as `FIREBASE_SERVICE_ACCOUNT_B64` in Vercel env vars (one var, decode at function init time — safer than splitting into many vars).
+3. Register the webhook URL `https://erasranker.com/api/lemon-webhook` in LS dashboard, copy signing secret to Vercel env vars.
+
+**Env vars needed in Vercel** (all server-side, NO `VITE_` prefix unless noted):
+- `LEMON_SQUEEZY_API_KEY` — server only
+- `LEMON_SQUEEZY_STORE_ID`
+- `LEMON_SQUEEZY_WEBHOOK_SECRET`
+- `FIREBASE_SERVICE_ACCOUNT_B64` — base64 of the service account JSON
+- `VITE_LEMON_SQUEEZY_VARIANT_ID` — frontend uses this to open the right checkout
+
+**Phase 3 — Frontend changes** (~1 hour)
+- [src/hooks/usePro.js](src/hooks/usePro.js) — replace mock `unlockPro` body. Open the LS Checkout overlay (their `lemon.js` script) with `user.uid` and `user.email` passed as `checkout_data.custom`. **DO NOT set `isPro` locally on click — wait for the webhook** to write to Firestore. The frontend just opens the checkout; the webhook is the source of truth.
+- [src/hooks/usePro.js](src/hooks/usePro.js) — switch the existing `getDoc` hydration to `onSnapshot` so when the webhook updates Firestore, the UI flips to Pro in real time without a refresh. Update the unsubscribe cleanup in the effect's return.
+- [src/components/Settings.jsx](src/components/Settings.jsx) — in the Account section, when `isPro` is true add a "Manage subscription" button that opens the LS customer portal URL (cancel, update card, view invoices). LS gives one customer-portal URL per subscription — fetch it from the user's Firestore doc (the webhook should store it).
+- [src/components/PaywallCard.jsx](src/components/PaywallCard.jsx) — update copy from "$4.99 — one time" to "$4.99 / month". Same in the [src/components/Settings.jsx](src/components/Settings.jsx) ProModal subtitle ("One-time unlock. No subscription, no recurring charges.").
+- [src/components/VibeCheckIntro.jsx](src/components/VibeCheckIntro.jsx) — update Pro perk copy if needed.
+- Remove the entire mock-unlock fallback path once real billing works.
+
+**Phase 4 — Test mode** (~30 min)
+LS has a full test mode with test cards. Run all of:
+- New subscription → Pro flips on
+- Cancel mid-period → Pro stays on until period end, then flips off
+- Failed payment → grace period → Pro flips off
+- Resubscribe → Pro flips back on
+- Sign out / sign in across devices → Pro state syncs correctly (already tested without LS — verify still works with real subs)
+
+**Phase 5 — Go live** (~30 min)
+1. Switch LS store from test → live mode, swap env vars in Vercel to production keys
+2. Make a real $4.99 purchase yourself, verify the entire flow end-to-end, then refund yourself in LS dashboard
+3. Update CLAUDE.md — remove "mock — no payment wired" notes, mark this section as ✅ BUILT
+
+**What's most likely to trip us up:**
+- Firebase Admin SDK initialization in a Vercel serverless function. Service account JSON has to be base64-encoded into a single env var, decoded once at module top level (NOT per-request). Watch for cold-start init issues.
+- LS webhook signature verification — easy to get HMAC payload format wrong on first try. Test with their dashboard's "Send test event" feature before relying on it.
+- Race condition: user closes the LS checkout right after paying but before the webhook fires (webhooks can take a few seconds). The `onSnapshot` listener handles this — UI just flips to Pro a moment later — but worth visualizing for the user (a "processing your payment…" state).
+
+**Total realistic effort:** about half a day of focused work, plus the time spent settling the trial / annual / rename decisions before Phase 1.
 
 ### ~~Song Previews in Rating Flow~~ ✅ BUILT via Spotify Web Playback SDK
 Pro users can connect their Spotify Premium account (Settings → Spotify) to hear each song play
