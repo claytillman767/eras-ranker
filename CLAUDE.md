@@ -295,6 +295,90 @@ service cloud.firestore {
 
 ---
 
+## Category Picks Pipeline
+**Purpose:** for each song × each rating/bracket category, pick the single best moment so Spotify playback seeks to the right place AND the bracket builder knows which songs actually fit a category. Outputs two parallel datasets:
+
+- **`SPOTIFY_CATEGORY_TIMES`** — millisecond start positions per song × category (used by `playTrack()`)
+- **`CATEGORY_FIT_SCORES`** — 0–100 fitness scores per song × category (used by the bracket builder to filter eligible songs — e.g. exclude Anti-Hero from the "Most Romantic" bracket)
+
+### Files
+```
+fetch_synced_lyrics.py             — Stage 1 script (run once per new song)
+find_category_times.py             — Stage 2 script (resolves picks → ms / JS)
+src/data/syncedLyricsFull.json     — full synced lyrics with section labels + per-line ms (Stage 1 output)
+src/data/categoryTimesAudit.json   — every pick: line + score + reasoning + reject/override flags (SOURCE OF TRUTH)
+src/data/spotifyCategoryTimes.js   — generated JS the app imports (DO NOT edit by hand)
+src/dev/AuditReview.jsx            — dev-only review UI (see below)
+```
+
+### Stages
+**Stage 1 — Fetch synced lyrics.** `python fetch_synced_lyrics.py` queries lrclib.net for every song and produces `syncedLyricsFull.json` — sections + line-by-line ms timestamps. Run when new songs are added (e.g. a new album drops).
+
+**Stage 2 — Pick the best moment per category.** For each song × lyric-based category, Claude (in-conversation OR via API) picks the single line that best captures that quality and assigns a 0–100 fit score. Picks land in `categoryTimesAudit.json`. `find_category_times.py` then resolves picks → millisecond timestamps and writes `spotifyCategoryTimes.js`.
+
+**Stage 3 — Audio-based categories (deferred, NOT BUILT).** "Best Vocal Performance", "Best Production", "Hype/Energy", "Catchiest Hook" need audio analysis. Default heuristic for now: use the bridge timestamp if available, else the first chorus.
+
+### Categories
+**Lyric-based (Stage 2 picks):**
+- `most-romantic` `most-devastating` `cry-factor` `best-storytelling` `best-lyrics`
+
+**Structural (auto-derived from section data — no Claude needed):**
+- `best-opening-line` — first synced line of the song
+- `best-closing-line` — last synced line
+- `best-chorus` / `hook` — first `[Chorus]` section's `startMs`
+- `bridge` — already in `SPOTIFY_BRIDGE_TIMES` (separate file)
+
+### Dev UI: review and reject picks
+With `npm run dev` running, visit `http://localhost:5173/?dev=audit`. **Only renders in dev mode** — never in the Vercel production build (gated on `import.meta.env.DEV` + dynamic import).
+
+Per-pick controls:
+- **✗ Reject** — flags the pick as bad. The regenerator outputs `null` for that song × category, so it's excluded from brackets and falls back to shuffle for playback.
+- **✏️ Override** — opens a scrollable list of every synced line in the song; click to use that line instead of the auto-pick.
+- **Save changes** — writes the updated audit JSON back to disk via a dev-only Vite middleware (`POST /__dev/audit/save`). The endpoint is registered with `apply: 'serve'` so it doesn't exist in production builds.
+
+### Audit JSON schema
+```json
+{
+  "rd_4": {
+    "song": "All Too Well",
+    "album": "Red (Taylor's Version)",
+    "picks": {
+      "most-romantic": {
+        "line": "Autumn leaves falling down like pieces into place",
+        "score": 60,
+        "reasoning": "Has tender memories but the song is fundamentally about loss.",
+        "rejected": false,
+        "manualLine": null
+      }
+    },
+    "resolved": { /* auto-filled by find_category_times.py with ms + section + flags */ }
+  }
+}
+```
+- `score: 0` is the convention for "this category genuinely doesn't apply" (paired with `line: null`)
+- `rejected: true` → JS output gets `null` for this entry (developer-rejected)
+- `manualLine: "..."` → overrides the auto-picked line; ms is resolved against this instead
+
+### Re-runs and resumability
+- `find_category_times.py` skips songs already in the audit (no rework, no API spend)
+- `python find_category_times.py --summary` prints coverage at a glance
+- **API key is optional** — without `ANTHROPIC_API_KEY`, the script just resolves cached picks and writes JS (skips uncached songs but doesn't error)
+- To redo one song: delete that key from `categoryTimesAudit.json`, then re-pick (in-conversation or via API)
+- To redo everything: delete `categoryTimesAudit.json`
+
+### Adding picks (the in-conversation flow)
+1. Tell Claude which song(s) to pick — e.g. "do album `tv`"
+2. Claude reads the synced lyrics for those songs, makes picks (line + score + reasoning), and appends them to `categoryTimesAudit.json`
+3. You open the dev UI to review, reject, or override
+4. After Save, run `python find_category_times.py` to regenerate `spotifyCategoryTimes.js`
+
+### Adding a new category later
+1. Add the category id + prompt to `LYRIC_CATEGORIES` in `find_category_times.py`
+2. Loop through the audit and add the new category's pick to each entry (in-conversation, via API, or by hand)
+3. Re-run the script
+
+---
+
 ## Future Enhancement Ideas
 **DO NOT begin any of these unless the user explicitly instructs you to.**
 

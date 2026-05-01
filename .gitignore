@@ -20,6 +20,10 @@ dist-ssr
 # Claude Code local settings (may contain API keys)
 .claude/settings.local.json
 
+# Python bytecode cache (from running .py scripts in this repo)
+__pycache__/
+*.pyc
+
 # UI design handoffs from external AI design tool — reference only, not part of the app
 Claude Design/
 
