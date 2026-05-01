@@ -62,7 +62,7 @@ export default function AlbumModeModal({ album, onChooseScore, onChooseManual, o
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 26 }}>⭐</span>
+            <span style={{ fontSize: 26 }}>🎧</span>
             <div>
               <div style={{ fontSize: 15, fontWeight: 600, color: '#7c3aed', marginBottom: 3 }}>
                 Vibe Check
@@ -89,7 +89,7 @@ export default function AlbumModeModal({ album, onChooseScore, onChooseManual, o
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 26 }}>⠿</span>
+            <span style={{ fontSize: 26 }}>✋</span>
             <div>
               <div style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 3 }}>
                 Sort It Yourself

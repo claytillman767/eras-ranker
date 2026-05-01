@@ -8,6 +8,7 @@ import { useSettings } from './hooks/useSettings';
 import { useSpotify } from './hooks/useSpotify';
 import { useUserStats } from './hooks/useUserStats';
 import BetaGate from './components/BetaGate';
+import Welcome from './components/Welcome';
 import Home from './components/Home';
 import AlbumGrid from './components/AlbumGrid';
 import AlbumModeModal from './components/AlbumModeModal';
@@ -28,6 +29,7 @@ const TABS = [
 ];
 
 const BETA_KEY = 'eras_beta_unlocked';
+const WELCOME_KEY = 'eras_welcome_seen';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -41,6 +43,9 @@ export default function App() {
   // ── Beta gate state ──────────────────────────────────────────────────────────
   const [betaUnlocked, setBetaUnlocked] = useState(() => localStorage.getItem(BETA_KEY) === 'true');
   const [betaRejected, setBetaRejected] = useState(false);
+
+  // ── Welcome tour state ───────────────────────────────────────────────────────
+  const [welcomeSeen, setWelcomeSeen] = useState(() => localStorage.getItem(WELCOME_KEY) === '1');
 
   // ── Data hooks — ALL hooks must be declared before any conditional return ────
   const {
@@ -147,6 +152,20 @@ export default function App() {
         onRejectedSignOut={handleRejectedSignOut}
       />
     );
+  }
+
+  // ── Welcome tour — shown once per device after the beta gate is passed ──────
+  function dismissWelcome() {
+    localStorage.setItem(WELCOME_KEY, '1');
+    setWelcomeSeen(true);
+  }
+  function replayWelcome() {
+    localStorage.removeItem(WELCOME_KEY);
+    setWelcomeSeen(false);
+  }
+
+  if (!welcomeSeen) {
+    return <Welcome onClose={dismissWelcome} />;
   }
   // ────────────────────────────────────────────────────────────────────────────
 
@@ -475,6 +494,7 @@ export default function App() {
             resetCategoryWeights={resetCategoryWeights}
             getCompositeScore={getCompositeScore}
             getAlbumScore={getAlbumScore}
+            onShowWelcome={replayWelcome}
           />
         )}
       </div>

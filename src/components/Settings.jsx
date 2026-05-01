@@ -15,6 +15,7 @@ export default function Settings({
   disabledDefaults, toggleDefault, setCustomCategoryType,
   categoryWeights, setCategoryWeight, resetCategoryWeights,
   getCompositeScore, getAlbumScore,
+  onShowWelcome,
 }) {
   const [showProModal, setShowProModal] = useState(false);
   const [showCategoriesEditor, setShowCategoriesEditor] = useState(false);
@@ -107,7 +108,7 @@ export default function Settings({
         border: '0.5px solid #e5e7eb',
         borderRadius: 12,
         overflow: 'hidden',
-        marginBottom: 28,
+        marginBottom: 12,
       }}>
         {user ? (
           <>
@@ -204,6 +205,26 @@ export default function Settings({
           </div>
         )}
       </div>
+
+      {/* Replay welcome tour — small text link below the Account card */}
+      {onShowWelcome && (
+        <button
+          onClick={onShowWelcome}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#a855f7',
+            fontSize: 12,
+            fontWeight: 500,
+            cursor: 'pointer',
+            padding: '2px 4px',
+            marginBottom: 28,
+            display: 'inline-block',
+          }}
+        >
+          Show welcome tour again
+        </button>
+      )}
 
       {/* ── Display section ── */}
       <SectionHeader>Display</SectionHeader>
