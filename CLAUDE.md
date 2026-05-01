@@ -190,8 +190,13 @@ src/
 - **Pro upgrades require a signed-in user.** `unlockPro()` no-ops and returns `false` if no user.
   Reason: a paid upgrade must be tied to identity so it survives device wipes and follows the user
   to other devices, and Stripe will need a customer record once real billing is wired up.
-  Every UI surface that offers Pro upgrade (Settings ProModal, PaywallCard, VibeCheckIntro) shows
-  a Google sign-in CTA instead of the unlock button when no user is signed in.
+- **Cloud is the source of truth for `isPro`.** On sign-in, usePro fetches the Firestore doc and
+  forces local `isPro` to match `users/{uid}.isPro`. This protects against localStorage tampering
+  (`localStorage.setItem('eras_is_pro','true')`) — the next sign-in will reset it. Unlike other
+  hooks, usePro does NOT migrate localStorage up to Firestore: a local-only Pro flag is treated as
+  stale or tampered, never as truth.
+- Pro UI surfaces (Settings ProModal, PaywallCard, VibeCheckIntro) keep "Unlock Pro" tappable; if
+  no user, tapping it routes through a shared "Sign in to continue" step (Back arrow → returns).
 - Extra category weights rescaled so all active categories always sum to 100
 - Weight overrides stored per-category in `eras_category_weights`; reset clears that key
 - Pro gates: extra categories, custom categories, Categories tab paywall UI, **Spotify integration**

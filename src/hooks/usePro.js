@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useState, useCallback, useEffect } from 'react';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
 
@@ -42,6 +42,31 @@ export function usePro(user) {
   const [categoryWeights, setCategoryWeightsState] = useState(loadWeights);
   const [disabledCustoms, setDisabledCustoms] = useState(loadDisabledCustoms);
   const [disabledDefaults, setDisabledDefaults] = useState(loadDisabledDefaults);
+
+  // On sign-in, hydrate isPro from Firestore. CLOUD WINS unconditionally —
+  // unlike the other hooks (ratings, manualOrder, settings) we do NOT migrate
+  // localStorage up to the cloud here. A paid Pro purchase only ever exists
+  // in Firestore (written by unlockPro while signed in), so a localStorage
+  // 'eras_is_pro=true' without a matching cloud record is either stale state
+  // or DevTools tampering — either way, cloud is the truth and local resets
+  // to match. Other Pro-related state (extras, custom categories, weights)
+  // is intentionally left local for now — see CLAUDE.md gotchas list.
+  useEffect(() => {
+    if (!user || !db) return;
+    getDoc(doc(db, 'users', user.uid)).then(snap => {
+      const cloudIsPro = snap.exists() && snap.data().isPro === true;
+      if (cloudIsPro) {
+        setIsPro(true);
+        localStorage.setItem(KEY_IS_PRO, 'true');
+      } else {
+        setIsPro(false);
+        localStorage.removeItem(KEY_IS_PRO);
+      }
+    }).catch(() => {
+      // Network or permission error — keep local state for now rather than
+      // wrongly revoking Pro because Firestore was momentarily unreachable.
+    });
+  }, [user]);
 
   // Mock unlock — sets isPro immediately without any payment.
   // Replace this with Stripe Checkout in production.
