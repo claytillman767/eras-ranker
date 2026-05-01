@@ -1,0 +1,1496 @@
+{
+  "tv_2": {
+    "song": "Teardrops on My Guitar",
+    "album": "Taylor Swift",
+    "picks": {
+      "most-romantic": {
+        "line": "I wonder if he knows he's all I think about at night",
+        "score": 55,
+        "reasoning": "Yearning is romantic, but the framing is unrequited and sad — moderate fit.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "most-devastating": {
+        "line": "And she's got everything that I have to live without",
+        "score": 70,
+        "reasoning": "Classic early-era heartbreak — milder than her later devastation but a clear gut-punch.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "cry-factor": {
+        "line": "So I'll drive home alone, as I turn off the light",
+        "score": 80,
+        "reasoning": "Peak teen emotion — the loneliness image hits hard.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "best-storytelling": {
+        "line": "I fake a smile so he won't see",
+        "score": 75,
+        "reasoning": "Clear narrative arc through the verses (Drew looks/talks/walks by).",
+        "rejected": false,
+        "manualLine": null
+      },
+      "best-lyrics": {
+        "line": "He's the reason for the teardrops on my guitar",
+        "score": 60,
+        "reasoning": "Strong title-drop, but earlier-era simpler imagery — not peak craft.",
+        "rejected": false,
+        "manualLine": null
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": 64920,
+        "section": "Refrain",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": 35880,
+        "section": "Refrain",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": 144410,
+        "section": "Bridge",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 15240,
+        "section": "Verse 1",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 67370,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "rd_4": {
+    "song": "All Too Well",
+    "album": "Red (Taylor's Version)",
+    "picks": {
+      "most-romantic": {
+        "line": "Autumn leaves falling down like pieces into place",
+        "score": 60,
+        "reasoning": "Has tender Verse 1/2 memories of the relationship, but the song is fundamentally about its loss.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "most-devastating": {
+        "line": "And you call me up again",
+        "score": 95,
+        "reasoning": "One of THE most devastating songs in her catalog — the bridge is a textbook gut-punch.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "cry-factor": {
+        "line": "I'm a crumpled up piece of paper lying here",
+        "score": 95,
+        "reasoning": "The bridge wrecks listeners; pure emotional collapse imagery.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "best-storytelling": {
+        "line": "You used to be a little kid with glasses in a twin-sized bed",
+        "score": 100,
+        "reasoning": "The gold standard storytelling song in Taylor's discography.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "best-lyrics": {
+        "line": "And I might be okay, but I'm not fine at all",
+        "score": 92,
+        "reasoning": "Peak craft — multiple lines have entered common usage; high lyric density.",
+        "rejected": false,
+        "manualLine": null
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": 61790,
+        "section": "Verse 2",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": 245050,
+        "section": "Bridge",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": 215020,
+        "section": "Bridge",
+        "found_in_lyrics": true,
+        "used_section_start": true,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 113080,
+        "section": "Verse 3",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 77230,
+        "section": "Pre-Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "lv_2": {
+    "song": "Lover",
+    "album": "Lover",
+    "picks": {
+      "most-romantic": {
+        "line": "Have I known you twenty seconds or twenty years?",
+        "score": 95,
+        "reasoning": "Definitive romantic song — wedding standard, soulmate framing throughout.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "most-devastating": {
+        "line": null,
+        "score": 0,
+        "reasoning": "Pure love song — no devastating content.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "cry-factor": {
+        "line": "You're my, my, my, my lover",
+        "score": 55,
+        "reasoning": "Happy-cry territory at weddings, but not a tear-jerker in the heartbreak sense.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "best-storytelling": {
+        "line": "We could leave the Christmas lights up 'til January",
+        "score": 45,
+        "reasoning": "Imagistic vignettes more than narrative — light on plot.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "best-lyrics": {
+        "line": "And there's a dazzling haze, a mysterious way about you, dear",
+        "score": 70,
+        "reasoning": "Strong bridge and verse imagery, but melody-first song — lyrics aren't the main draw.",
+        "rejected": false,
+        "manualLine": null
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": 35750,
+        "section": "Verse 1",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": null,
+        "section": null,
+        "found_in_lyrics": false,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": 125980,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 14810,
+        "section": "Verse 1",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 27600,
+        "section": "Verse 1",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "fl_3": {
+    "song": "exile",
+    "album": "Folklore",
+    "picks": {
+      "most-romantic": {
+        "line": "Holdin' all this love out here in the hall",
+        "score": 20,
+        "reasoning": "Anti-romantic — romance only appears as something lost; not a fit for a romantic-songs bracket.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "most-devastating": {
+        "line": "You're not my homeland anymore",
+        "score": 85,
+        "reasoning": "Heartbreak duet, central devastation in identity-loss framing.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "cry-factor": {
+        "line": "I gave so many signs",
+        "score": 90,
+        "reasoning": "The bridge crescendo when Taylor and Bon Iver overlap is the cry trigger of the album.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "best-storytelling": {
+        "line": "And it took you five whole minutes",
+        "score": 75,
+        "reasoning": "POV-shift duet structure tells a complete arc — both sides of one breakup.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "best-lyrics": {
+        "line": "I think I've seen this film before",
+        "score": 85,
+        "reasoning": "The film/movie metaphor is the song's organising image — instantly iconic.",
+        "rejected": false,
+        "manualLine": null
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": 34170,
+        "section": "Verse 1: Justin Vernon",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": 47310,
+        "section": "Chorus: Justin Vernon",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": 165000,
+        "section": "Bridge: Justin Vernon, Taylor Swift & Both",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 27570,
+        "section": "Verse 1: Justin Vernon",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 41060,
+        "section": "Chorus: Justin Vernon",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "ml_2": {
+    "song": "Anti-Hero",
+    "album": "Midnights",
+    "picks": {
+      "most-romantic": {
+        "line": null,
+        "score": 0,
+        "reasoning": "Confessional self-loathing song — no romantic content at all.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "most-devastating": {
+        "line": "I'll stare directly at the sun, but never in the mirror",
+        "score": 60,
+        "reasoning": "Self-recognition is heavy, but tone is more dark-comedy than tragic.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "cry-factor": {
+        "line": "It must be exhausting always rooting for the anti-hero",
+        "score": 55,
+        "reasoning": "Bittersweet rather than crushing — more 'ouch' than 'tears'.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "best-storytelling": {
+        "line": "I have this dream my daughter-in-law kills me for the money",
+        "score": 75,
+        "reasoning": "Bridge tells a complete vivid story in four lines.",
+        "rejected": false,
+        "manualLine": null
+      },
+      "best-lyrics": {
+        "line": "Did you hear my covert narcissism I disguise as altruism",
+        "score": 90,
+        "reasoning": "Peak modern Taylor craft — internal rhyme, vocab, self-awareness.",
+        "rejected": false,
+        "manualLine": null
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": null,
+        "section": null,
+        "found_in_lyrics": false,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": 54960,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": 59400,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 133920,
+        "section": "Bridge",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 89440,
+        "section": "Pre-Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "tv_0": {
+    "song": "Tim McGraw",
+    "album": "Taylor Swift",
+    "picks": {
+      "most-romantic": {
+        "rejected": false,
+        "manualLine": "He said the way my blue eyes shined",
+        "line": "The moon like a spotlight on the lake",
+        "score": 70,
+        "reasoning": "Iconic Taylor visual — peak romantic memory of the relationship."
+      },
+      "most-devastating": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "September saw a month of tears",
+        "score": 55,
+        "reasoning": "Direct admission of grief, but framed as wistful retrospect rather than fresh wound."
+      },
+      "cry-factor": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "And there's a letter left on your doorstep",
+        "score": 60,
+        "reasoning": "Bridge image of returning with a letter — quiet, visual ache."
+      },
+      "best-storytelling": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "Just a boy in a Chevy truck",
+        "score": 75,
+        "reasoning": "Country-debut character setup in a single line — establishes the whole world."
+      },
+      "best-lyrics": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "The moon like a spotlight on the lake",
+        "score": 70,
+        "reasoning": "Strong debut imagery — the line that anchors the song's nostalgia."
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": 60170,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": 83890,
+        "section": "Verse 2",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": 161800,
+        "section": "Bridge",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 27050,
+        "section": "Verse 1",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 60170,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "tv_1": {
+    "song": "Picture to Burn",
+    "album": "Taylor Swift",
+    "picks": {
+      "most-romantic": {
+        "rejected": false,
+        "manualLine": null,
+        "line": null,
+        "score": 0,
+        "reasoning": "Anger anthem — no romantic content."
+      },
+      "most-devastating": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "I realize you love yourself more than you could ever love me",
+        "score": 35,
+        "reasoning": "A kernel of hurt under all the bravado, but the song is sass not devastation."
+      },
+      "cry-factor": {
+        "rejected": false,
+        "manualLine": null,
+        "line": null,
+        "score": 5,
+        "reasoning": "No tears — this is pure attitude and revenge."
+      },
+      "best-storytelling": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "There's no time for tears, I'm just sittin' here planning my revenge",
+        "score": 60,
+        "reasoning": "Sets up the whole song's posture in one declarative line."
+      },
+      "best-lyrics": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "As far as I'm concerned, you're just another picture to burn",
+        "score": 65,
+        "reasoning": "Title-drop with the central burn metaphor — catchy if simple."
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": null,
+        "section": null,
+        "found_in_lyrics": false,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": 15270,
+        "section": "Verse 1",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": null,
+        "section": null,
+        "found_in_lyrics": false,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 56760,
+        "section": "Verse 2",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 45630,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "tv_3": {
+    "song": "Stay Beautiful",
+    "album": "Taylor Swift",
+    "picks": {
+      "most-romantic": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "I hope your life leads you back to my door",
+        "score": 75,
+        "reasoning": "Selfless wish for the crush — the heart of the song's sweetness."
+      },
+      "most-devastating": {
+        "rejected": false,
+        "manualLine": null,
+        "line": null,
+        "score": 5,
+        "reasoning": "Sweet, well-wishing crush song — no devastating content."
+      },
+      "cry-factor": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "If you and I are a story",
+        "score": 50,
+        "reasoning": "Bridge has the song's only real ache — a quiet might-have-been."
+      },
+      "best-storytelling": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "Cory's eyes are like a jungle",
+        "score": 55,
+        "reasoning": "Opens the song with a vivid character introduction."
+      },
+      "best-lyrics": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "He whispers songs into my window",
+        "score": 50,
+        "reasoning": "Sweet image, but earlier-era simplicity — not peak craft."
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": 55430,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": null,
+        "section": null,
+        "found_in_lyrics": false,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": 139380,
+        "section": "Bridge",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 7790,
+        "section": "Verse 1",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 15710,
+        "section": "Verse 1",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "tv_4": {
+    "song": "Should've Said No",
+    "album": "Taylor Swift",
+    "picks": {
+      "most-romantic": {
+        "rejected": false,
+        "manualLine": null,
+        "line": null,
+        "score": 0,
+        "reasoning": "Cheating betrayal anthem — no romantic content."
+      },
+      "most-devastating": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "Yesterday, I found out about you",
+        "score": 70,
+        "reasoning": "The pivot moment when the betrayal lands — direct gut punch."
+      },
+      "cry-factor": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "And I should've been there in the back of your mind",
+        "score": 60,
+        "reasoning": "Vulnerability cracks the anger — the cry line beneath the spite."
+      },
+      "best-storytelling": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "It's strange to think the songs we used to sing",
+        "score": 60,
+        "reasoning": "Opens with reflective scene-setting before the betrayal reveal."
+      },
+      "best-lyrics": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "You should've said no, you should've gone home",
+        "score": 60,
+        "reasoning": "Title-drop with anaphoric \"should've\" structure — catchy."
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": null,
+        "section": null,
+        "found_in_lyrics": false,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": 35160,
+        "section": "Verse 1",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": 150870,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 23700,
+        "section": "Verse 1",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 139480,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "tv_5": {
+    "song": "Cold as You",
+    "album": "Taylor Swift",
+    "picks": {
+      "most-romantic": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "And I stood there loving you and wished them all away",
+        "score": 35,
+        "reasoning": "Devotion in the face of coldness — sad-romantic, not swoony."
+      },
+      "most-devastating": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "I've never been anywhere cold as you",
+        "score": 80,
+        "reasoning": "Title line carrying the central devastation — the whole song in one image."
+      },
+      "cry-factor": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "But I cried, cried for you",
+        "score": 75,
+        "reasoning": "Bridge confession — naming her own tears against an unfeeling lover."
+      },
+      "best-storytelling": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "You put up walls and paint them all a shade of gray",
+        "score": 60,
+        "reasoning": "Vivid metaphor that captures the lover's entire emotional architecture."
+      },
+      "best-lyrics": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "Oh, what a shame, what a rainy ending",
+        "score": 70,
+        "reasoning": "Sound and meaning fused — the chorus opener doing structural work."
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": 98390,
+        "section": "Verse 2",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": 70650,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": 168320,
+        "section": "Bridge",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 87460,
+        "section": "Verse 2",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 44470,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "tv_6": {
+    "song": "The Outside",
+    "album": "Taylor Swift",
+    "picks": {
+      "most-romantic": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "I would give it all up to be",
+        "score": 25,
+        "reasoning": "Implied unrequited longing — barely qualifies as romantic."
+      },
+      "most-devastating": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "Nobody ever lets me in",
+        "score": 65,
+        "reasoning": "Pure isolation captured in five words — the song's emotional core."
+      },
+      "cry-factor": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "I've never been on the outside",
+        "score": 65,
+        "reasoning": "Heightened self-pity — the line that twists the knife on loneliness."
+      },
+      "best-storytelling": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "I tried to take the road less traveled by",
+        "score": 50,
+        "reasoning": "Frost-reference frames the self-narrative of being out of step."
+      },
+      "best-lyrics": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "On the outside looking in",
+        "score": 55,
+        "reasoning": "Anchors the song with a clean declarative phrase."
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": 86360,
+        "section": "Verse 2",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": 56280,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": 73200,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 36050,
+        "section": "Pre-Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 64810,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "tv_7": {
+    "song": "Tied Together with a Smile",
+    "album": "Taylor Swift",
+    "picks": {
+      "most-romantic": {
+        "rejected": false,
+        "manualLine": null,
+        "line": null,
+        "score": 0,
+        "reasoning": "Friend song about hidden struggle — not romantic."
+      },
+      "most-devastating": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "That you cry, but you don't tell anyone",
+        "score": 70,
+        "reasoning": "Devastating witness to a friend's hidden pain — quiet and exact."
+      },
+      "cry-factor": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "And you're tied together with a smile",
+        "score": 75,
+        "reasoning": "Title image — the brave-face mask cracking under pressure."
+      },
+      "best-storytelling": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "But he leaves you out like a penny in the rain",
+        "score": 60,
+        "reasoning": "Vivid simile that captures the friend's disposability."
+      },
+      "best-lyrics": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "The water's high, you're jumping into it and letting go",
+        "score": 65,
+        "reasoning": "Strong metaphor for self-destructive surrender."
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": null,
+        "section": null,
+        "found_in_lyrics": false,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": 60740,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": 69070,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 104530,
+        "section": "Verse 2",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 50570,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "tv_8": {
+    "song": "Mary's Song (Oh My My My)",
+    "album": "Taylor Swift",
+    "picks": {
+      "most-romantic": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "Take me back to the time when we walked down the aisle",
+        "score": 90,
+        "reasoning": "Definitive lifelong-love song — wedding moment in the arc."
+      },
+      "most-devastating": {
+        "rejected": false,
+        "manualLine": null,
+        "line": null,
+        "score": 0,
+        "reasoning": "Pure happy story — no devastation."
+      },
+      "cry-factor": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "And I'll be eighty-seven, you'll be eighty-nine",
+        "score": 70,
+        "reasoning": "Wedding-tears territory — imagining a whole life together."
+      },
+      "best-storytelling": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "She said I was seven and you were nine",
+        "score": 85,
+        "reasoning": "Opens a complete childhood-to-marriage narrative arc."
+      },
+      "best-lyrics": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "I looked at you like the stars that shined",
+        "score": 65,
+        "reasoning": "Opening imagery that frames a whole life of seeing this person."
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": 165030,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": null,
+        "section": null,
+        "found_in_lyrics": false,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": 191340,
+        "section": "Outro",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 12230,
+        "section": "Verse 1",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 15460,
+        "section": "Verse 1",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "tv_9": {
+    "song": "Our Song",
+    "album": "Taylor Swift",
+    "picks": {
+      "most-romantic": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "The other on my heart",
+        "score": 75,
+        "reasoning": "Sweet teen-romance image — driving with him, hand on her heart."
+      },
+      "most-devastating": {
+        "rejected": false,
+        "manualLine": null,
+        "line": null,
+        "score": 5,
+        "reasoning": "Happy debut single about a country teen romance — no devastation."
+      },
+      "cry-factor": {
+        "rejected": false,
+        "manualLine": null,
+        "line": null,
+        "score": 10,
+        "reasoning": "Pure happy song — no tear-trigger moment."
+      },
+      "best-storytelling": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "I was ridin' shotgun with my hair undone",
+        "score": 75,
+        "reasoning": "Country opening that places you in the scene immediately."
+      },
+      "best-lyrics": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "Our song is a slammin' screen door",
+        "score": 75,
+        "reasoning": "Clever conceit — the title-drop where the metaphor lands."
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": 19900,
+        "section": "Verse 1",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": null,
+        "section": null,
+        "found_in_lyrics": false,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": null,
+        "section": null,
+        "found_in_lyrics": false,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 11630,
+        "section": "Verse 1",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 35100,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "fe_0": {
+    "song": "Fearless",
+    "album": "Fearless (Taylor's Version)",
+    "picks": {
+      "most-romantic": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "You take my hand and drag me head first, fearless",
+        "score": 90,
+        "reasoning": "Definitive falling-in-love line in Taylor's discography — title image."
+      },
+      "most-devastating": {
+        "rejected": false,
+        "manualLine": null,
+        "line": null,
+        "score": 0,
+        "reasoning": "Pure love song — no devastating content."
+      },
+      "cry-factor": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "And I don't know how it gets better than this",
+        "score": 60,
+        "reasoning": "Happy-cry escalation — the breathless awe moment."
+      },
+      "best-storytelling": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "There's a glow off the pavement",
+        "score": 70,
+        "reasoning": "After-rain visual that anchors the whole song's setting."
+      },
+      "best-lyrics": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "In a storm, in my best dress, fearless",
+        "score": 80,
+        "reasoning": "Peak craft — image, sound, and theme fused into one line."
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": 120980,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": null,
+        "section": null,
+        "found_in_lyrics": false,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": 116180,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 25270,
+        "section": "Verse 1",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 130870,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "fe_1": {
+    "song": "Fifteen",
+    "album": "Fearless (Taylor's Version)",
+    "picks": {
+      "most-romantic": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "And you're feelin' like flyin'",
+        "score": 50,
+        "reasoning": "First-love feeling — romantic but framed retrospectively as naive."
+      },
+      "most-devastating": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "And Abigail gave everything she had",
+        "score": 80,
+        "reasoning": "Real-friend devastation — naming Abigail makes it land harder."
+      },
+      "cry-factor": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "When all you wanted was to be wanted",
+        "score": 80,
+        "reasoning": "Bridge confession — the bare emotional core of teenagedom."
+      },
+      "best-storytelling": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "You sit in class next to a redhead named Abigail",
+        "score": 90,
+        "reasoning": "Coming-of-age narrative excellence — specificity carries the whole arc."
+      },
+      "best-lyrics": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "I've found time can heal most anything",
+        "score": 75,
+        "reasoning": "Wisdom line that gives the retrospective frame its emotional weight."
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": 122990,
+        "section": "Verse 2",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": 207450,
+        "section": "Bridge",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": 183490,
+        "section": "Bridge",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 97570,
+        "section": "Verse 2",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 240470,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "fe_2": {
+    "song": "Love Story",
+    "album": "Fearless (Taylor's Version)",
+    "picks": {
+      "most-romantic": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "Marry me, Juliet, you'll never have to be alone",
+        "score": 92,
+        "reasoning": "Direct proposal — the resolution of one of Taylor's most romantic songs."
+      },
+      "most-devastating": {
+        "rejected": false,
+        "manualLine": null,
+        "line": null,
+        "score": 5,
+        "reasoning": "Pure love story with a happy ending — devastation doesn't fit."
+      },
+      "cry-factor": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "He knelt to the ground and pulled out a ring, and said",
+        "score": 75,
+        "reasoning": "Happy-cry moment — the proposal landing as narrative payoff."
+      },
+      "best-storytelling": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "We were both young when I first saw you",
+        "score": 90,
+        "reasoning": "Opens the song's narrative frame — flashback structure stated cleanly."
+      },
+      "best-lyrics": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "Romeo, take me somewhere we can be alone",
+        "score": 80,
+        "reasoning": "Chorus carrying the Shakespeare metaphor — instantly memorable."
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": 197310,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": null,
+        "section": null,
+        "found_in_lyrics": false,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": 192910,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 15870,
+        "section": "Verse 1",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 64459,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  },
+  "fe_3": {
+    "song": "Hey Stephen",
+    "album": "Fearless (Taylor's Version)",
+    "picks": {
+      "most-romantic": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "Can't help it if I wanna kiss you in the rain so",
+        "score": 80,
+        "reasoning": "Iconic crush imagery — the central romantic moment of the song."
+      },
+      "most-devastating": {
+        "rejected": false,
+        "manualLine": null,
+        "line": null,
+        "score": 0,
+        "reasoning": "Light crush song — no devastation."
+      },
+      "cry-factor": {
+        "rejected": false,
+        "manualLine": null,
+        "line": null,
+        "score": 5,
+        "reasoning": "Happy and flirty throughout — no tear-trigger."
+      },
+      "best-storytelling": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "But would they write a song for you?",
+        "score": 65,
+        "reasoning": "Meta moment — the song acknowledging itself as the gesture."
+      },
+      "best-lyrics": {
+        "rejected": false,
+        "manualLine": null,
+        "line": "They're dimming the street lights, you're perfect for me",
+        "score": 70,
+        "reasoning": "Bridge image — soft cinematic moment where the song crystallises."
+      }
+    },
+    "resolved": {
+      "most-romantic": {
+        "ms": 55950,
+        "section": "Chorus",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "most-devastating": {
+        "ms": null,
+        "section": null,
+        "found_in_lyrics": false,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "cry-factor": {
+        "ms": null,
+        "section": null,
+        "found_in_lyrics": false,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-storytelling": {
+        "ms": 171560,
+        "section": "Breakdown",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      },
+      "best-lyrics": {
+        "ms": 139390,
+        "section": "Bridge",
+        "found_in_lyrics": true,
+        "used_section_start": false,
+        "used_manual_line": false,
+        "rejected": false
+      }
+    }
+  }
+}
