@@ -110,7 +110,7 @@ export default function Categories({
   return (
     <div>
       {/* Reset weightings banner — appears at the top whenever weights have been customised */}
-      {isPro && Object.keys(categoryWeights).length > 0 && (
+      {Object.keys(categoryWeights).length > 0 && (
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -183,16 +183,13 @@ export default function Categories({
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{cat.name}</span>
-                      {!isPro && isOn && (
-                        <span style={{ fontSize: 12, color: '#9ca3af' }}>{normalizedPct(cat.id)}%</span>
-                      )}
                     </div>
                     <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
                       {isOn ? cat.description : 'Off — your existing ratings are saved and will reapply if turned back on.'}
                     </div>
                   </div>
                 </div>
-                {isPro && isOn && (
+                {isOn && (
                   <WeightSlider
                     catId={cat.id}
                     rawWeight={rawWeight(cat)}

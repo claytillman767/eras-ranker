@@ -180,7 +180,8 @@ src/
 - `isPro` stored as `'eras_is_pro'` in localStorage; `unlockPro()` is a mock — no payment wired
 - Extra category weights rescaled so all active categories always sum to 100
 - Weight overrides stored per-category in `eras_category_weights`; reset clears that key
-- Pro gates: extra/custom categories, weight sliders, Categories tab paywall UI, **Spotify integration**
+- Pro gates: extra categories, custom categories, Categories tab paywall UI, **Spotify integration**
+- **Free for everyone:** all 5 default categories, default-category weight sliders, on/off toggles, weight reset banner
 
 ## Beta gate
 - Controlled by two env vars (set in `.env` locally and in Vercel environment settings):
@@ -532,6 +533,45 @@ Firestore's `setDoc` throws **synchronously** when data contains nested arrays. 
 - Increment `bracketsCompleted` when the final winner is set (i.e. the bracket transitions to a finished state)
 - These pair with the existing per-user analytics fields (`totalRatings`, `albumsCompleted`) so we can spot drop-offs in the bracket flow without scanning every user's full state
 - Same write pattern as `useUserStats` — silent failure on offline, no rules changes needed
+
+### Notification System (engagement loop) — NOT BUILT
+
+**Goal:** drive engagement during a new user's first week and re-engage lapsed users. Reuses existing per-user Firestore fields (`signedUpAt`, `lastActiveAt`, `sessionCount`, `totalRatings`, `albumsCompleted`).
+
+**Channels (v1):** email + in-app banners. **Skip web push for v1** — iOS only supports it for installed PWAs, opt-in rates are low, not worth the build cost yet. Reconsider after launch if email isn't enough.
+
+**First-week schedule:**
+
+| When | Trigger | Message | Channel |
+|---|---|---|---|
+| Sign-up | Account created | Welcome + "pick your first album" | In-app banner |
+| +1 day inactive | No session since signup | "Vibe check your first album in 2 minutes" | Email |
+| +2 days, partial album | Started but didn't finish an album | "You're N songs from completing {album}" | Email |
+| +3 days | Weekly bracket live | "This week's bracket — vote in 60 seconds" | Email + banner |
+| Album completed | First full album rated | "Share your rankings card" | In-app moment + email follow-up |
+| +7 days | One-week mark | "Here's how your top 10 looks vs other Swifties" | Email |
+| +14 days inactive | Re-engagement | "Your rankings are waiting" | Email |
+
+**What needs building:**
+- Email service — Resend or Postmark (free tier covers early scale; ~$20/mo at growth). Simpler setup than SendGrid.
+- Scheduler — daily job (Vercel Cron or Firebase scheduled function) reads each user doc and sends due emails.
+- Two new Firestore fields per user: `notificationPrefs` (per-type opt-out) and `notificationsSent` (log of what was sent + when, prevents spam).
+- Unsubscribe page — legally required, one-click off any list.
+- In-app banner component above home tab; reads "next nudge" from user doc.
+
+**Guardrails:**
+- Cap at 1 email/day, max 3/week until user is regularly active
+- Default opt-in for transactional + product updates, opt-out for marketing
+- Easy unsubscribe link in every email footer
+- Never email password-bypass beta users (no Firebase user record)
+- Log open + click rates so dead messages can be killed
+
+**Decisions still open before building:**
+1. Web push in v1 or email only? (Recommended: email only.)
+2. Email service + budget tier?
+3. Draft email copy upfront or ship with placeholders?
+
+**Smallest first step:** pick email service → add the two Firestore fields → ship the Day +1 inactive-user email. Everything else slots in after that.
 
 ---
 

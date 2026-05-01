@@ -25,9 +25,9 @@ export default function PaywallCard({ onUnlock }) {
       {/* Feature list */}
       <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
         {[
+          'Connect Spotify to play songs while you rate',
           '8 new categories to score',
           'Add your own custom categories',
-          'Adjust category weights',
           'Export your full rankings list',
         ].map(item => (
           <li key={item} style={{ fontSize: 13, color: '#374151', display: 'flex', gap: 8 }}>
