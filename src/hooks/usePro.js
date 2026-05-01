@@ -45,18 +45,21 @@ export function usePro(user) {
 
   // Mock unlock — sets isPro immediately without any payment.
   // Replace this with Stripe Checkout in production.
-  // When a user is signed in, also records the upgrade timestamp on their
-  // Firestore doc so we can see Pro adoption pre-Stripe.
+  //
+  // Pro upgrades REQUIRE a signed-in account. This ties the purchase to a
+  // user identity (so it carries to other devices and survives a localStorage
+  // wipe), and it's a hard prerequisite once Stripe is wired up — Stripe
+  // needs a customer record. Returns true on success, false if no user.
   const unlockPro = useCallback(() => {
+    if (!user || !db) return false;
     localStorage.setItem(KEY_IS_PRO, 'true');
     setIsPro(true);
-    if (user && db) {
-      setDoc(
-        doc(db, 'users', user.uid),
-        { isPro: true, proUpgradedAt: serverTimestamp() },
-        { merge: true }
-      ).catch(() => {});
-    }
+    setDoc(
+      doc(db, 'users', user.uid),
+      { isPro: true, proUpgradedAt: serverTimestamp() },
+      { merge: true }
+    ).catch(() => {});
+    return true;
   }, [user]);
 
   // Toggle an extra category on or off

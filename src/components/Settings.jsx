@@ -4,6 +4,7 @@ import { db } from '../firebase';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
 import CategoriesEditor from './CategoriesEditor';
+import SpotifyBadge from './SpotifyBadge';
 
 // Settings tab — app-wide display and behaviour preferences.
 export default function Settings({
@@ -98,7 +99,12 @@ export default function Settings({
 
       {/* ── Pro upgrade modal ── */}
       {showProModal && (
-        <ProModal onUnlock={handleUnlockPro} onClose={() => setShowProModal(false)} />
+        <ProModal
+          onUnlock={handleUnlockPro}
+          onClose={() => setShowProModal(false)}
+          user={user}
+          signIn={signIn}
+        />
       )}
 
       {/* ── Account section ── */}
@@ -532,6 +538,8 @@ export default function Settings({
           resetCategoryWeights={resetCategoryWeights}
           getCompositeScore={getCompositeScore}
           getAlbumScore={getAlbumScore}
+          user={user}
+          signIn={signIn}
         />
       )}
 
@@ -616,12 +624,26 @@ export default function Settings({
 }
 
 // ── Pro upgrade modal ─────────────────────────────────────────────────────────
-function ProModal({ onUnlock, onClose }) {
+// Two-step modal:
+//   step 'features' → feature list + "Unlock Pro" button
+//   step 'signin'   → "Sign in required" panel, shown after the user taps
+//                     Unlock Pro without being signed in (lets them make the
+//                     decision first, then explains the login requirement)
+function ProModal({ onUnlock, onClose, user, signIn }) {
+  const [step, setStep] = useState('features');
   const features = [
     { kind: 'spotify', label: 'Connect Spotify',     desc: 'Hear each song play while you rate it' },
     { kind: 'emoji',   icon: '📊', label: '8 extra categories', desc: 'Hook, Vocals, Cry Factor, and more' },
     { kind: 'emoji',   icon: '✏️', label: 'Custom categories',  desc: 'Add your own scoring dimensions' },
   ];
+
+  function handleUnlock() {
+    if (!user) {
+      setStep('signin');
+      return;
+    }
+    onUnlock();
+  }
 
   return (
     <div
@@ -650,82 +672,185 @@ function ProModal({ onUnlock, onClose }) {
           boxShadow: '0 12px 40px rgba(0,0,0,0.18)',
         }}
       >
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          <span style={{ fontSize: 22 }}>⭐</span>
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>
-            Unlock Pro
-          </div>
-        </div>
-        <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.5 }}>
-          One-time unlock. No subscription, no recurring charges.
-        </div>
-
-        {/* Feature list */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
-          {features.map(f => (
-            <div key={f.label} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{
-                width: 40,
-                height: 40,
-                borderRadius: 10,
-                background: f.kind === 'spotify' ? '#ffffff' : '#f3e8ff',
-                border: f.kind === 'spotify' ? '0.5px solid #e5e7eb' : 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 18,
-                flexShrink: 0,
-              }}>
-                {f.kind === 'spotify'
-                  ? <SpotifyBadge variant="green" size={26} />
-                  : f.icon}
-              </div>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>{f.label}</div>
-                <div style={{ fontSize: 12, color: '#6b7280' }}>{f.desc}</div>
+        {step === 'features' ? (
+          <>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+              <span style={{ fontSize: 22 }}>⭐</span>
+              <div style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>
+                Unlock Pro
               </div>
             </div>
-          ))}
-        </div>
+            <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.5 }}>
+              One-time unlock. No subscription, no recurring charges.
+            </div>
 
-        {/* Unlock button */}
-        <button
-          onClick={onUnlock}
-          style={{
-            width: '100%',
-            padding: '14px',
-            borderRadius: 12,
-            border: 'none',
-            background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
-            color: '#ffffff',
-            fontSize: 16,
-            fontWeight: 700,
-            cursor: 'pointer',
-            boxShadow: '0 4px 20px rgba(168,85,247,0.35)',
-            marginBottom: 12,
-          }}
-        >
-          Unlock Pro
-        </button>
+            {/* Feature list */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
+              {features.map(f => (
+                <div key={f.label} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 10,
+                    background: f.kind === 'spotify' ? '#ffffff' : '#f3e8ff',
+                    border: f.kind === 'spotify' ? '0.5px solid #e5e7eb' : 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 18,
+                    flexShrink: 0,
+                  }}>
+                    {f.kind === 'spotify'
+                      ? <SpotifyBadge variant="green" size={26} />
+                      : f.icon}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>{f.label}</div>
+                    <div style={{ fontSize: 12, color: '#6b7280' }}>{f.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-        <button
-          onClick={onClose}
-          style={{
-            width: '100%',
-            padding: '12px',
-            borderRadius: 12,
-            border: '0.5px solid #e5e7eb',
-            background: '#ffffff',
-            color: '#6b7280',
-            fontSize: 14,
-            cursor: 'pointer',
-          }}
-        >
-          Not now
-        </button>
+            {/* Unlock — always tappable. If not signed in, transitions to the
+                sign-in step instead of immediately calling onUnlock. */}
+            <button
+              onClick={handleUnlock}
+              style={{
+                width: '100%',
+                padding: '14px',
+                borderRadius: 12,
+                border: 'none',
+                background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+                color: '#ffffff',
+                fontSize: 16,
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 4px 20px rgba(168,85,247,0.35)',
+                marginBottom: 12,
+              }}
+            >
+              Unlock Pro
+            </button>
+
+            <button
+              onClick={onClose}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: 12,
+                border: '0.5px solid #e5e7eb',
+                background: '#ffffff',
+                color: '#6b7280',
+                fontSize: 14,
+                cursor: 'pointer',
+              }}
+            >
+              Not now
+            </button>
+          </>
+        ) : (
+          <SignInRequiredStep
+            onBack={() => setStep('features')}
+            signIn={signIn}
+          />
+        )}
       </div>
     </div>
+  );
+}
+
+// Step 2 of the Pro modal — shown after the user taps "Unlock Pro" without
+// being signed in. Explains that sign-in is needed first (so the purchase
+// follows them to every device) and offers a Google sign-in button.
+// Reused by other Pro upgrade surfaces (PaywallCard, VibeCheckIntro).
+export function SignInRequiredStep({ onBack, signIn }) {
+  return (
+    <>
+      {/* Back arrow */}
+      <button
+        onClick={onBack}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          background: 'none',
+          border: 'none',
+          padding: 0,
+          color: '#6b7280',
+          fontSize: 13,
+          cursor: 'pointer',
+          marginBottom: 16,
+        }}
+      >
+        ← Back
+      </button>
+
+      {/* Lock icon */}
+      <div style={{
+        width: 56,
+        height: 56,
+        borderRadius: 16,
+        background: '#f3e8ff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        margin: '0 auto 16px',
+        fontSize: 28,
+      }}>
+        🔐
+      </div>
+
+      <div style={{
+        fontSize: 19,
+        fontWeight: 700,
+        color: '#111827',
+        textAlign: 'center',
+        marginBottom: 8,
+      }}>
+        Sign in to continue
+      </div>
+
+      <div style={{
+        fontSize: 13,
+        color: '#6b7280',
+        textAlign: 'center',
+        lineHeight: 1.6,
+        marginBottom: 24,
+      }}>
+        Pro is tied to your Google account so it follows you to every device —
+        no risk of losing it if you change browsers or clear your cache.
+      </div>
+
+      <button
+        onClick={signIn}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
+          width: '100%',
+          padding: '13px',
+          borderRadius: 12,
+          border: '1px solid #d1d5db',
+          background: '#ffffff',
+          color: '#111827',
+          fontSize: 15,
+          fontWeight: 600,
+          cursor: 'pointer',
+          marginBottom: 10,
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 18 18">
+          <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+          <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+          <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+          <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+        </svg>
+        Sign in with Google
+      </button>
+    </>
   );
 }
 
@@ -791,21 +916,3 @@ function SettingRow({ label, description, value, onChange }) {
   );
 }
 
-// Spotify logo mark — three approved color variants per Spotify design guidelines:
-//   'green' — on WHITE backgrounds only
-//   'black' — on light/colored backgrounds
-//   'white' — on dark or Spotify-green backgrounds
-function SpotifyBadge({ variant = 'green', size = 22 }) {
-  const circleFill = variant === 'green' ? '#1DB954'
-    : variant === 'black' ? '#191414'
-    : 'rgba(255,255,255,0.3)';
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-label="Spotify" style={{ flexShrink: 0 }}>
-      <circle cx="12" cy="12" r="12" fill={circleFill} />
-      <path
-        d="M17.25 16.31c-.19.31-.6.41-.91.22-2.49-1.52-5.63-1.87-9.33-1.02-.35.08-.7-.13-.79-.48-.08-.35.13-.7.48-.79 4.05-.93 7.52-.53 10.33 1.16.31.19.41.6.22.91zm1.26-2.81c-.24.38-.75.5-1.13.27-2.85-1.75-7.19-2.26-10.56-1.24-.43.13-.88-.11-1.01-.54-.13-.43.11-.88.54-1.01 3.86-1.17 8.66-.6 11.89 1.4.38.23.5.75.27 1.12zm.11-2.93c-3.42-2.03-9.07-2.21-12.33-1.22-.51.16-1.06-.13-1.22-.64-.16-.51.13-1.06.64-1.22C9.12 6.33 15.3 6.54 19.21 8.9c.46.27.61.86.34 1.32-.27.46-.86.61-1.32.34z"
-        fill="white"
-      />
-    </svg>
-  );
-}

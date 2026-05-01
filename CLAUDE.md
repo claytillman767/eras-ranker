@@ -123,6 +123,15 @@ src/
                              cover art image when provided, falls back to emoji/color otherwise
     AlbumModeModal.jsx     — bottom-sheet shown on first album visit; "Vibe Check" (auto-starts QuickScore)
                              or "Sort It Yourself"; choice saved via useAlbumModes
+    VibeCheckIntro.jsx     — full-screen overlay shown ONCE on user's first Vibe Check
+                             (gated by 'eras_vibecheck_intro_seen'). Teaches the Spotify
+                             integration; uses "Play Bridge" as a Pro upsell hook.
+                             CTAs adapt to user state: signed-out → "Sign in to unlock Pro";
+                             signed-in non-Pro → "Unlock Pro"; Pro non-connected → "Connect Spotify".
+                             Pro + Spotify-connected users skip this screen entirely.
+    SpotifyBadge.jsx       — Spotify logo SVG in the three approved color variants
+                             ('green' on white, 'black' on light, 'white' on dark/green).
+                             Default size 22; pass size={24}+ for new code (CLAUDE.md min).
     SongList.jsx           — song list for one album; owns drag, QuickScore, AlbumCompleteCard state
                              receives spotify, spotifyAutoplay, spotifyAlbumArt, onGoToSpotifySettings props
                              spotifyAlbumArt passed to AlbumHero; spotify/spotifyAutoplay passed to QuickScore
@@ -178,6 +187,11 @@ src/
 
 ## Pro system
 - `isPro` stored as `'eras_is_pro'` in localStorage; `unlockPro()` is a mock — no payment wired
+- **Pro upgrades require a signed-in user.** `unlockPro()` no-ops and returns `false` if no user.
+  Reason: a paid upgrade must be tied to identity so it survives device wipes and follows the user
+  to other devices, and Stripe will need a customer record once real billing is wired up.
+  Every UI surface that offers Pro upgrade (Settings ProModal, PaywallCard, VibeCheckIntro) shows
+  a Google sign-in CTA instead of the unlock button when no user is signed in.
 - Extra category weights rescaled so all active categories always sum to 100
 - Weight overrides stored per-category in `eras_category_weights`; reset clears that key
 - Pro gates: extra categories, custom categories, Categories tab paywall UI, **Spotify integration**

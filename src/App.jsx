@@ -9,6 +9,7 @@ import { useSpotify } from './hooks/useSpotify';
 import { useUserStats } from './hooks/useUserStats';
 import BetaGate from './components/BetaGate';
 import Welcome from './components/Welcome';
+import VibeCheckIntro, { hasSeenVibeCheckIntro } from './components/VibeCheckIntro';
 import Home from './components/Home';
 import AlbumGrid from './components/AlbumGrid';
 import AlbumModeModal from './components/AlbumModeModal';
@@ -99,6 +100,9 @@ export default function App() {
   const [pendingAlbumId, setPendingAlbumId] = useState(null);
   const [autoStartScore, setAutoStartScore] = useState(false);
   const [autoStartSongIndex, setAutoStartSongIndex] = useState(null);
+  // Holds the album the user just chose Vibe Check for, while the
+  // Spotify intro screen is showing (first-time only).
+  const [pendingVibeCheckAlbumId, setPendingVibeCheckAlbumId] = useState(null);
 
   // Close the user menu if the user clicks anywhere outside it
   useEffect(() => {
@@ -180,12 +184,35 @@ export default function App() {
   }
 
   function handleChooseScore() {
-    setAlbumMode(pendingAlbumId, 'score');
-    setSelectedAlbumId(pendingAlbumId);
+    const albumId = pendingAlbumId;
+    setPendingAlbumId(null); // close the AlbumModeModal either way
+
+    // First Vibe Check ever? Show the Spotify intro before launching QuickScore.
+    // Skipped for users who are already enjoying it (Pro + Spotify connected).
+    const alreadyBenefits = isPro && spotify?.isConnected;
+    if (!hasSeenVibeCheckIntro() && !alreadyBenefits) {
+      setPendingVibeCheckAlbumId(albumId);
+      return;
+    }
+
+    launchVibeCheck(albumId);
+  }
+
+  // Common launch path used by both the normal flow and after the Spotify
+  // intro is dismissed. Records the album mode and opens QuickScore.
+  function launchVibeCheck(albumId) {
+    if (!albumId) return;
+    setAlbumMode(albumId, 'score');
+    setSelectedAlbumId(albumId);
     setAutoStartScore(true);
     setAutoStartSongIndex(null);
-    setPendingAlbumId(null);
     setActiveTab('rate');
+  }
+
+  function handleVibeCheckIntroContinue() {
+    const albumId = pendingVibeCheckAlbumId;
+    setPendingVibeCheckAlbumId(null);
+    launchVibeCheck(albumId);
   }
 
   function handleChooseManual() {
@@ -382,6 +409,18 @@ export default function App() {
           onChooseScore={handleChooseScore}
           onChooseManual={handleChooseManual}
           onBack={() => setPendingAlbumId(null)}
+        />
+      )}
+
+      {/* Spotify intro — shown ONCE on the user's first Vibe Check */}
+      {pendingVibeCheckAlbumId !== null && (
+        <VibeCheckIntro
+          user={user}
+          isPro={isPro}
+          spotify={spotify}
+          unlockPro={unlockPro}
+          signIn={signIn}
+          onContinue={handleVibeCheckIntroContinue}
         />
       )}
 

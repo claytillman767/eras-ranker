@@ -71,6 +71,8 @@ export default function Categories({
   categoryWeights,
   setCategoryWeight,
   resetCategoryWeights,
+  user,
+  signIn,
 }) {
   const [newCatName, setNewCatName] = useState('');
   const [newCatType, setNewCatType] = useState('stars');
@@ -476,7 +478,7 @@ export default function Categories({
       ) : (
         // Paywall card + teaser for free users
         <>
-          <PaywallCard onUnlock={unlockPro} />
+          <PaywallCard onUnlock={unlockPro} user={user} signIn={signIn} />
 
           {/* Teaser — extra categories (locked) */}
           <div style={{ marginTop: 24, position: 'relative' }}>
