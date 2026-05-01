@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
@@ -43,15 +43,39 @@ export function usePro(user) {
   const [disabledCustoms, setDisabledCustoms] = useState(loadDisabledCustoms);
   const [disabledDefaults, setDisabledDefaults] = useState(loadDisabledDefaults);
 
-  // On sign-in, hydrate isPro from Firestore. CLOUD WINS unconditionally —
-  // unlike the other hooks (ratings, manualOrder, settings) we do NOT migrate
-  // localStorage up to the cloud here. A paid Pro purchase only ever exists
-  // in Firestore (written by unlockPro while signed in), so a localStorage
-  // 'eras_is_pro=true' without a matching cloud record is either stale state
-  // or DevTools tampering — either way, cloud is the truth and local resets
-  // to match. Other Pro-related state (extras, custom categories, weights)
-  // is intentionally left local for now — see CLAUDE.md gotchas list.
+  // Tracks the previous user so we can detect a real sign-out transition
+  // (had a user, now don't) without firing on the initial null→null render.
+  const prevUserRef = useRef(null);
+
+  // Watches `user` changes — handles both sign-in (hydrate from Firestore)
+  // and sign-out (revoke Pro locally) for the same entitlement flag.
+  //
+  // SIGN-IN — CLOUD WINS unconditionally. Unlike the other hooks (ratings,
+  // manualOrder, settings) we do NOT migrate localStorage up to the cloud
+  // here. A paid Pro purchase only ever exists in Firestore (written by
+  // unlockPro while signed in), so a localStorage 'eras_is_pro=true' without
+  // a matching cloud record is either stale state or DevTools tampering —
+  // either way, cloud is the truth and local resets to match.
+  //
+  // SIGN-OUT — clears the local Pro flag so the device stops claiming the
+  // entitlement once the account that paid for it leaves. Firestore still
+  // has the isPro record on the user's doc, so signing back in restores
+  // Pro instantly via the hydration branch.
+  //
+  // Other Pro-related state (extras, custom categories, weights) is left
+  // alone — those are user preferences, not entitlements.
   useEffect(() => {
+    const prevUser = prevUserRef.current;
+    prevUserRef.current = user;
+
+    // Sign-out transition: had a user, now don't. Doesn't fire on the
+    // initial null→null render (prevUser starts null too).
+    if (prevUser && !user) {
+      setIsPro(false);
+      localStorage.removeItem(KEY_IS_PRO);
+      return;
+    }
+
     if (!user || !db) return;
     getDoc(doc(db, 'users', user.uid)).then(snap => {
       const cloudIsPro = snap.exists() && snap.data().isPro === true;

@@ -195,6 +195,10 @@ src/
   (`localStorage.setItem('eras_is_pro','true')`) — the next sign-in will reset it. Unlike other
   hooks, usePro does NOT migrate localStorage up to Firestore: a local-only Pro flag is treated as
   stale or tampered, never as truth.
+- **Sign-out revokes Pro locally.** On a real sign-out transition (had a user, now don't), usePro
+  clears `eras_is_pro` and resets `isPro` state. Firestore still has the user's record, so signing
+  back in instantly restores Pro via the hydration branch. Detection uses a `prevUserRef` so the
+  initial `null → null` render on app load doesn't trigger a false revocation.
 - Pro UI surfaces (Settings ProModal, PaywallCard, VibeCheckIntro) keep "Unlock Pro" tappable; if
   no user, tapping it routes through a shared "Sign in to continue" step (Back arrow → returns).
 - Extra category weights rescaled so all active categories always sum to 100
