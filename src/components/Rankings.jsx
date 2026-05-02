@@ -73,7 +73,7 @@ export default function Rankings({ getCompositeScore, getAlbumScore, activeCateg
       {/* Empty state */}
       {isEmpty && (
         <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 14, padding: '40px 0' }}>
-          No ratings yet — go to Rate Songs to get started.
+          No ratings yet — go to the Albums tab to get started.
         </div>
       )}
 
