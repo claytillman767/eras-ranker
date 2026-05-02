@@ -4,7 +4,7 @@ import { SignInRequiredStep } from './Settings';
 
 // Shown ONCE on a user's first Vibe Check (gated by 'eras_vibecheck_intro_seen').
 // Teaches the Spotify integration so users understand why they'd want it,
-// and uses the unique "Play Bridge" feature as a Pro upsell hook.
+// and shows the full Pro perks list as the upsell hook.
 //
 // CTA logic depends on user state:
 //   - signed-out / non-Pro:    "Unlock Pro"      + "Continue without sound"
@@ -26,6 +26,37 @@ export function markVibeCheckIntroSeen() {
 export function hasSeenVibeCheckIntro() {
   return localStorage.getItem(FLAG_KEY) === '1';
 }
+
+// Full Pro perks list — shown together so users see the whole value of Pro
+// at the moment it matters most (their first Vibe Check). Order is roughly
+// "what they'll experience first" → "deeper customisation".
+const PRO_PERKS = [
+  {
+    icon: '🎵',
+    label: 'Songs play while you rate',
+    desc: 'Each song auto-plays from a hand-picked moment as the screen opens.',
+  },
+  {
+    icon: '💿',
+    label: 'Real album cover art',
+    desc: 'Real Spotify covers replace the emoji tiles across the whole app.',
+  },
+  {
+    icon: '🌉',
+    label: 'Jump straight to the bridge',
+    desc: "On the Bridge category, tap one button to skip right to the song's bridge.",
+  },
+  {
+    icon: '📊',
+    label: '8 extra rating categories',
+    desc: 'Hook, Vocals, Cry Factor, Storytelling and more.',
+  },
+  {
+    icon: '✏️',
+    label: 'Custom categories',
+    desc: 'Add your own scoring dimensions and tune their weights.',
+  },
+];
 
 export default function VibeCheckIntro({
   user,
@@ -109,7 +140,7 @@ export default function VibeCheckIntro({
         </div>
       ) : (
       <>
-      {/* Body */}
+      {/* Body — scrolls when the perks list overflows on small screens */}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -122,6 +153,7 @@ export default function VibeCheckIntro({
         width: '100%',
         boxSizing: 'border-box',
         textAlign: 'center',
+        overflowY: 'auto',
       }}>
         {/* Hero — headphones + Spotify */}
         <div style={{
@@ -168,7 +200,7 @@ export default function VibeCheckIntro({
           so you can <b style={{ color: '#111827' }}>really hear it</b> before you rate.
         </div>
 
-        {/* Bridge feature — Pro perk highlight */}
+        {/* Pro perks — full list of what Pro unlocks */}
         <div style={{
           background: 'linear-gradient(135deg, #faf5ff, #f3e8ff)',
           border: '0.5px solid #e9d5ff',
@@ -178,37 +210,42 @@ export default function VibeCheckIntro({
           textAlign: 'left',
           width: '100%',
           boxSizing: 'border-box',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
         }}>
           <div style={{
-            width: 44,
-            height: 44,
-            borderRadius: 12,
-            background: '#ffffff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            fontSize: 24,
-          }}>🌉</div>
-          <div style={{ minWidth: 0 }}>
-            <div style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: '#a855f7',
-              letterSpacing: '0.08em',
-              marginBottom: 2,
-            }}>
-              PRO PERK
-            </div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
-              Jump straight to the bridge
-            </div>
-            <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>
-              On the Bridge category, tap one button to skip right to the song's bridge moment.
-            </div>
+            fontSize: 10,
+            fontWeight: 700,
+            color: '#a855f7',
+            letterSpacing: '0.08em',
+            marginBottom: 12,
+          }}>
+            EVERYTHING PRO UNLOCKS
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {PRO_PERKS.map(perk => (
+              <div key={perk.label} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <div style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  background: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  fontSize: 16,
+                }}>
+                  {perk.icon}
+                </div>
+                <div style={{ minWidth: 0, paddingTop: 2 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
+                    {perk.label}
+                  </div>
+                  <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4 }}>
+                    {perk.desc}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
