@@ -140,12 +140,23 @@ function shuffleWithSeed(arr, rand) {
   return a;
 }
 
-// Nearest power of 2 <= n, capped at 16
-function bracketSize(n) {
-  if (n >= 16) return 16;
-  if (n >= 8) return 8;
-  if (n >= 4) return 4;
+// Allowed bracket sizes, smallest → largest. 32 is the cap — larger
+// brackets push past ~15 minutes of voting which is too long for a
+// casual feature.
+export const BRACKET_SIZES = [4, 8, 16, 32];
+
+// Largest allowed size that fits in `n` eligible songs. Returns 0 if
+// `n` is below the minimum (4).
+export function bracketSize(n) {
+  for (let i = BRACKET_SIZES.length - 1; i >= 0; i--) {
+    if (n >= BRACKET_SIZES[i]) return BRACKET_SIZES[i];
+  }
   return 0;
+}
+
+// Allowed sizes that fit `n` eligible songs (subset of BRACKET_SIZES).
+export function availableSizes(n) {
+  return BRACKET_SIZES.filter(s => s <= n);
 }
 
 // Build matchup array for a given array of songs (must be power of 2 length)
@@ -157,8 +168,10 @@ function buildRound(songs) {
   return matchups;
 }
 
-// Generate initial bracket rounds structure
-export function generateBracket(categoryId, scope, seed) {
+// Generate initial bracket rounds structure. `desiredSize` (optional) lets
+// the caller pick a specific bracket size from BRACKET_SIZES; if omitted or
+// larger than the eligible pool, falls back to the largest size that fits.
+export function generateBracket(categoryId, scope, seed, desiredSize) {
   const cat = BRACKET_CATEGORIES.find(c => c.id === categoryId);
   let pool = scope === 'all' ? buildAllSongPool() : buildAlbumSongPool(scope);
 
@@ -169,7 +182,10 @@ export function generateBracket(categoryId, scope, seed) {
 
   const rand = seededRandom(seed);
   const shuffled = shuffleWithSeed(pool, rand);
-  const size = bracketSize(shuffled.length);
+  const maxFit = bracketSize(shuffled.length);
+  const size = desiredSize && BRACKET_SIZES.includes(desiredSize) && desiredSize <= maxFit
+    ? desiredSize
+    : maxFit;
 
   if (size === 0) return null;
 

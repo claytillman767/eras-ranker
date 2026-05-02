@@ -8,6 +8,7 @@ import RoundTransition from './RoundTransition';
 import BracketResults from './BracketResults';
 import WinnerReveal from './WinnerReveal';
 import DailyMatchup from './DailyMatchup';
+import BracketBuilder from './BracketBuilder';
 
 export default function Brackets({ user, spotify, isPro }) {
   const {
@@ -16,7 +17,7 @@ export default function Brackets({ user, spotify, isPro }) {
     dailyState, recordDailyVote,
   } = useBrackets(user);
 
-  // Screens: 'landing' | 'tree' | 'matchup' | 'transition' | 'results' | 'reveal' | 'daily'
+  // Screens: 'landing' | 'builder' | 'tree' | 'matchup' | 'transition' | 'results' | 'reveal' | 'daily'
   const [screen, setScreen] = useState('landing');
   const [activeBracketId, setActiveBracketId] = useState(null);
   const [activeMode, setActiveMode] = useState(null); // 'personal' | 'weekly'
@@ -66,10 +67,15 @@ export default function Brackets({ user, spotify, isPro }) {
     setScreen(personalInProgress.status === 'complete' ? 'results' : 'matchup');
   }
 
-  // Builder (Screen 5) doesn't exist yet — for now this still default-creates a
-  // "most-devastating" bracket so the empty state still produces a working flow.
+  // Open the BracketBuilder picker (category → scope → size).
   function buildPersonal() {
-    const id = createBracket('most-devastating', 'all');
+    setScreen('builder');
+  }
+
+  // Called when the builder confirms — actually creates the bracket and
+  // routes into the matchup flow.
+  function handleBuilderStart(categoryId, scope, size) {
+    const id = createBracket(categoryId, scope, size);
     if (id) {
       setActiveBracketId(id);
       setActiveMode('personal');
@@ -103,6 +109,15 @@ export default function Brackets({ user, spotify, isPro }) {
   }
 
   // ── Routes ─────────────────────────────────────────────────────────────────
+
+  if (screen === 'builder') {
+    return (
+      <BracketBuilder
+        onClose={backToLanding}
+        onStart={handleBuilderStart}
+      />
+    );
+  }
 
   if (screen === 'matchup' && activeBracket) {
     const round = activeBracket.rounds[activeBracket.currentRound];
