@@ -18,6 +18,7 @@ import Rankings from './components/Rankings';
 import Categories from './components/Categories';
 import Settings from './components/Settings';
 import Brackets from './components/brackets/Brackets';
+import ConnectSpotifyPrompt from './components/ConnectSpotifyPrompt';
 import { ALL_ALBUMS } from './data/albums';
 
 // Tab definitions — Categories lives inside Settings
@@ -103,6 +104,27 @@ export default function App() {
   // Holds the album the user just chose Vibe Check for, while the
   // Spotify intro screen is showing (first-time only).
   const [pendingVibeCheckAlbumId, setPendingVibeCheckAlbumId] = useState(null);
+  // Set true right after a successful Pro upgrade so we can auto-prompt
+  // the user to connect Spotify (instead of forcing the three-tap detour
+  // through Settings → Spotify → Connect).
+  const [showConnectSpotifyPrompt, setShowConnectSpotifyPrompt] = useState(false);
+
+  // Wraps usePro's unlockPro so any successful upgrade triggers the
+  // Connect Spotify prompt — unless the user already has Spotify connected,
+  // in which case the prompt would be redundant. Suppressed inside
+  // VibeCheckIntro by using the raw unlockPro there (its own UI adapts).
+  function handleUnlockProGlobal(plan) {
+    const ok = unlockPro(plan);
+    if (ok && !spotify?.isConnected) {
+      setShowConnectSpotifyPrompt(true);
+    }
+    return ok;
+  }
+
+  function handleConnectSpotifyFromPrompt() {
+    setShowConnectSpotifyPrompt(false);
+    spotify?.connect?.(); // redirects to Spotify OAuth
+  }
 
   // Close the user menu if the user clicks anywhere outside it
   useEffect(() => {
@@ -424,6 +446,16 @@ export default function App() {
         />
       )}
 
+      {/* Auto-prompt to connect Spotify right after a successful Pro upgrade.
+          Removes the three-tap detour through Settings → Spotify → Connect. */}
+      {showConnectSpotifyPrompt && !spotify?.isConnected && (
+        <ConnectSpotifyPrompt
+          isLoading={spotify?.isLoading}
+          onConnect={handleConnectSpotifyFromPrompt}
+          onDismiss={() => setShowConnectSpotifyPrompt(false)}
+        />
+      )}
+
       {/* ── Tab content ── */}
       <div style={{ flex: 1, padding: '0 16px 80px' }}>
 
@@ -512,7 +544,7 @@ export default function App() {
             updateSetting={updateSetting}
             spotify={isPro ? spotify : null}
             isPro={isPro}
-            unlockPro={unlockPro}
+            unlockPro={handleUnlockProGlobal}
             user={user}
             signIn={signIn}
             signOut={signOut}
