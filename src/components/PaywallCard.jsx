@@ -77,7 +77,7 @@ export default function PaywallCard({ onUnlock, user, signIn }) {
             }}
           >
             {plan === 'annual'
-              ? 'Subscribe — $47.90/year'
+              ? 'Subscribe — $46.71/year'
               : 'Subscribe — $4.99/month'}
           </button>
         </>
@@ -138,7 +138,7 @@ function PlanCard({ id, title, price, sub, badge, selected, onSelect, sizes }) {
 }
 
 // Plan picker — two side-by-side cards (Monthly / Annual). Annual shows the
-// "Save 20%" tag. `compact` uses a tighter layout to fit inside PaywallCard.
+// "Save 22%" tag. `compact` uses a tighter layout to fit inside PaywallCard.
 export function PlanPicker({ plan, onChange, compact = false }) {
   const sizes = compact
     ? { pad: 10, title: 13, price: 15, sub: 11 }
@@ -158,9 +158,9 @@ export function PlanPicker({ plan, onChange, compact = false }) {
       <PlanCard
         id="annual"
         title="Annual"
-        price="$47.90"
-        sub="per year ($3.99/mo)"
-        badge="SAVE 20%"
+        price="$46.71"
+        sub="per year ($3.89/mo)"
+        badge="SAVE 22%"
         selected={plan === 'annual'}
         onSelect={onChange}
         sizes={sizes}

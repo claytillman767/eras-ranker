@@ -684,7 +684,7 @@ function ProModal({ onUnlock, onClose, user, signIn }) {
               </div>
             </div>
             <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 20, lineHeight: 1.5 }}>
-              $4.99/month, or save 20% with an annual plan. Cancel anytime.
+              $4.99/month, or save 22% with an annual plan. Cancel anytime.
             </div>
 
             {/* Feature list */}
@@ -739,7 +739,7 @@ function ProModal({ onUnlock, onClose, user, signIn }) {
               }}
             >
               {plan === 'annual'
-                ? 'Subscribe — $47.90/year'
+                ? 'Subscribe — $46.71/year'
                 : 'Subscribe — $4.99/month'}
             </button>
 
