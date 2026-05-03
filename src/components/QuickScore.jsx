@@ -117,10 +117,11 @@ const CAT_BACKGROUNDS = {
 
 // ── Big interactive stars ─────────────────────────────────────────────────────
 // Gets a new `key` each question so hover state resets automatically.
-function StarPicker({ currentRating, onRate, labels }) {
+function StarPicker({ currentRating, onRate, labels, flashLevel = 0 }) {
   const [hovered, setHovered] = useState(0);
   const display = hovered || currentRating;
   const activeLevel = hovered || currentRating;
+  const isFlashing = flashLevel > 0;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
@@ -128,22 +129,29 @@ function StarPicker({ currentRating, onRate, labels }) {
         {[1, 2, 3, 4, 5].map(star => {
           const active = star <= display;
           const isHoverTarget = hovered > 0 && star <= hovered;
+          // Pulse stars 1..flashLevel during the post-pick hold. Stagger by
+          // 60 ms each so the animation reads as a left-to-right sweep.
+          const flashing = isFlashing && star <= flashLevel;
           return (
             <button
               key={star}
               onMouseEnter={() => setHovered(star)}
               onMouseLeave={() => setHovered(0)}
               onClick={() => onRate(star)}
+              disabled={isFlashing}
               aria-label={`${star} star`}
               style={{
                 background: 'none',
                 border: 'none',
-                cursor: 'pointer',
+                cursor: isFlashing ? 'default' : 'pointer',
                 padding: '6px',
                 lineHeight: 0,
                 transition: 'transform 0.1s ease',
                 transform: isHoverTarget ? 'scale(1.18)' : 'scale(1)',
                 WebkitTapHighlightColor: 'transparent',
+                animation: flashing
+                  ? `qs-star-pulse 700ms ${star * 60}ms ease-out both`
+                  : undefined,
               }}
             >
               <svg
@@ -705,6 +713,13 @@ export default function QuickScore({
   const [isVisible, setIsVisible] = useState(true);
   const pendingRef = useRef(null);
 
+  // Hold-and-flash after a rating: keep the picked stars visible for ~900 ms
+  // and run a brief pulse animation on the active stars before advancing to
+  // the next category. Without this, the list jumps so fast the user can't
+  // confirm what they picked.
+  const [flashLevel, setFlashLevel] = useState(0);
+  const advanceTimeoutRef = useRef(null);
+
   const isSingleSong = songs.length === 1;
 
   // ── Spotify autoplay: start playing from shuffle timestamp on new song ───
@@ -733,6 +748,7 @@ export default function QuickScore({
   useEffect(() => {
     return () => {
       spotify?.pause?.();
+      if (advanceTimeoutRef.current) clearTimeout(advanceTimeoutRef.current);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -814,6 +830,12 @@ export default function QuickScore({
 
   function goBack() {
     if (isFirstStep) return;
+    // If a hold-and-flash is in progress, cancel it before navigating back.
+    if (advanceTimeoutRef.current) {
+      clearTimeout(advanceTimeoutRef.current);
+      advanceTimeoutRef.current = null;
+      setFlashLevel(0);
+    }
     pendingRef.current = catPos > 0
       ? { catPos: catPos - 1 }
       : { songPos: songPos - 1, catPos: songsWithCats[songPos - 1].cats.length - 1 };
@@ -846,7 +868,13 @@ export default function QuickScore({
   function handleRate(val) {
     onRate(currentSong.index, currentCat.id, val);
     if (currentSong.name === 'Wood') setShowTrees(true);
-    advance();
+    setFlashLevel(val);
+    if (advanceTimeoutRef.current) clearTimeout(advanceTimeoutRef.current);
+    advanceTimeoutRef.current = setTimeout(() => {
+      advanceTimeoutRef.current = null;
+      setFlashLevel(0);
+      advance();
+    }, 900);
   }
 
   // Called by ShuffleScreen after its own transition animation finishes (~720ms)
@@ -887,6 +915,16 @@ export default function QuickScore({
 
   return (
     <div style={overlayStyle}>
+      {/* Keyframes — pulse animation applied to picked stars during the
+          900 ms hold after a rating, so the user can see what they chose. */}
+      <style>{`
+        @keyframes qs-star-pulse {
+          0%   { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(168,85,247,0)); }
+          30%  { transform: scale(1.18); filter: drop-shadow(0 0 8px rgba(168,85,247,0.65)); }
+          100% { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(168,85,247,0)); }
+        }
+      `}</style>
+
       {showTrees && <FallingTrees onDone={() => setShowTrees(false)} />}
 
       {/* Progress bar */}
@@ -1095,6 +1133,7 @@ export default function QuickScore({
               currentRating={currentRating}
               onRate={handleRate}
               labels={STAR_LABELS[currentCat?.id] ?? null}
+              flashLevel={flashLevel}
             />
           )}
 
