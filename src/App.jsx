@@ -509,6 +509,7 @@ export default function App() {
               autoStartSongIndex={autoStartSongIndex}
               onAutoStartConsumed={() => { setAutoStartScore(false); setAutoStartSongIndex(null); }}
               showCategoryBars={settings.showCategoryBars}
+              albumMode={getAlbumMode(selectedAlbumId)}
               spotify={isPro ? spotify : null}
               spotifyAutoplay={settings.spotifyAutoplay}
               spotifyBridgeAutoplay={settings.spotifyBridgeAutoplay}
