@@ -73,6 +73,13 @@ export default function SongList({
   const [dragState, setDragState] = useState(null); // { fromPos, toPos } | null
   const rowRefs = useRef([]);
 
+  // Drop-flash — after a successful drag reorder, briefly highlight the song
+  // that just moved so the user can see where it landed (the list re-sorts
+  // silently otherwise). flashKey forces the animation to restart when the
+  // same song is dragged twice in a row.
+  const [flashIndex, setFlashIndex] = useState(null);
+  const [flashKey, setFlashKey] = useState(0);
+
   // Track whether the album was incomplete when this view was first opened,
   // so we only show the completion card when it transitions to complete.
   const wasIncompleteOnMount = useRef(
@@ -183,7 +190,13 @@ export default function SongList({
     const { fromPos, toPos } = dragState;
     setDragState(null);
     if (fromPos !== toPos) {
+      const movedSongIndex = displaySongs[fromPos].index;
       onReorder(albumId, fromPos, toPos);
+      setFlashIndex(movedSongIndex);
+      setFlashKey(k => k + 1);
+      setTimeout(() => {
+        setFlashIndex(prev => (prev === movedSongIndex ? null : prev));
+      }, 900);
     }
   }
 
@@ -205,6 +218,16 @@ export default function SongList({
 
   return (
     <div>
+      {/* Drop-flash keyframes — animates a soft purple ring/glow on the
+          row that was just reordered, fading out over ~900ms. */}
+      <style>{`
+        @keyframes song-row-drop-flash {
+          0%   { box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.55), 0 4px 14px rgba(168, 85, 247, 0.25); }
+          70%  { box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.20), 0 4px 14px rgba(168, 85, 247, 0.08); }
+          100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0),    0 0 0 rgba(168, 85, 247, 0); }
+        }
+      `}</style>
+
       {/* Midnights Easter egg */}
       {showMidnightsEgg && (
         <MidnightsEasterEgg
@@ -348,15 +371,20 @@ export default function SongList({
             const lineBelow = dragState && !isDraggingThis && dragState.toPos === listPos && dragState.fromPos < listPos;
             const isSelected = selectedIndex === song.index;
 
+            const isFlashing = song.index === flashIndex;
+
             return (
               <div
-                key={song.index}
+                // Re-key during a flash so the keyframe animation restarts
+                // every time the same song is dropped.
+                key={isFlashing ? `${song.index}-flash-${flashKey}` : song.index}
                 ref={el => { rowRefs.current[listPos] = el; }}
                 style={{
                   opacity: isDraggingThis ? 0.35 : 1,
                   boxShadow: lineAbove ? '0 -2px 0 #a855f7' : lineBelow ? '0 2px 0 #a855f7' : 'none',
                   borderRadius: 10,
                   transition: 'opacity 0.15s',
+                  animation: isFlashing ? 'song-row-drop-flash 900ms ease-out' : undefined,
                 }}
               >
                 <SongRow
