@@ -6,6 +6,8 @@ import AlbumCompleteCard from './AlbumCompleteCard';
 import MidnightsEasterEgg from './MidnightsEasterEgg';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
 
+const DRAG_HINT_KEY = 'eras_sort_it_yourself_hint_seen';
+
 // Full song list for one album with drag-to-reorder and inline scoring.
 // Props come from App via useRatings, usePro, and useManualOrder hooks.
 export default function SongList({
@@ -31,6 +33,8 @@ export default function SongList({
   getRatedCount,
   // Display settings
   showCategoryBars,
+  // Album mode — used to show the one-time drag hint when 'manual'
+  albumMode,
   // Spotify playback (optional — omit to hide the feature entirely)
   spotify,
   spotifyAutoplay,
@@ -50,6 +54,20 @@ export default function SongList({
   const [completionShown, setCompletionShown] = useState(false);
   // Midnights Easter egg — shown before the completion card for album 'ml'
   const [showMidnightsEgg, setShowMidnightsEgg] = useState(false);
+
+  // One-time drag hint shown when the user lands in Sort It Yourself mode
+  // for the first time. The drag handle (⠿) is small and not labelled and
+  // the up/down buttons only appear after a row is tapped, so without this
+  // hint a brand-new user has no on-screen signal that drag works.
+  const [showDragHint, setShowDragHint] = useState(() => (
+    albumMode === 'manual' &&
+    !quickScoreSongs &&
+    localStorage.getItem(DRAG_HINT_KEY) !== '1'
+  ));
+  function dismissDragHint() {
+    localStorage.setItem(DRAG_HINT_KEY, '1');
+    setShowDragHint(false);
+  }
 
   // Drag state: which positions are being dragged from/to
   const [dragState, setDragState] = useState(null); // { fromPos, toPos } | null
@@ -140,6 +158,9 @@ export default function SongList({
 
   function startDrag(fromPos) {
     setDragState({ fromPos, toPos: fromPos });
+    // Power users who figure out drag on their own shouldn't have to tap
+    // "Got it" — dismiss the hint as soon as they actually use it.
+    if (showDragHint) dismissDragHint();
   }
 
   function moveDrag(clientY) {
@@ -312,6 +333,12 @@ export default function SongList({
           )}
         </div>
 
+        {/* One-time drag hint — shown only on first entry into Sort It
+            Yourself mode. Auto-dismisses as soon as the user actually drags. */}
+        {showDragHint && !quickScoreSongs && (
+          <DragHint onDismiss={dismissDragHint} />
+        )}
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {displaySongs.map((song, listPos) => {
             const compositeScore = getCompositeScore(albumId, song.index, activeCategories);
@@ -388,6 +415,80 @@ export default function SongList({
           })}
         </div>
       </div>
+    </div>
+  );
+}
+
+// One-time hint card shown above the song list when a user enters Sort It
+// Yourself mode for the first time. Includes a downward arrow that visually
+// points at the drag handles below it.
+function DragHint({ onDismiss }) {
+  return (
+    <div style={{
+      position: 'relative',
+      background: 'linear-gradient(135deg, #faf5ff, #f3e8ff)',
+      border: '0.5px solid #e9d5ff',
+      borderRadius: 12,
+      padding: '12px 14px',
+      marginBottom: 18,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 12,
+    }}>
+      {/* Big drag handle glyph so the user learns what to look for */}
+      <div style={{
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        background: '#ffffff',
+        border: '0.5px solid #e9d5ff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#a855f7',
+        fontSize: 22,
+        flexShrink: 0,
+      }}>
+        ⠿
+      </div>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
+          Drag to reorder
+        </div>
+        <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>
+          Hold the ⠿ on any row and drag it up or down.
+        </div>
+      </div>
+
+      <button
+        onClick={onDismiss}
+        style={{
+          background: '#a855f7',
+          color: '#ffffff',
+          border: 'none',
+          borderRadius: 999,
+          padding: '7px 14px',
+          fontSize: 12,
+          fontWeight: 600,
+          cursor: 'pointer',
+          flexShrink: 0,
+        }}
+      >
+        Got it
+      </button>
+
+      {/* Downward triangle pointing at the first row's drag handle */}
+      <div style={{
+        position: 'absolute',
+        bottom: -7,
+        left: 30,
+        width: 0,
+        height: 0,
+        borderLeft: '7px solid transparent',
+        borderRight: '7px solid transparent',
+        borderTop: '7px solid #f3e8ff',
+      }} />
     </div>
   );
 }
