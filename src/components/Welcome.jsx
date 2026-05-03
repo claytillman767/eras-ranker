@@ -288,7 +288,7 @@ function SlideModes() {
         <ModeCard
           icon="🎧"
           title="Vibe Check"
-          desc="We play a snippet of each song. Tap fast — Play it again, or Skip."
+          desc="Tap through quick questions to score each song. With Pro, songs play while you rate."
         />
         <ModeCard
           icon="✋"
