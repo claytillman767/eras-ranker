@@ -5,6 +5,7 @@ import { ALL_ALBUMS, SONGS } from '../data/albums';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
 import CategoriesEditor from './CategoriesEditor';
 import SpotifyBadge from './SpotifyBadge';
+import { PlanPicker } from './PaywallCard';
 
 // Settings tab — app-wide display and behaviour preferences.
 export default function Settings({
@@ -89,8 +90,8 @@ export default function Settings({
     URL.revokeObjectURL(url);
   }
 
-  function handleUnlockPro() {
-    unlockPro();
+  function handleUnlockPro(plan) {
+    unlockPro(plan);
     setShowProModal(false);
   }
 
@@ -631,6 +632,7 @@ export default function Settings({
 //                     decision first, then explains the login requirement)
 function ProModal({ onUnlock, onClose, user, signIn }) {
   const [step, setStep] = useState('features');
+  const [plan, setPlan] = useState('annual'); // default to annual (better value)
   const features = [
     { kind: 'spotify', label: 'Connect Spotify',     desc: 'Hear each song play while you rate it' },
     { kind: 'emoji',   icon: '📊', label: '8 extra categories', desc: 'Hook, Vocals, Cry Factor, and more' },
@@ -642,7 +644,7 @@ function ProModal({ onUnlock, onClose, user, signIn }) {
       setStep('signin');
       return;
     }
-    onUnlock();
+    onUnlock(plan);
   }
 
   return (
@@ -681,12 +683,12 @@ function ProModal({ onUnlock, onClose, user, signIn }) {
                 Unlock Pro
               </div>
             </div>
-            <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.5 }}>
-              One-time unlock. No subscription, no recurring charges.
+            <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 20, lineHeight: 1.5 }}>
+              $4.99/month, or save 22% with an annual plan. Cancel anytime.
             </div>
 
             {/* Feature list */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
               {features.map(f => (
                 <div key={f.label} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{
@@ -713,6 +715,11 @@ function ProModal({ onUnlock, onClose, user, signIn }) {
               ))}
             </div>
 
+            {/* Plan picker — choose monthly or annual */}
+            <div style={{ marginBottom: 20 }}>
+              <PlanPicker plan={plan} onChange={setPlan} />
+            </div>
+
             {/* Unlock — always tappable. If not signed in, transitions to the
                 sign-in step instead of immediately calling onUnlock. */}
             <button
@@ -731,7 +738,9 @@ function ProModal({ onUnlock, onClose, user, signIn }) {
                 marginBottom: 12,
               }}
             >
-              Unlock Pro
+              {plan === 'annual'
+                ? 'Subscribe — $46.71/year'
+                : 'Subscribe — $4.99/month'}
             </button>
 
             <button

@@ -93,19 +93,22 @@ export function usePro(user) {
   }, [user]);
 
   // Mock unlock — sets isPro immediately without any payment.
-  // Replace this with Stripe Checkout in production.
+  // Replace this with Lemon Squeezy Checkout in production (see CLAUDE.md
+  // "Payment provider plan"). The `plan` argument ('monthly' | 'annual') is
+  // captured now so the LS hook-up later only needs to read it and open the
+  // matching checkout variant.
   //
   // Pro upgrades REQUIRE a signed-in account. This ties the purchase to a
   // user identity (so it carries to other devices and survives a localStorage
-  // wipe), and it's a hard prerequisite once Stripe is wired up — Stripe
-  // needs a customer record. Returns true on success, false if no user.
-  const unlockPro = useCallback(() => {
+  // wipe), and it's a hard prerequisite once Lemon Squeezy is wired up —
+  // LS needs a customer record. Returns true on success, false if no user.
+  const unlockPro = useCallback((plan = 'monthly') => {
     if (!user || !db) return false;
     localStorage.setItem(KEY_IS_PRO, 'true');
     setIsPro(true);
     setDoc(
       doc(db, 'users', user.uid),
-      { isPro: true, proUpgradedAt: serverTimestamp() },
+      { isPro: true, proPlan: plan, proUpgradedAt: serverTimestamp() },
       { merge: true }
     ).catch(() => {});
     return true;

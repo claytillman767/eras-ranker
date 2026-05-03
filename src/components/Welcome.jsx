@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { ALBUMS } from '../data/albums';
+import { DEFAULT_CATEGORIES } from '../data/categories';
 
 // Full-screen 4-slide welcome tour for new users.
 // Skippable from any slide; tappable dots; basic touch swipe support.
@@ -207,14 +208,23 @@ function SlideWelcome() {
 }
 
 // ── Slide 2 — How rating works ────────────────────────────────────────────────
+// Sources category names from DEFAULT_CATEGORIES so the demo never drifts
+// from what the user actually sees in the rating flow. Per-category demo
+// star counts are keyed by category id; any default not listed falls back
+// to 5 stars (a reasonable choice for "Cruel Summer", the demo song).
+const DEMO_STARS = {
+  lyrics: 5,
+  music: 5,
+  bridge: 5,
+  nostalgia: 4,
+  replay: 5,
+};
+
 function SlideRating() {
-  const cats = [
-    { name: 'Replay Value', stars: 5 },
-    { name: 'Lyrics',       stars: 4 },
-    { name: 'Vocals',       stars: 5 },
-    { name: 'Production',   stars: 5 },
-    { name: 'Bridge',       stars: 5 },
-  ];
+  const cats = DEFAULT_CATEGORIES.map(c => ({
+    name: c.name,
+    stars: DEMO_STARS[c.id] ?? 5,
+  }));
   return (
     <div style={{ textAlign: 'center', width: '100%' }}>
       <div style={{

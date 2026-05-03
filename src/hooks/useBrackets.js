@@ -132,10 +132,11 @@ export function useBrackets(user) {
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Create a new personal bracket
-  const createBracket = useCallback((categoryId, scope = 'all') => {
+  // Create a new personal bracket. `desiredSize` (optional) overrides the
+  // default "largest power-of-two that fits" sizing — see BRACKET_SIZES.
+  const createBracket = useCallback((categoryId, scope = 'all', desiredSize) => {
     const seed = Date.now();
-    const generated = generateBracket(categoryId, scope, seed);
+    const generated = generateBracket(categoryId, scope, seed, desiredSize);
     if (!generated) return null;
 
     const bracket = {
