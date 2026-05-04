@@ -3,6 +3,15 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
+import { isUatMode, clearOnboardingFlags } from './uat.js'
+
+// UAT-as-new-user mode — when the developer toggle in Settings is on, every
+// page load starts with onboarding flags cleared so the Welcome tour, album
+// mode modal, VibeCheckIntro, drag hint, and bridge-autoplay nudge all
+// reappear. Flag set in localStorage; only the developer email can flip it.
+if (isUatMode()) {
+  clearOnboardingFlags();
+}
 
 // Capture acquisition source ONCE per device, before any redirect can wipe
 // document.referrer or strip the ?ref= URL param. Stashed in localStorage so
