@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ALBUMS } from '../data/albums';
 import { DEFAULT_CATEGORIES } from '../data/categories';
 
@@ -340,31 +340,178 @@ function ModeCard({ icon, title, desc }) {
 }
 
 // ── Slide 4 — Your rankings grow ──────────────────────────────────────────────
+// Loops a short animation: a Nostalgia rating card for "marjorie" gets
+// 5 stars, fades into the leaderboard, and marjorie drops in as #1 with
+// a score of 98 — pushing All Too Well, August, and Cruel Summer down a
+// rank (Cruel Summer falls off the visible top three). Mirrors the real
+// post-rating placement the user gets in their album list.
 function SlideRankings() {
-  const top = [
-    { rank: 1, song: 'All Too Well',  album: 'Red',      score: 96 },
-    { rank: 2, song: 'August',        album: 'Folklore', score: 94 },
-    { rank: 3, song: 'Cruel Summer',  album: '1989',     score: 92 },
+  // 0 = rating card pre-tap
+  // 1 = stars filled & pulsing (rating "happened")
+  // 2 = rating fades out, leaderboard fades in (marjorie not yet placed)
+  // 3 = marjorie drops into #1, cruel summer falls off
+  const [phase, setPhase] = useState(0);
+
+  useEffect(() => {
+    const timers = [];
+    function runLoop() {
+      setPhase(0);
+      timers.push(setTimeout(() => setPhase(1), 500));    // stars fill + pulse
+      timers.push(setTimeout(() => setPhase(2), 1500));   // start cross-fade
+      timers.push(setTimeout(() => setPhase(3), 2000));   // marjorie inserts
+      timers.push(setTimeout(runLoop, 5500));             // restart loop
+    }
+    runLoop();
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  const showRating = phase < 2;
+  const marjorieIn = phase >= 3;
+
+  // Rank for each row depends on whether marjorie has been placed yet.
+  // Before: All Too Well #1, August #2, Cruel Summer #3.
+  // After:  marjorie #1, All Too Well #2, August #3, Cruel Summer falls off.
+  function rankFor(id) {
+    if (marjorieIn) return { mj: 1, atw: 2, aug: 3, cs: 4 }[id];
+    return { atw: 1, aug: 2, cs: 3 }[id];
+  }
+
+  const rows = [
+    { id: 'mj',  song: 'marjorie',     album: 'Evermore', score: 98 },
+    { id: 'atw', song: 'All Too Well', album: 'Red',      score: 96 },
+    { id: 'aug', song: 'August',       album: 'Folklore', score: 94 },
+    { id: 'cs',  song: 'Cruel Summer', album: '1989',     score: 92 },
   ];
+
   return (
     <div style={{ textAlign: 'center', width: '100%' }}>
-      <div style={{
-        background: '#ffffff',
-        border: '0.5px solid #e5e7eb',
-        borderRadius: 14,
-        overflow: 'hidden',
-        marginBottom: 28,
-        boxShadow: '0 6px 20px rgba(0,0,0,0.06)',
-      }}>
-        {top.map((t, i) => (
+      <style>{`
+        @keyframes welcome-star-pulse {
+          0%   { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(168,85,247,0)); }
+          30%  { transform: scale(1.18); filter: drop-shadow(0 0 8px rgba(168,85,247,0.65)); }
+          100% { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(168,85,247,0)); }
+        }
+      `}</style>
+
+      <div style={{ position: 'relative', minHeight: 230, marginBottom: 28 }}>
+        {/* Rating card — fades up and out as the leaderboard takes over */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          opacity: showRating ? 1 : 0,
+          transform: showRating ? 'translateY(0)' : 'translateY(-12px)',
+          transition: 'opacity 0.35s ease, transform 0.35s ease',
+          pointerEvents: 'none',
+        }}>
+          <RatingDemoCard starsFilled={phase >= 1} />
+        </div>
+
+        {/* Leaderboard — cross-fades in over the rating card */}
+        <div style={{
+          opacity: showRating ? 0 : 1,
+          transition: 'opacity 0.35s ease 0.1s',
+          pointerEvents: 'none',
+        }}>
+          <LeaderboardDemo rows={rows} marjorieIn={marjorieIn} rankFor={rankFor} />
+        </div>
+      </div>
+
+      <div style={titleStyle}>Your rankings grow as you rate</div>
+      <div style={subtitleStyle}>
+        Finish an album to unlock a shareable card. Sign in to keep your ratings on every device.
+      </div>
+    </div>
+  );
+}
+
+// Rating card mock — visually echoes the real QuickScore rating screen
+// for the Nostalgia category, with all 5 stars filling at once and the
+// same staggered pulse animation users see when they actually rate.
+function RatingDemoCard({ starsFilled }) {
+  return (
+    <div style={{
+      background: '#ffffff',
+      border: '0.5px solid #e5e7eb',
+      borderRadius: 14,
+      padding: '20px 18px',
+      boxShadow: '0 6px 20px rgba(0,0,0,0.06)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: 10,
+    }}>
+      <div style={{ fontSize: 11, color: '#9ca3af', letterSpacing: '0.05em' }}>
+        🍂 Evermore
+      </div>
+      <div style={{ fontSize: 18, fontWeight: 700, color: '#111827' }}>
+        marjorie
+      </div>
+      <div style={{ fontSize: 11, fontWeight: 700, color: '#a855f7', letterSpacing: '0.1em' }}>
+        NOSTALGIA
+      </div>
+      <div style={{ fontSize: 11, color: '#c4b5fd' }}>Category 5 of 5</div>
+
+      <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
+        {[1, 2, 3, 4, 5].map(star => (
           <div
-            key={t.rank}
+            key={star}
+            style={{
+              padding: 4,
+              animation: starsFilled
+                ? `welcome-star-pulse 700ms ${star * 60}ms ease-out both`
+                : undefined,
+            }}
+          >
+            <svg
+              width={32}
+              height={32}
+              viewBox="0 0 20 20"
+              fill={starsFilled ? '#a855f7' : '#e9d5ff'}
+              style={{ display: 'block', transition: 'fill 0.18s ease' }}
+            >
+              <path d="M10 1l2.39 4.84 5.34.78-3.86 3.76.91 5.32L10 13.27l-4.78 2.51.91-5.32L2.27 6.62l5.34-.78L10 1z" />
+            </svg>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Leaderboard mock — Cruel Summer is rendered as the 4th row but only
+// visible until marjorie arrives. Marjorie occupies the top slot but is
+// height/opacity-hidden until phase 3, then animates in. Other songs
+// reflow naturally because the heights cancel out (Marjorie grows while
+// Cruel Summer shrinks by the same amount).
+function LeaderboardDemo({ rows, marjorieIn, rankFor }) {
+  return (
+    <div style={{
+      background: '#ffffff',
+      border: '0.5px solid #e5e7eb',
+      borderRadius: 14,
+      overflow: 'hidden',
+      boxShadow: '0 6px 20px rgba(0,0,0,0.06)',
+    }}>
+      {rows.map(r => {
+        const isMj = r.id === 'mj';
+        const isCs = r.id === 'cs';
+        const visible = isMj ? marjorieIn : (isCs ? !marjorieIn : true);
+        const rank = rankFor(r.id);
+
+        return (
+          <div
+            key={r.id}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: 12,
-              padding: '12px 14px',
-              borderBottom: i < top.length - 1 ? '0.5px solid #f3f4f6' : 'none',
+              padding: visible ? '12px 14px' : '0 14px',
+              maxHeight: visible ? 80 : 0,
+              opacity: visible ? 1 : 0,
+              overflow: 'hidden',
+              borderBottom: '0.5px solid #f3f4f6',
+              transition: 'max-height 0.55s ease, padding 0.55s ease, opacity 0.35s ease, background 0.4s ease',
+              background: isMj && marjorieIn ? '#faf5ff' : '#ffffff',
             }}
           >
             <div style={{
@@ -374,13 +521,13 @@ function SlideRankings() {
               width: 22,
               textAlign: 'center',
             }}>
-              {t.rank}
+              {rank}
             </div>
             <div style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {t.song}
+                {r.song}
               </div>
-              <div style={{ fontSize: 11, color: '#9ca3af' }}>{t.album}</div>
+              <div style={{ fontSize: 11, color: '#9ca3af' }}>{r.album}</div>
             </div>
             <div style={{
               background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
@@ -390,15 +537,11 @@ function SlideRankings() {
               padding: '3px 10px',
               borderRadius: 16,
             }}>
-              {t.score}
+              {r.score}
             </div>
           </div>
-        ))}
-      </div>
-      <div style={titleStyle}>Your rankings grow as you rate</div>
-      <div style={subtitleStyle}>
-        Finish an album to unlock a shareable card. Sign in to keep your ratings on every device.
-      </div>
+        );
+      })}
     </div>
   );
 }
