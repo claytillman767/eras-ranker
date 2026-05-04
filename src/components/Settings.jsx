@@ -6,6 +6,7 @@ import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
 import CategoriesEditor from './CategoriesEditor';
 import SpotifyBadge from './SpotifyBadge';
 import { PlanPicker } from './PaywallCard';
+import { isDevEmail, isUatMode, setUatMode, clearOnboardingFlags } from '../uat';
 
 // Settings tab — app-wide display and behaviour preferences.
 export default function Settings({
@@ -232,6 +233,9 @@ export default function Settings({
           Show welcome tour again
         </button>
       )}
+
+      {/* Dev-only UAT toggle — only the developer email sees this row */}
+      {isDevEmail(user?.email) && <UatToggle />}
 
       {/* ── Display section ── */}
       <SectionHeader>Display</SectionHeader>
@@ -876,6 +880,76 @@ function SectionHeader({ children }) {
       marginBottom: 8,
     }}>
       {children}
+    </div>
+  );
+}
+
+// Dev-only toggle for the developer email. When flipped on, clears every
+// onboarding flag and reloads so the next app boot looks like a brand-new
+// user. main.jsx also re-clears the flags on every subsequent boot until
+// this toggle is flipped off, so reloading mid-UAT keeps everything fresh.
+function UatToggle() {
+  const [on, setOn] = useState(isUatMode);
+
+  function handleToggle() {
+    const next = !on;
+    setUatMode(next);
+    setOn(next);
+    if (next) {
+      clearOnboardingFlags();
+      // Reload so the user immediately sees the Welcome tour, etc.
+      window.location.reload();
+    }
+  }
+
+  return (
+    <div style={{
+      background: '#fffbeb',
+      border: '0.5px solid #fde68a',
+      borderRadius: 12,
+      padding: '4px 0',
+      marginBottom: 28,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+            Dev · UAT
+          </div>
+          <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>
+            UAT as new user
+          </div>
+          <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, lineHeight: 1.4 }}>
+            Resets onboarding flags so the Welcome tour, album mode modal,
+            Vibe Check intro, drag hint, and bridge nudge all reappear. While
+            on, every reload restores the new-user view.
+          </div>
+        </div>
+        <div
+          onClick={handleToggle}
+          style={{
+            width: 44,
+            height: 26,
+            borderRadius: 13,
+            background: on ? '#a855f7' : '#d1d5db',
+            position: 'relative',
+            cursor: 'pointer',
+            flexShrink: 0,
+            transition: 'background 0.2s',
+          }}
+        >
+          <div style={{
+            position: 'absolute',
+            top: 3,
+            left: on ? 21 : 3,
+            width: 20,
+            height: 20,
+            borderRadius: '50%',
+            background: '#ffffff',
+            transition: 'left 0.2s',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+          }} />
+        </div>
+      </div>
     </div>
   );
 }
