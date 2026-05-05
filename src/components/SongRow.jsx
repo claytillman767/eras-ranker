@@ -16,16 +16,32 @@ export default function SongRow({
 }) {
   const scored = compositeScore !== null;
 
-  // Build the bar data: up to the first 4 active categories that have been rated
+  // Build the bar data — full category names; only the rated ones, in active order.
+  // Three render kinds:
+  //   - 'shuffle': the 'replay' / Skip-on-shuffle category → Play or Skip icon
+  //   - 'yesno':   custom binary categories (type 'yesno') → Y or N badge
+  //   - 'stars':   everything else (1–5 stars)            → bar + N/5 label
   const ratedBars = scored && songRatings && activeCategories
     ? activeCategories
-        .slice(0, 4)
-        .map(cat => ({
-          id: cat.id,
-          label: abbrevLabel(cat.name),
-          pct: songRatings[cat.id] ? Math.round((songRatings[cat.id] / 5) * 100) : null,
-        }))
-        .filter(b => b.pct !== null)
+        .map(cat => {
+          const rating = songRatings[cat.id];
+          if (!rating) return null;
+          let kind = 'stars';
+          if (cat.id === 'replay') kind = 'shuffle';
+          else if (cat.type === 'yesno') kind = 'yesno';
+          return {
+            id: cat.id,
+            label: cat.name,
+            rating,
+            pct: Math.round((rating / 5) * 100),
+            kind,
+            // For yesno: rating 5 → 'Y', 1 → 'N'
+            yesNo: kind === 'yesno' ? (rating >= 3 ? 'Y' : 'N') : null,
+            // For shuffle: rating 5 → "Play" (don't skip), rating 1 → "Skip"
+            shuffle: kind === 'shuffle' ? (rating >= 3 ? 'play' : 'skip') : null,
+          };
+        })
+        .filter(Boolean)
     : [];
 
   return (
@@ -120,21 +136,93 @@ export default function SongRow({
           )}
         </div>
 
-        {/* Category bars — only shown for scored songs when the setting is on */}
-        {scored && showCategoryBars !== false && ratedBars.length > 0 && (
-          <div style={{ display: 'flex', gap: 6, marginTop: 5 }}>
+        {/* Category breakdown — only when the row is selected (click to expand) */}
+        {scored && isSelected && showCategoryBars !== false && ratedBars.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
             {ratedBars.map(bar => (
-              <div key={bar.id} style={{ flex: 1 }}>
-                <div style={{ height: 3, background: '#f3f4f6', borderRadius: 2, overflow: 'hidden' }}>
-                  <div style={{
-                    height: '100%',
-                    width: `${bar.pct}%`,
-                    background: bar.pct >= 85 ? '#a855f7' : bar.pct >= 70 ? '#a855f7aa' : '#a855f755',
-                    borderRadius: 2,
-                  }} />
-                </div>
-                <div style={{ fontSize: 9, color: '#9ca3af', marginTop: 2, letterSpacing: '0.02em' }}>
+              <div key={bar.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{
+                  flex: 1,
+                  fontSize: 12,
+                  color: '#374151',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}>
                   {bar.label}
+                </div>
+
+                {bar.kind === 'shuffle' ? (
+                  <div style={{
+                    width: 80,
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    flexShrink: 0,
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 5,
+                      padding: '3px 9px',
+                      borderRadius: 10,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: '#ffffff',
+                      background: bar.shuffle === 'play' ? '#a855f7' : '#9ca3af',
+                      lineHeight: 1.4,
+                    }}>
+                      <ShuffleIcon kind={bar.shuffle} />
+                      {bar.shuffle === 'play' ? 'Play' : 'Skip'}
+                    </div>
+                  </div>
+                ) : bar.kind === 'yesno' ? (
+                  <div style={{
+                    width: 80,
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    flexShrink: 0,
+                  }}>
+                    <div style={{
+                      minWidth: 28,
+                      padding: '2px 10px',
+                      borderRadius: 10,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: '#ffffff',
+                      background: bar.yesNo === 'Y' ? '#a855f7' : '#9ca3af',
+                      textAlign: 'center',
+                      lineHeight: 1.5,
+                    }}>
+                      {bar.yesNo}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{
+                    width: 80,
+                    height: 4,
+                    background: '#f3f4f6',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    flexShrink: 0,
+                  }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${bar.pct}%`,
+                      background: bar.pct >= 85 ? '#a855f7' : bar.pct >= 70 ? '#a855f7aa' : '#a855f755',
+                      borderRadius: 2,
+                    }} />
+                  </div>
+                )}
+
+                <div style={{
+                  width: 32,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: '#a855f7',
+                  textAlign: 'right',
+                  flexShrink: 0,
+                }}>
+                  {bar.kind === 'stars' ? `${bar.rating}/5` : ''}
                 </div>
               </div>
             ))}
@@ -152,22 +240,20 @@ export default function SongRow({
   );
 }
 
-// Short label for the tiny bar legend beneath each song row
-function abbrevLabel(name) {
-  const MAP = {
-    'Lyrics': 'Lyrics',
-    'Music / melody': 'Music',
-    'Bridge': 'Bridge',
-    'Nostalgia': 'Nostlg',
-    'Skip on shuffle?': 'Skip',
-    'Hook / chorus': 'Hook',
-    'Vocal performance': 'Vocal',
-    'Cry factor': 'Cry',
-    'Romantic feel': 'Rom',
-    'Hype / energy': 'Hype',
-    'Opening line': 'Open',
-    'Vibe / atmosphere': 'Vibe',
-    'Storytelling': 'Story',
-  };
-  return MAP[name] || name.slice(0, 6);
+// Small inline SVGs for the Skip-on-shuffle category badge
+function ShuffleIcon({ kind }) {
+  if (kind === 'play') {
+    return (
+      <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M8 5v14l11-7z" />
+      </svg>
+    );
+  }
+  // 'skip' — skip-forward / next-track glyph
+  return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M6 6l8.5 6L6 18V6zm10 0h2v12h-2V6z" />
+    </svg>
+  );
 }
+

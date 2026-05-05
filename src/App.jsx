@@ -7,6 +7,7 @@ import { useAlbumModes } from './hooks/useAlbumModes';
 import { useSettings } from './hooks/useSettings';
 import { useSpotify } from './hooks/useSpotify';
 import { useUserStats } from './hooks/useUserStats';
+import { useProfile } from './hooks/useProfile';
 import BetaGate from './components/BetaGate';
 import Welcome from './components/Welcome';
 import VibeCheckIntro, { hasSeenVibeCheckIntro } from './components/VibeCheckIntro';
@@ -19,7 +20,17 @@ import Categories from './components/Categories';
 import Settings from './components/Settings';
 import Brackets from './components/brackets/Brackets';
 import ConnectSpotifyPrompt from './components/ConnectSpotifyPrompt';
+import ProfileView from './components/ProfileView';
 import { ALL_ALBUMS } from './data/albums';
+
+// Hand-rolled URL routing for the public-profile feature. The app is
+// otherwise tab-driven, so adding react-router for one extra route would
+// be overkill. If we add more deep-linkable screens later, swap this for
+// a real router.
+function getProfileUidFromPath() {
+  const m = window.location.pathname.match(/^\/u\/([^/?#]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
 
 // Tab definitions — Categories lives inside Settings
 const TABS = [
@@ -34,6 +45,16 @@ const BETA_KEY = 'eras_beta_unlocked';
 const WELCOME_KEY = 'eras_welcome_seen';
 
 export default function App() {
+  // Public-profile route gate — checked once at mount and again on
+  // back/forward navigation. Pre-empts the rest of the app and the beta gate
+  // so a shared profile link is reachable without signing in.
+  const [profileUid, setProfileUid] = useState(getProfileUidFromPath);
+  useEffect(() => {
+    function onPop() { setProfileUid(getProfileUidFromPath()); }
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
   const [activeTab, setActiveTab] = useState('home');
   const [selectedAlbumId, setSelectedAlbumId] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -87,6 +108,10 @@ export default function App() {
   const { getAlbumMode, setAlbumMode } = useAlbumModes(user);
   const { settings, updateSetting } = useSettings(user);
   const spotify = useSpotify(user);
+
+  // Public profile (anyone-with-link sharing). Mirrors album rankings to
+  // a separate Firestore doc when the user has it turned on.
+  const profile = useProfile(user, getAlbumScore, activeCategories);
 
   // Per-user analytics: lastActiveAt, sessionCount, totalRatings, albumsCompleted, signup origin
   useUserStats(user, ratings);
@@ -165,6 +190,13 @@ export default function App() {
   function handleRejectedSignOut() {
     setBetaRejected(false);
     signOut();
+  }
+
+  // Public profile route takes precedence over both the beta gate and the
+  // welcome tour — a shared link should always render the profile screen
+  // for unauthenticated visitors.
+  if (profileUid) {
+    return <ProfileView uid={profileUid} />;
   }
 
   if (!betaUnlocked) {
@@ -569,6 +601,7 @@ export default function App() {
             getCompositeScore={getCompositeScore}
             getAlbumScore={getAlbumScore}
             onShowWelcome={replayWelcome}
+            profile={profile}
           />
         )}
       </div>

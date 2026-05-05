@@ -22,6 +22,28 @@ The top-level `Claude Design/` folder holds UI design handoffs produced by a sep
 
 When the user references "the design" or "the wireframe" for a screen, look here first.
 
+## Versioning & changelog
+The app version lives in **`package.json`** under `"version"` and is exposed to
+the bundle as `__APP_VERSION__` (injected by `vite.config.js`). It's displayed
+in **Settings → bottom of the page** so users can tell which build they're on.
+
+A running record of every shipped change lives in **`CHANGELOG.md`** at the
+repo root. **Whenever you ship a user-facing change, you must:**
+
+1. Bump `package.json` → `"version"` using a loose semver feel:
+   - **Major** (`x.0.0`) — big rewrite, redesign, or breaking data change
+   - **Minor** (`0.x.0`) — new feature, screen, or notable UX shift
+   - **Patch** (`0.0.x`) — bug fix, copy tweak, small visual polish
+2. Add a new section at the top of `CHANGELOG.md` for that version, dated today.
+   Group changes under `### Added`, `### Changed`, `### Fixed`, or `### Removed`.
+3. Keep entries plain-English and user-facing — what someone using the app
+   would notice. Skip purely internal refactors unless they affect behaviour.
+4. The version label in Settings updates automatically on the next build —
+   no extra wiring needed.
+
+If multiple changes ship together, batch them into one version. Don't bump
+the version for in-progress local edits — only on a real ship to `main`.
+
 ## Stack
 React 19 + Vite. All styling is **inline styles only** (no Tailwind classes in JSX).
 
@@ -277,7 +299,7 @@ All user data lives in a single Firestore document: `users/{uid}`
 - On sign-out: app continues using whatever is in localStorage
 
 ### Firestore security rules
-Set in Firebase console → Firestore → Rules. Users can only read/write their own document. The `launchWaitlist` collection is write-only from the client (BetaGate creates one doc when a rejected user opts in to be notified at launch); reads happen only via the Firebase console.
+Set in Firebase console → Firestore → Rules. Users can only read/write their own document. The `launchWaitlist` collection is write-only from the client (BetaGate creates one doc when a rejected user opts in to be notified at launch); reads happen only via the Firebase console. The `profiles` collection is the public-share mirror — readable by anyone when the user has flipped their profile on, writable only by the owner.
 ```
 rules_version = '2';
 service cloud.firestore {
@@ -293,9 +315,31 @@ service cloud.firestore {
                             && request.resource.data.email == request.auth.token.email;
       allow read, delete: if false; // owner reads via Firebase console
     }
+    match /profiles/{userId} {
+      // Public read when the owner has turned their profile on. Owner can
+      // always read their own doc (e.g. while it's still 'off' on first load).
+      allow read: if (resource.data.visibility == 'unlisted')
+                  || (request.auth != null && request.auth.uid == userId);
+      // Only the owner can create or update; doc ID must match their uid.
+      allow create, update: if request.auth != null
+                            && request.auth.uid == userId
+                            && request.resource.data.ownerUid == userId;
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
   }
 }
 ```
+
+### Public profile (anyone-with-link sharing)
+A signed-in user can flip on a public profile under **Settings → Public profile**. When on, their album rankings (and an optional bio) are mirrored to a separate Firestore document and reachable at `/u/{uid}` by anyone with the link.
+
+- **Collection:** `profiles/{uid}` — fields: `visibility` (`'off'` | `'unlisted'`), `bio`, `albumRankings`, `displayName`, `photoURL`, `ownerUid`, `updatedAt`.
+- **Default:** `visibility: 'off'` for every new account. The doc isn't even created until the user first toggles the feature on.
+- **Mirroring:** [src/hooks/useProfile.js](src/hooks/useProfile.js) auto-syncs `albumRankings` to the cloud doc whenever the user's ratings change AND the profile is on. Writes are debounced 1.5s so a rapid QuickScore session doesn't fan out into many writes.
+- **Routing:** Hand-rolled URL match in [src/App.jsx](src/App.jsx) — `/u/{uid}` short-circuits the beta gate / welcome tour and renders [src/components/ProfileView.jsx](src/components/ProfileView.jsx) directly. No router dependency.
+- **Bio guardrails:** [src/utils/profanity.js](src/utils/profanity.js) — 140-char limit, profanity wordlist, URL/domain pattern rejection. Validated client-side on save; the cloud rule is purely auth/uid-based, so the filter is the only spam barrier today.
+- **Visibility levels:** Only two — `'off'` (only the owner can read the doc) and `'unlisted'` (anyone can read). No "logged-in only" or "discoverable" tiers in v1. If a `loggedIn` tier is added later, update both the rule and `ProfileView`'s availability check.
+- **Vanity handles:** Not built. URLs are uid-based for v1. A `/u/{handle}` upgrade is plotted in the original scope but parked.
 
 ### Beta gate rejection → launch waitlist
 When a Google sign-in succeeds but the email isn't on `VITE_BETA_EMAILS`, BetaGate (instead of immediately signing the user out) shows a "we'll email you at launch" opt-in. Clicking it writes `{ email, name, photoURL, requestedAt }` to `launchWaitlist/{email}` in Firestore, then signs the user out. Owner views the list at Firebase console → Firestore → `launchWaitlist` collection.

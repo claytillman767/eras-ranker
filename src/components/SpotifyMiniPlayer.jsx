@@ -1,3 +1,5 @@
+import Spinner from './Spinner';
+
 // Compact Spotify playback bar shown inside the QuickScore overlay.
 // - If Spotify is connected + player is ready: shows song name + play/pause + "Open in Spotify" link.
 // - If connected but player not yet ready: shows "Connecting…"
@@ -83,8 +85,18 @@ export default function SpotifyMiniPlayer({
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
         }}>
-          {playerReady ? (songName || '…') : 'Connecting…'}
+          {playerReady ? (
+            songName || '…'
+          ) : (
+            <>
+              <Spinner size={12} color="#a855f7" strokeWidth={3} />
+              <span>Connecting to Spotify…</span>
+            </>
+          )}
         </div>
         <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 1, letterSpacing: '0.04em' }}>
           Powered by Spotify

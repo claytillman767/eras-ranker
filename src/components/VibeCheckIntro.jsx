@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import SpotifyBadge from './SpotifyBadge';
+import Spinner from './Spinner';
 import { SignInRequiredStep } from './Settings';
 
 // Shown ONCE on a user's first Vibe Check (gated by 'eras_vibecheck_intro_seen').
@@ -26,37 +27,6 @@ export function markVibeCheckIntroSeen() {
 export function hasSeenVibeCheckIntro() {
   return localStorage.getItem(FLAG_KEY) === '1';
 }
-
-// Full Pro perks list — shown together so users see the whole value of Pro
-// at the moment it matters most (their first Vibe Check). Order is roughly
-// "what they'll experience first" → "deeper customisation".
-const PRO_PERKS = [
-  {
-    icon: '🎵',
-    label: 'Songs play while you rate',
-    desc: 'Each song auto-plays from a hand-picked moment as the screen opens.',
-  },
-  {
-    icon: '💿',
-    label: 'Real album cover art',
-    desc: 'Real Spotify covers replace the emoji tiles across the whole app.',
-  },
-  {
-    icon: '🌉',
-    label: 'Jump straight to the bridge',
-    desc: "On the Bridge category, tap one button to skip right to the song's bridge.",
-  },
-  {
-    icon: '📊',
-    label: '8 extra rating categories',
-    desc: 'Hook, Vocals, Cry Factor, Storytelling and more.',
-  },
-  {
-    icon: '✏️',
-    label: 'Custom categories',
-    desc: 'Add your own scoring dimensions and tune their weights.',
-  },
-];
 
 export default function VibeCheckIntro({
   user,
@@ -193,59 +163,114 @@ export default function VibeCheckIntro({
           fontSize: 14,
           color: '#6b7280',
           lineHeight: 1.6,
-          marginBottom: 24,
+          marginBottom: 16,
           maxWidth: 360,
         }}>
-          Connect Spotify and each song plays automatically during your Vibe Check —
-          so you can <b style={{ color: '#111827' }}>really hear it</b> before you rate.
+          Hear each song before you rate it — so you can <b style={{ color: '#111827' }}>really hear it</b> before you score it.
         </div>
 
-        {/* Pro perks — full list of what Pro unlocks */}
+        {/* Everything Pro unlocks */}
         <div style={{
           background: 'linear-gradient(135deg, #faf5ff, #f3e8ff)',
           border: '0.5px solid #e9d5ff',
-          borderRadius: 14,
-          padding: '14px 16px',
+          borderRadius: 16,
+          padding: '16px 18px',
           marginBottom: 8,
           textAlign: 'left',
           width: '100%',
           boxSizing: 'border-box',
         }}>
           <div style={{
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
             color: '#a855f7',
             letterSpacing: '0.08em',
-            marginBottom: 12,
+            marginBottom: 14,
           }}>
             EVERYTHING PRO UNLOCKS
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {PRO_PERKS.map(perk => (
-              <div key={perk.label} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <div style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  background: '#ffffff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                  fontSize: 16,
-                }}>
-                  {perk.icon}
+
+          {[
+            {
+              spotify: false,
+              icon: '📊',
+              title: '8 extra rating categories',
+              desc: 'Hook, Vocals, Cry Factor, Storytelling and more.',
+            },
+            {
+              spotify: false,
+              icon: '✏️',
+              title: 'Custom categories',
+              desc: 'Add your own scoring dimensions and tune their weights.',
+            },
+            {
+              spotify: true,
+              icon: '🎵',
+              title: 'Songs play while you rate',
+              desc: 'Each song auto-plays from a hand-picked moment as the screen opens.',
+            },
+            {
+              spotify: true,
+              icon: '💿',
+              title: 'Real album cover art',
+              desc: 'Real Spotify covers replace the emoji tiles across the whole app.',
+            },
+            {
+              spotify: true,
+              icon: '🌉',
+              title: 'Jump straight to the bridge',
+              desc: "On the Bridge category, tap one button to skip right to the song's bridge.",
+            },
+          ].map((item, i, arr) => (
+            <div
+              key={item.title}
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 12,
+                marginBottom: i === arr.length - 1 ? 0 : 12,
+              }}
+            >
+              <div style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                fontSize: 18,
+              }}>
+                {item.spotify ? <SpotifyBadge size={22} /> : item.icon}
+              </div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
+                  {item.title}
                 </div>
-                <div style={{ minWidth: 0, paddingTop: 2 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
-                    {perk.label}
-                  </div>
-                  <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4 }}>
-                    {perk.desc}
-                  </div>
+                <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>
+                  {item.desc}
                 </div>
               </div>
-            ))}
+            </div>
+          ))}
+
+          {/* Spotify Premium footnote */}
+          <div style={{
+            marginTop: 14,
+            paddingTop: 12,
+            borderTop: '0.5px solid #e9d5ff',
+            fontSize: 11,
+            color: '#6b7280',
+            lineHeight: 1.5,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+          }}>
+            <SpotifyBadge size={14} />
+            <span>
+              Spotify features require a <b style={{ color: '#111827' }}>Spotify Premium</b> account connected to Eras Ranker.
+            </span>
           </div>
         </div>
       </div>
@@ -294,7 +319,7 @@ export default function VibeCheckIntro({
               padding: '14px',
               borderRadius: 12,
               border: 'none',
-              background: spotify?.isLoading ? '#a7f3d0' : '#1DB954',
+              background: spotify?.isLoading ? '#1aa84a' : '#1DB954',
               color: '#ffffff',
               fontSize: 15,
               fontWeight: 700,
@@ -303,8 +328,12 @@ export default function VibeCheckIntro({
               marginBottom: 10,
             }}
           >
-            <SpotifyBadge variant="white" size={22} />
-            {spotify?.isLoading ? 'Connecting…' : 'Connect Spotify'}
+            {spotify?.isLoading ? (
+              <Spinner size={20} />
+            ) : (
+              <SpotifyBadge variant="white" size={22} />
+            )}
+            {spotify?.isLoading ? 'Connecting to Spotify…' : 'Connect Spotify'}
           </button>
         )}
 

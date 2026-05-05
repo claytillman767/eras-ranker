@@ -8,7 +8,7 @@ import SpotifyAttribution from './SpotifyAttribution';
 export default function Rankings({ getCompositeScore, getAlbumScore, activeCategories, ratings, spotifyAlbumArt }) {
   const [view, setView] = useState('songs'); // 'songs' | 'albums'
 
-  // Build top songs list: all rated songs across all albums, sorted desc, max 20
+  // Build full songs list: every rated song across all albums, sorted desc.
   function getTopSongs() {
     const all = [];
     for (const album of ALL_ALBUMS) {
@@ -20,7 +20,7 @@ export default function Rankings({ getCompositeScore, getAlbumScore, activeCateg
         }
       }
     }
-    return all.sort((a, b) => b.score - a.score).slice(0, 20);
+    return all.sort((a, b) => b.score - a.score);
   }
 
   // Build top albums list: all albums with at least one rated song, sorted desc

@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
+import { BIO_MAX_LENGTH } from '../utils/profanity';
 import CategoriesEditor from './CategoriesEditor';
 import SpotifyBadge from './SpotifyBadge';
+import Spinner from './Spinner';
+import ConfirmModal from './ConfirmModal';
 import { PlanPicker } from './PaywallCard';
 import { isDevEmail, isUatMode, setUatMode, clearOnboardingFlags } from '../uat';
 
@@ -19,17 +22,51 @@ export default function Settings({
   categoryWeights, setCategoryWeight, resetCategoryWeights,
   getCompositeScore, getAlbumScore,
   onShowWelcome,
+  profile,
 }) {
   const [showProModal, setShowProModal] = useState(false);
   const [showCategoriesEditor, setShowCategoriesEditor] = useState(false);
+  const [confirmState, setConfirmState] = useState(null);
+
+  // "Forget me on this device" — clears local data only. Cloud data is untouched
+  // (Firestore record stays intact). The user can sign in again on any device to
+  // restore everything. Distinct from "Sign out" which leaves local data alone.
+  function handleForgetMe() {
+    setConfirmState({
+      title: 'Forget you on this device?',
+      body: 'This clears your saved ratings, brackets, and settings from this browser. Your cloud data stays safe — sign in again on any device to bring it back.',
+      confirmLabel: 'Forget me here',
+      destructive: true,
+      onConfirm: doForgetMe,
+    });
+  }
+
+  async function doForgetMe() {
+    // Wipe all app-owned localStorage keys, but keep beta-gate unlock so the
+    // user doesn't have to re-enter the password on the next session.
+    Object.keys(localStorage)
+      .filter(k => k.startsWith('eras_') && k !== 'eras_beta_unlocked')
+      .forEach(k => localStorage.removeItem(k));
+
+    try {
+      if (signOut) await signOut();
+    } finally {
+      location.reload();
+    }
+  }
 
   // Dev/test utility — wipes all bracket data so the flow can be replayed.
-  async function handleClearBracketData() {
-    const ok = window.confirm(
-      'Clear all bracket data? This deletes your personal brackets, weekly votes, and daily matchup.'
-    );
-    if (!ok) return;
+  function handleClearBracketData() {
+    setConfirmState({
+      title: 'Clear all bracket data?',
+      body: 'This deletes your personal brackets, weekly votes, and daily matchup.',
+      confirmLabel: 'Clear data',
+      destructive: true,
+      onConfirm: doClearBracketData,
+    });
+  }
 
+  async function doClearBracketData() {
     ['eras_brackets', 'eras_weekly_bracket', 'eras_daily_bracket']
       .forEach(k => localStorage.removeItem(k));
 
@@ -157,25 +194,77 @@ export default function Settings({
                 </div>
               </div>
             </div>
-            <div style={{ padding: '8px 12px' }}>
-              <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 10, paddingTop: 4 }}>
-                Your ratings and settings are backed up to the cloud and will sync across devices.
+            <div style={{ padding: '12px' }}>
+              <div style={{
+                fontSize: 12,
+                color: '#16a34a',
+                marginBottom: 12,
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 6,
+                lineHeight: 1.4,
+              }}>
+                <span aria-hidden="true">✓</span>
+                <span>
+                  Your ratings and settings are backed up. They'll sync across devices when you sign in.
+                </span>
               </div>
+
+              {/* Sign out — non-destructive: cloud data is preserved */}
               <button
                 onClick={signOut}
                 style={{
                   width: '100%',
-                  padding: '10px',
+                  padding: '10px 12px',
                   borderRadius: 10,
                   border: '0.5px solid #e5e7eb',
                   background: '#ffffff',
-                  fontSize: 13,
-                  color: '#ef4444',
-                  fontWeight: 500,
                   cursor: 'pointer',
+                  textAlign: 'left',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 10,
+                  marginBottom: 8,
                 }}
               >
-                Sign out
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
+                    Sign out
+                  </div>
+                  <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4 }}>
+                    Your data stays in the cloud. Sign back in any time to restore it.
+                  </div>
+                </div>
+                <span style={{ fontSize: 14, color: '#9ca3af', flexShrink: 0 }}>→</span>
+              </button>
+
+              {/* Forget me on this device — destructive: wipes local data */}
+              <button
+                onClick={handleForgetMe}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  border: '0.5px solid #fecaca',
+                  background: '#ffffff',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 10,
+                }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#dc2626', marginBottom: 2 }}>
+                    Forget me on this device
+                  </div>
+                  <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4 }}>
+                    Wipes the local copy on this browser. Your cloud data is untouched.
+                  </div>
+                </div>
+                <span style={{ fontSize: 14, color: '#dc2626', flexShrink: 0 }}>→</span>
               </button>
             </div>
           </>
@@ -236,6 +325,14 @@ export default function Settings({
 
       {/* Dev-only UAT toggle — only the developer email sees this row */}
       {isDevEmail(user?.email) && <UatToggle />}
+
+      {/* ── Public profile section ── */}
+      {user && profile && (
+        <>
+          <SectionHeader>Public profile</SectionHeader>
+          <PublicProfileSection profile={profile} />
+        </>
+      )}
 
       {/* ── Display section ── */}
       <SectionHeader>Display</SectionHeader>
@@ -453,15 +550,19 @@ export default function Settings({
                   padding: '12px',
                   borderRadius: 10,
                   border: 'none',
-                  background: spotify?.isLoading ? '#d1d5db' : '#1DB954',
+                  background: spotify?.isLoading ? '#1aa84a' : '#1DB954',
                   color: '#ffffff',
                   fontSize: 14,
                   fontWeight: 600,
                   cursor: spotify?.isLoading ? 'default' : 'pointer',
                 }}
               >
-                <SpotifyBadge variant="white" />
-                {spotify?.isLoading ? 'Connecting…' : 'Connect Spotify'}
+                {spotify?.isLoading ? (
+                  <Spinner size={18} />
+                ) : (
+                  <SpotifyBadge variant="white" />
+                )}
+                {spotify?.isLoading ? 'Connecting to Spotify…' : 'Connect Spotify'}
               </button>
 
               <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 10, textAlign: 'center' }}>
@@ -608,9 +709,20 @@ export default function Settings({
         </div>
       </div>
 
-      {/* ── Disclaimer ── */}
+      {/* ── About / version ── */}
       <div style={{
         marginTop: 32,
+        textAlign: 'center',
+        fontSize: 11,
+        color: '#9ca3af',
+        letterSpacing: '0.04em',
+      }}>
+        The Eras Ranker · v{__APP_VERSION__}
+      </div>
+
+      {/* ── Disclaimer ── */}
+      <div style={{
+        marginTop: 8,
         padding: '12px 14px',
         background: '#f9fafb',
         border: '0.5px solid #e5e7eb',
@@ -624,6 +736,12 @@ export default function Settings({
         or connected to Taylor Swift or TAS Rights Management, LLC.
       </div>
 
+      {confirmState && (
+        <ConfirmModal
+          {...confirmState}
+          onClose={() => setConfirmState(null)}
+        />
+      )}
     </div>
   );
 }
@@ -864,6 +982,218 @@ export function SignInRequiredStep({ onBack, signIn }) {
         Sign in with Google
       </button>
     </>
+  );
+}
+
+// ── Public profile section ────────────────────────────────────────────────────
+
+function PublicProfileSection({ profile }) {
+  const { isOn, profile: data, setVisibility, setBio, profileUrl, loading } = profile;
+  const [bioDraft, setBioDraft] = useState(data.bio ?? '');
+  const [bioError, setBioError] = useState(null);
+  const [bioSavedTick, setBioSavedTick] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // Keep the textarea in sync if the cloud doc updates externally (e.g. on sign-in)
+  useEffect(() => { setBioDraft(data.bio ?? ''); }, [data.bio]);
+
+  async function handleToggle() {
+    await setVisibility(isOn ? 'off' : 'unlisted');
+  }
+
+  async function handleSaveBio() {
+    setBioError(null);
+    const result = await setBio(bioDraft);
+    if (!result.ok) {
+      setBioError(result.reason);
+      return;
+    }
+    setBioSavedTick(true);
+    setTimeout(() => setBioSavedTick(false), 1500);
+  }
+
+  async function handleCopyLink() {
+    if (!profileUrl) return;
+    try {
+      await navigator.clipboard.writeText(profileUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Fallback: select the input so the user can copy manually
+      const el = document.getElementById('eras-profile-url');
+      if (el) { el.focus(); el.select(); }
+    }
+  }
+
+  const charsLeft = BIO_MAX_LENGTH - bioDraft.length;
+  const tooLong = charsLeft < 0;
+
+  return (
+    <div style={{
+      background: '#ffffff',
+      border: '0.5px solid #e5e7eb',
+      borderRadius: 12,
+      overflow: 'hidden',
+      marginBottom: 28,
+    }}>
+      {/* Toggle */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: '14px 16px',
+        borderBottom: isOn ? '0.5px solid #f3f4f6' : 'none',
+      }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
+            Anyone with the link can view
+          </div>
+          <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>
+            Shows your album rankings and (optional) bio. We won't list your
+            profile anywhere — only people you share the link with will see it.
+          </div>
+        </div>
+        <button
+          onClick={handleToggle}
+          disabled={loading}
+          aria-pressed={isOn}
+          aria-label={isOn ? 'Turn profile off' : 'Turn profile on'}
+          style={{
+            width: 44,
+            height: 26,
+            borderRadius: 13,
+            border: 'none',
+            background: isOn ? '#a855f7' : '#e5e7eb',
+            position: 'relative',
+            cursor: loading ? 'default' : 'pointer',
+            transition: 'background 0.15s ease',
+            flexShrink: 0,
+          }}
+        >
+          <span style={{
+            position: 'absolute',
+            top: 2,
+            left: isOn ? 20 : 2,
+            width: 22,
+            height: 22,
+            borderRadius: '50%',
+            background: '#ffffff',
+            transition: 'left 0.15s ease',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+          }} />
+        </button>
+      </div>
+
+      {/* Share link + bio editor — only when profile is on */}
+      {isOn && (
+        <div style={{ padding: '14px 16px' }}>
+          <div style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: '#6b7280',
+            marginBottom: 6,
+            letterSpacing: '0.04em',
+          }}>
+            SHAREABLE LINK
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
+            <input
+              id="eras-profile-url"
+              type="text"
+              value={profileUrl ?? ''}
+              readOnly
+              onFocus={e => e.target.select()}
+              style={{
+                flex: 1,
+                padding: '9px 11px',
+                fontSize: 12,
+                fontFamily: 'monospace',
+                border: '0.5px solid #e5e7eb',
+                borderRadius: 8,
+                background: '#f9fafb',
+                color: '#374151',
+                minWidth: 0,
+              }}
+            />
+            <button
+              onClick={handleCopyLink}
+              style={{
+                padding: '9px 14px',
+                fontSize: 12,
+                fontWeight: 600,
+                color: '#ffffff',
+                background: copied ? '#16a34a' : '#a855f7',
+                border: 'none',
+                borderRadius: 8,
+                cursor: 'pointer',
+                transition: 'background 0.15s ease',
+                flexShrink: 0,
+              }}
+            >
+              {copied ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+
+          <div style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: '#6b7280',
+            marginBottom: 6,
+            letterSpacing: '0.04em',
+          }}>
+            BIO (OPTIONAL)
+          </div>
+          <textarea
+            value={bioDraft}
+            onChange={e => { setBioDraft(e.target.value); setBioError(null); }}
+            placeholder="A line about your taste — no links."
+            rows={2}
+            style={{
+              width: '100%',
+              padding: '9px 11px',
+              fontSize: 13,
+              fontFamily: 'inherit',
+              border: `0.5px solid ${tooLong ? '#fecaca' : '#e5e7eb'}`,
+              borderRadius: 8,
+              resize: 'vertical',
+              boxSizing: 'border-box',
+              outline: 'none',
+              color: '#111827',
+            }}
+          />
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginTop: 6,
+            marginBottom: 10,
+            fontSize: 11,
+            color: tooLong ? '#dc2626' : '#9ca3af',
+          }}>
+            <span>{bioError ?? ' '}</span>
+            <span>{bioDraft.length} / {BIO_MAX_LENGTH}</span>
+          </div>
+
+          <button
+            onClick={handleSaveBio}
+            disabled={tooLong || bioDraft === (data.bio ?? '')}
+            style={{
+              padding: '9px 18px',
+              fontSize: 13,
+              fontWeight: 600,
+              color: '#ffffff',
+              background: (tooLong || bioDraft === (data.bio ?? '')) ? '#d1d5db' : '#a855f7',
+              border: 'none',
+              borderRadius: 8,
+              cursor: (tooLong || bioDraft === (data.bio ?? '')) ? 'default' : 'pointer',
+            }}
+          >
+            {bioSavedTick ? 'Saved ✓' : 'Save bio'}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
