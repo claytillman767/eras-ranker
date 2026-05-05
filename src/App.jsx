@@ -431,6 +431,8 @@ export default function App() {
           onChooseScore={handleChooseScore}
           onChooseManual={handleChooseManual}
           onBack={() => setPendingAlbumId(null)}
+          isPro={isPro}
+          spotify={spotify}
         />
       )}
 
