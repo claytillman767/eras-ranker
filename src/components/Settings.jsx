@@ -15,6 +15,7 @@ import { isDevEmail, isUatMode, setUatMode, clearOnboardingFlags } from '../uat'
 // Settings tab — app-wide display and behaviour preferences.
 export default function Settings({
   settings, updateSetting, spotify, isPro, unlockPro,
+  customerPortalUrl, subscriptionStatus, subscriptionEndsAt,
   user, signIn, signOut,
   ratings, activeCategories, customCategories,
   enabledExtras, toggleExtra,
@@ -211,6 +212,17 @@ export default function Settings({
                   Your ratings and settings are backed up. They'll sync across devices when you sign in.
                 </span>
               </div>
+
+              {/* Pro subscription summary — shown when the user is Pro and the
+                  webhook has stored a customer-portal URL. The portal lets
+                  them update their card, view invoices, cancel, etc. */}
+              {isPro && customerPortalUrl && (
+                <ManageSubscriptionRow
+                  portalUrl={customerPortalUrl}
+                  status={subscriptionStatus}
+                  endsAt={subscriptionEndsAt}
+                />
+              )}
 
               {/* Sign out — non-destructive: cloud data is preserved */}
               <button
@@ -1251,6 +1263,81 @@ function SectionHeader({ children }) {
     }}>
       {children}
     </div>
+  );
+}
+
+// Pro subscription summary row inside the Account card. Opens the LS
+// customer portal in a new tab — that's where users cancel, update card
+// details, download invoices, etc. We don't host that UI ourselves; LS
+// provides one portal URL per subscription and stores it on users/{uid}
+// via the webhook.
+//
+// When the user has cancelled but still has access until period end,
+// `status === 'cancelled'` and we surface a "Cancels on {date}" line so
+// they know exactly when access ends and aren't surprised.
+function ManageSubscriptionRow({ portalUrl, status, endsAt }) {
+  const isCancelled = status === 'cancelled';
+
+  // endsAt is an ISO string from the LS webhook (or null). Format as a
+  // friendly date — defensive about bad input so a typo or missing field
+  // never crashes the Account card.
+  let endsAtLabel = null;
+  if (isCancelled && endsAt) {
+    const d = new Date(endsAt);
+    if (!Number.isNaN(d.getTime())) {
+      endsAtLabel = d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+  }
+
+  return (
+    <a
+      href={portalUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 10,
+        width: '100%',
+        padding: '10px 12px',
+        borderRadius: 10,
+        border: '0.5px solid #e9d5ff',
+        background: '#faf5ff',
+        textDecoration: 'none',
+        marginBottom: 8,
+      }}
+    >
+      <div style={{ minWidth: 0 }}>
+        <div style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: '#7c3aed',
+          marginBottom: 2,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+        }}>
+          <span>Manage subscription</span>
+          <span style={{
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+            color: '#ffffff',
+            padding: '2px 6px',
+            borderRadius: 8,
+            textTransform: 'uppercase',
+          }}>Pro</span>
+        </div>
+        <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4 }}>
+          {isCancelled && endsAtLabel
+            ? `Cancels on ${endsAtLabel}. Update card or restart anytime.`
+            : 'Update payment, view invoices, or cancel anytime.'}
+        </div>
+      </div>
+      <span style={{ fontSize: 14, color: '#a855f7', flexShrink: 0 }}>↗</span>
+    </a>
   );
 }
 

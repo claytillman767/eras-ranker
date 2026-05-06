@@ -20,6 +20,7 @@ import Categories from './components/Categories';
 import Settings from './components/Settings';
 import Brackets from './components/brackets/Brackets';
 import ConnectSpotifyPrompt from './components/ConnectSpotifyPrompt';
+import ProcessingBanner from './components/ProcessingBanner';
 import ProfileView from './components/ProfileView';
 import { ALL_ALBUMS } from './data/albums';
 
@@ -91,6 +92,10 @@ export default function App() {
   const {
     isPro,
     unlockPro,
+    isUpgrading,
+    customerPortalUrl,
+    subscriptionStatus,
+    subscriptionEndsAt,
     enabledExtras,
     toggleExtra,
     customCategories,
@@ -312,6 +317,11 @@ export default function App() {
       display: 'flex',
       flexDirection: 'column',
     }}>
+      {/* Pro upgrade in flight — banner stays up until the LS webhook lands
+          and usePro flips isPro to true (clears isUpgrading), or the 90s
+          failsafe expires. */}
+      <ProcessingBanner visible={isUpgrading} />
+
       {/* ── App header + tab bar ── */}
       <div style={{
         padding: '14px 16px 0',
@@ -585,6 +595,9 @@ export default function App() {
             spotify={isPro ? spotify : null}
             isPro={isPro}
             unlockPro={handleUnlockProGlobal}
+            customerPortalUrl={customerPortalUrl}
+            subscriptionStatus={subscriptionStatus}
+            subscriptionEndsAt={subscriptionEndsAt}
             user={user}
             signIn={signIn}
             signOut={signOut}

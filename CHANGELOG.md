@@ -16,6 +16,32 @@ Newest entries go at the top.
 
 ---
 
+## 0.4.0 — 2026-05-06
+
+### Added
+- **Real subscription billing via Lemon Squeezy.** The "Subscribe — $4.99/month" /
+  "$46.71/year" buttons now open a real Lemon Squeezy checkout overlay
+  instead of granting Pro for free. Pay with a card, and Pro activates
+  within a few seconds of the payment going through. Existing mock-Pro
+  fallback is preserved for local dev.
+- **"Manage subscription" link in Settings → Account.** Once you're Pro,
+  a small purple-tinted row appears with a link to the Lemon Squeezy
+  customer portal where you can update your card, view invoices, or
+  cancel. Cancelled subscriptions show a "Cancels on {date}" line so you
+  know exactly when access ends.
+- **"Processing your payment…" banner.** A slim purple bar at the top of
+  the app is shown for the few seconds between checkout completing and
+  the webhook activating Pro. Clears automatically when Pro flips on, or
+  after 90 seconds if something goes wrong.
+
+### Changed
+- **Pro state is now real-time.** When the Lemon Squeezy webhook updates
+  your account, the UI flips to Pro within a second or two without
+  needing a refresh. Subscription cancellations and payment changes
+  flow through the same way.
+
+---
+
 ## 0.3.0 — 2026-05-05
 
 ### Added
