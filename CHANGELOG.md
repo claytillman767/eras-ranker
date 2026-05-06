@@ -16,6 +16,28 @@ Newest entries go at the top.
 
 ---
 
+## 0.3.0 — 2026-05-05
+
+### Added
+- **Delete my account.** New option in **Settings → Account** below
+  "Forget me on this device." Walks through a clear three-step flow:
+  what will be wiped (with a reminder to export your CSV first), a final
+  "I understand" checkbox, and a goodbye screen once it's done. Removes
+  your ratings, brackets, public profile, Pro subscription, and Firebase
+  account in one go. Required for legal compliance (GDPR / CCPA) before
+  the public launch.
+
+## 0.2.1 — 2026-05-05
+
+### Changed
+- **Brackets tab hidden until phase 2.** The Brackets tab is no longer shown
+  in the main navigation. The feature is still in development (community vote
+  tallies, audio playback in matchups, and trivia fact-checking aren't ready
+  yet) and will return in a later release. All underlying code is preserved
+  — the tab can be flipped back on with a single flag in `src/App.jsx`.
+
+---
+
 ## 0.2.0 — 2026-05-04
 
 ### Added

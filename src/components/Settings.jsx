@@ -8,6 +8,7 @@ import CategoriesEditor from './CategoriesEditor';
 import SpotifyBadge from './SpotifyBadge';
 import Spinner from './Spinner';
 import ConfirmModal from './ConfirmModal';
+import DeleteAccountModal from './DeleteAccountModal';
 import { PlanPicker } from './PaywallCard';
 import { isDevEmail, isUatMode, setUatMode, clearOnboardingFlags } from '../uat';
 
@@ -27,6 +28,7 @@ export default function Settings({
   const [showProModal, setShowProModal] = useState(false);
   const [showCategoriesEditor, setShowCategoriesEditor] = useState(false);
   const [confirmState, setConfirmState] = useState(null);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
 
   // "Forget me on this device" — clears local data only. Cloud data is untouched
   // (Firestore record stays intact). The user can sign in again on any device to
@@ -254,6 +256,7 @@ export default function Settings({
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   gap: 10,
+                  marginBottom: 8,
                 }}
               >
                 <div style={{ minWidth: 0 }}>
@@ -265,6 +268,34 @@ export default function Settings({
                   </div>
                 </div>
                 <span style={{ fontSize: 14, color: '#dc2626', flexShrink: 0 }}>→</span>
+              </button>
+
+              {/* Delete account — fully destructive: wipes cloud + auth + local */}
+              <button
+                onClick={() => setShowDeleteAccount(true)}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  border: '0.5px solid #fecaca',
+                  background: '#fef2f2',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 10,
+                }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#b91c1c', marginBottom: 2 }}>
+                    Delete my account
+                  </div>
+                  <div style={{ fontSize: 11, color: '#7f1d1d', lineHeight: 1.4 }}>
+                    Permanently removes your ratings, profile, and account from every device.
+                  </div>
+                </div>
+                <span style={{ fontSize: 14, color: '#b91c1c', flexShrink: 0 }}>→</span>
               </button>
             </div>
           </>
@@ -740,6 +771,15 @@ export default function Settings({
         <ConfirmModal
           {...confirmState}
           onClose={() => setConfirmState(null)}
+        />
+      )}
+
+      {showDeleteAccount && user && (
+        <DeleteAccountModal
+          user={user}
+          isPro={isPro}
+          signOut={signOut}
+          onClose={() => setShowDeleteAccount(false)}
         />
       )}
     </div>

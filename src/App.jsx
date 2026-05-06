@@ -32,11 +32,16 @@ function getProfileUidFromPath() {
   return m ? decodeURIComponent(m[1]) : null;
 }
 
+// Brackets feature is hidden from the published app until phase 2 of launch.
+// Flip to `true` to re-enable the Brackets tab — all underlying code (the tab
+// render, the Brackets components, the useBrackets hook) is intact.
+const BRACKETS_ENABLED = false;
+
 // Tab definitions — Categories lives inside Settings
 const TABS = [
   { id: 'home',     label: 'Home' },
   { id: 'albums',   label: 'Albums' },
-  { id: 'brackets', label: 'Brackets' },
+  ...(BRACKETS_ENABLED ? [{ id: 'brackets', label: 'Brackets' }] : []),
   { id: 'rankings', label: 'Rankings' },
   { id: 'settings', label: 'Settings' },
 ];

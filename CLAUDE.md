@@ -344,6 +344,24 @@ A signed-in user can flip on a public profile under **Settings → Public profil
 ### Beta gate rejection → launch waitlist
 When a Google sign-in succeeds but the email isn't on `VITE_BETA_EMAILS`, BetaGate (instead of immediately signing the user out) shows a "we'll email you at launch" opt-in. Clicking it writes `{ email, name, photoURL, requestedAt }` to `launchWaitlist/{email}` in Firestore, then signs the user out. Owner views the list at Firebase console → Firestore → `launchWaitlist` collection.
 
+### Delete account flow
+Live under **Settings → Account → Delete my account**. Implemented entirely client-side in [src/components/DeleteAccountModal.jsx](src/components/DeleteAccountModal.jsx) — no Vercel function or Firebase Admin SDK required.
+
+**Order of operations during deletion (matters for privacy):**
+1. Cancel any active Lemon Squeezy subscription via `/api/cancel-subscription`. Gated on `import.meta.env.VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY` being set — when the env var is missing (mock-unlock mode), this step is skipped entirely. Once the env var is added in Vercel, the call activates automatically. The endpoint itself is idempotent and skips gracefully when the user has no `subscriptionId` on their Firestore doc.
+2. Delete `profiles/{uid}` doc — kills the public link immediately. `ProfileView` already handles missing docs as "not available."
+3. Delete `users/{uid}` doc — wipes ratings, brackets, Pro flag, profile mirror.
+4. `deleteUser()` on the Firebase auth record — sign-out is automatic.
+5. Wipe `eras_*` localStorage keys (keeps `eras_beta_unlocked` so re-entry doesn't bounce off the gate).
+
+**Why this order:** auth must outlive the Firestore writes (the security rules require `request.auth.uid === userId` to delete the doc), and we purge auth last so a partial failure leaves orphan docs only — never a case where auth survives WITH active Firestore data, which would be a bigger privacy hole.
+
+**Re-auth handling:** if `deleteUser()` throws `auth/requires-recent-login` (session > ~5 min old), the modal calls `reauthenticateWithPopup` and retries once. If the user closes the popup mid-reauth, we treat it as a cancellation and surface a friendly retry message — no data has been touched yet at that point.
+
+**Pro subscription policy on delete:** cancel immediately, no proration, no refund. We do **not** auto-restore Pro on re-signup; if the same Google account creates a new `users/{uid}` doc later, they need to re-subscribe. Justification is in the UAT report — auto-linking billing records back to a re-created account contradicts the spirit of "delete my data."
+
+**Partial-failure recovery:** if step 4 fails after steps 2–3 succeed, the user is in a "ghost" state (auth survives, Firestore wiped). On next sign-in, the missing `users/{uid}` doc is recreated empty (or migrated from localStorage on a different device). That's almost equivalent to a clean delete; the daily failure check (planned — see Notification System section) is intended to surface these orphan auth records for cleanup.
+
 ### Firebase project
 - **Project ID:** `eras-8fd36`
 - **Console:** https://console.firebase.google.com/project/eras-8fd36
@@ -516,11 +534,13 @@ The webhook is the only trusted "did they pay" source — never trust the browse
 3. Register the webhook URL `https://erasranker.com/api/lemon-webhook` in LS dashboard, copy signing secret to Vercel env vars.
 
 **Env vars needed in Vercel** (all server-side, NO `VITE_` prefix unless noted):
-- `LEMON_SQUEEZY_API_KEY` — server only
-- `LEMON_SQUEEZY_STORE_ID`
-- `LEMON_SQUEEZY_WEBHOOK_SECRET`
+- `LEMON_SQUEEZY_API_KEY` — server only, used by `/api/cancel-subscription` to call LS
+- `LEMON_SQUEEZY_WEBHOOK_SECRET` — HMAC signing secret for verifying webhook payloads
 - `FIREBASE_SERVICE_ACCOUNT_B64` — base64 of the service account JSON
-- `VITE_LEMON_SQUEEZY_VARIANT_ID` — frontend uses this to open the right checkout
+- `VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY` — frontend uses this to open the monthly checkout (current value: `1619795`)
+- `VITE_LEMON_SQUEEZY_VARIANT_ID_ANNUAL` — frontend uses this to open the annual checkout (current value: `1619818`)
+
+**Note: `LEMON_SQUEEZY_STORE_ID` is NOT required.** All API calls (cancel subscription, etc.) work directly off subscription/customer IDs that come in the webhook payload. The store ID is only useful for admin scripts that query the LS API for "all subscriptions in store X" — not needed at runtime.
 
 **Phase 3 — Frontend changes** (~1 hour)
 - [src/hooks/usePro.js](src/hooks/usePro.js) — replace mock `unlockPro` body. Open the LS Checkout overlay (their `lemon.js` script) with `user.uid` and `user.email` passed as `checkout_data.custom`. **DO NOT set `isPro` locally on click — wait for the webhook** to write to Firestore. The frontend just opens the checkout; the webhook is the source of truth.
@@ -549,6 +569,8 @@ LS has a full test mode with test cards. Run all of:
 - Race condition: user closes the LS checkout right after paying but before the webhook fires (webhooks can take a few seconds). The `onSnapshot` listener handles this — UI just flips to Pro a moment later — but worth visualizing for the user (a "processing your payment…" state).
 
 **Total realistic effort:** about half a day of focused work, plus the time spent settling the trial / annual / rename decisions before Phase 1.
+
+**Custom checkout domain (future enhancement, not required for launch).** Lemon Squeezy supports pointing checkout at `checkout.erasranker.com` instead of the default `erasranker.lemonsqueezy.com` via Settings → Domains. Slightly higher trust at the moment of payment because users see your domain on the card-entry screen. Setup is a CNAME record (added in Cloudflare DNS once Email Routing is set up). Skip for v1 — the LS-branded checkout works fine, and it can be flipped on any time later without code changes.
 
 ### ~~Song Previews in Rating Flow~~ ✅ BUILT via Spotify Web Playback SDK
 Pro users can connect their Spotify Premium account (Settings → Spotify) to hear each song play
@@ -703,6 +725,21 @@ Firestore's `setDoc` throws **synchronously** when data contains nested arrays. 
 
 **Smallest first step:** pick email service → add the two Firestore fields → ship the Day +1 inactive-user email. Everything else slots in after that.
 
+### Daily developer health-check email (planned — NOT BUILT)
+
+A separate, lower-stakes channel from the user-facing notifications above. Goal: send the developer (claytillman767@gmail.com) one email per day summarising anything that needs human attention, so silent failures stop being silent.
+
+**Use cases to include from day one:**
+- **Account-deletion partial failures.** When [DeleteAccountModal](src/components/DeleteAccountModal.jsx) gets past Firestore deletes (steps 2–3) but `deleteUser()` (step 4) fails, the user ends up with an orphan Firebase auth record and no Firestore data. We need to detect these and clean them up. Cheapest detection: each session start, check whether `users/{uid}` exists for the signed-in user — if missing AND `signedUpAt` was previously written, log a `deletionOrphan` flag somewhere the daily job can find. Daily email lists any uids in that state so the developer can manually delete the auth record from the Firebase console.
+- **Webhook drift.** Once Lemon Squeezy is live: any user where `users/{uid}.isPro === true` but their LS subscription is `cancelled`/`expired`. Means the webhook missed an event.
+- **Profanity filter false-positives or new patterns.** Bio attempts that were rejected but look benign — the developer reviews and adjusts the wordlist if a pattern keeps tripping real users up.
+- **Spotify Extended Quota threshold.** Once user count crosses 20, the email warns that the 25-user free-tier ceiling is approaching.
+
+**Implementation sketch (not built yet):**
+- Vercel Cron job runs once daily, hits `/api/daily-health-check`.
+- The endpoint scans Firestore for the conditions above and emails a single summary via Resend / Postmark (same provider as the user notification system — share the account).
+- Empty days send a one-line "all clear" so silence ≠ "the cron is broken."
+
 ---
 
 ## Pre-launch checklist
@@ -718,3 +755,58 @@ Firestore's `setDoc` throws **synchronously** when data contains nested arrays. 
 - Fix or replace any that are inaccurate
 - Verify the default fallback fact too ("over 200 million records worldwide")
 - Consider expanding the list once verified — 10 facts is thin if a user plays many brackets
+
+### Set up `privacy@erasranker.com` via Cloudflare Email Routing
+**Why this matters:** the privacy policy needs a real contact email at the company domain (a personal Gmail looks unprofessional and signals the operation isn't serious). The same address is needed for Lemon Squeezy merchant onboarding, Google OAuth verification, and as the listed contact for any DMCA / takedown / data-subject requests.
+
+**The plan: Cloudflare Email Routing — free, unlimited aliases, no monthly fee.** Receive-only by default; can layer "send as" later via a free SMTP relay (Brevo) if reply-from-real-address is wanted.
+
+**Setup (~45 min, one time):**
+1. Make a free Cloudflare account.
+2. Add `erasranker.com` to Cloudflare and switch the domain's nameservers from Vercel's to Cloudflare's. **Vercel still hosts the site** — DNS just lives at Cloudflare. The site keeps working.
+3. In Cloudflare → Email → Email Routing, click Enable. Cloudflare auto-adds the MX records.
+4. Add `privacy@erasranker.com` as a forwarding rule → forward to `claytillman767@gmail.com`. Send a test email.
+5. While you're there, add the other addresses you'll likely want over time: `support@`, `legal@`, `dmca@`, `hello@`, `noreply@`. Each takes 10 seconds and stays free.
+
+**Optional follow-up (~30 min, free, do later if needed):**
+- Sign up for Brevo (free SMTP relay, 300 emails/day).
+- In Gmail → Settings → Accounts → "Send mail as" → add `privacy@erasranker.com` using Brevo SMTP credentials.
+- Replies now go out from `privacy@erasranker.com` instead of the personal Gmail.
+
+**Doesn't conflict with Resend.** When the user-facing notification system (transactional emails, see "Notification System" above) is wired with Resend, Resend will own a separate sub-address like `notifications@erasranker.com` or `hello@erasranker.com`. They share the domain, not the address.
+
+### Write and publish the privacy policy
+**Why this matters:** GDPR, CCPA, Apple/Google store policies, Lemon Squeezy onboarding, Google OAuth verification, and every email service all require a real privacy policy URL. Cannot launch publicly without one.
+
+**The plan: iubenda generator + ~5 hand-written paragraphs covering app-specific items.** ~$35/year, ~3.5 hours of work.
+
+**What to do:**
+1. Subscribe to iubenda.com.
+2. Run their wizard with the data inventory documented in the v0.3.0 conversation (Google identity fields, ratings, brackets, Pro state, Spotify tokens stored locally, public profile data, launch waitlist, planned Lemon Squeezy fields).
+3. Add 5 hand-written paragraphs in iubenda's custom-text fields:
+   - Spotify integration (token stored locally only, never on our servers)
+   - Public profile (anyone-with-link sharing, how to turn off)
+   - Lyric data (sourced from public databases, not collected from users)
+   - Pro subscription (Lemon Squeezy handles billing, we never see card data)
+   - Account deletion (link directly to Settings → Delete my account)
+4. List `privacy@erasranker.com` as the privacy contact (set up via the Cloudflare task above).
+5. Wire the iubenda URL into the app at three touchpoints:
+   - **Beta gate sign-in screen** — small grey text below the sign-in button: *"By signing in, you agree to our [Terms of Service] and [Privacy Policy]."*
+   - **Settings → About** — link directly under the version number.
+   - **Footer** — discreet link reachable from any screen.
+6. Decide on Terms of Service in the same iubenda flow (recommended yes — minimal extra cost, and Lemon Squeezy will ask).
+7. Set a 6-month calendar reminder to review the policy.
+
+**Cookie banner:** not strictly needed today (Firebase Auth cookies are functional/essential), but required the moment any analytics or third-party tracking is added. iubenda's cookie banner module is ~$30/year — add at the same time as analytics.
+
+**Decisions to lock in before drafting:**
+- Business name (personal name, LLC, sole proprietorship?) — affects both the policy and Lemon Squeezy.
+- Mailing address (PO Box is fine — GDPR requires a physical address, not just an email).
+- Children's age cutoff — recommended 13+. Anything younger requires parental-consent flows.
+
+### Upload a logo to the Lemon Squeezy storefront
+**Why this matters:** the LS dashboard ships with an "E" placeholder logo today. The logo appears on the checkout page, on customer email receipts and invoices, and on the public storefront at `erasranker.lemonsqueezy.com`. A real logo is a small but visible trust signal — without one, the checkout page looks half-built.
+
+**Where:** Lemon Squeezy dashboard → Settings → General → Logo → Choose. JPG / GIF / PNG, 1MB max. Recommended 512×512 PNG.
+
+**Suggestion:** match the in-app brand (purple gradient `#a855f7 → #7c3aed` + a recognisable mark — could be one of the existing album emojis or a custom "ER" wordmark). Doesn't need a designer; a simple tile generated in Figma / Canva is plenty.
