@@ -129,6 +129,12 @@ const DEBUT_BACKGROUND =
   // Base cream gradient — the actual album color.
   'linear-gradient(180deg, #fdf6e3 0%, #faeeda 50%, #fff7e0 100%)';
 
+// Enchanted-purple gradient for Speak Now — light at the top, drifting into
+// deeper amethyst toward the bottom so the scene has somewhere for petals
+// and candle-glow to feel "lit from within."
+const SPEAKNOW_BACKGROUND =
+  'linear-gradient(180deg, #f5f3ff 0%, #ddd6fe 55%, #c4b5fd 100%)';
+
 // ── Night sky decoration (Midnights album theme) ─────────────────────────────
 // Crescent moon in the upper-right corner + a sprinkle of twinkling stars.
 // CSS-only — animation runs through @keyframes injected near the moon SVG so
@@ -437,6 +443,151 @@ function DebutScene() {
   );
 }
 
+// ── Speak Now ambient scene ──────────────────────────────────────────────────
+// Floating violet petals (sway + rotate), warm candelabra glow points
+// pulsing at irregular intervals, and a sparse layer of pale glitter.
+
+const SPEAKNOW_PETALS = [
+  { top: '6%',  left: '14%', size: 22, delay: '0s',   rotate: -18, dur: 5500 },
+  { top: '12%', left: '78%', size: 18, delay: '1.2s', rotate: 22,  dur: 6200 },
+  { top: '24%', left: '46%', size: 16, delay: '2.5s', rotate: -8,  dur: 5800 },
+  { top: '36%', left: '8%',  size: 20, delay: '0.8s', rotate: 14,  dur: 6500 },
+  { top: '48%', left: '88%', size: 16, delay: '1.9s', rotate: -24, dur: 5300 },
+  { top: '58%', left: '28%', size: 22, delay: '0.4s', rotate: 8,   dur: 6100 },
+  { top: '70%', left: '62%', size: 18, delay: '2.2s', rotate: -14, dur: 5900 },
+  { top: '82%', left: '12%', size: 16, delay: '1.5s', rotate: 26,  dur: 6300 },
+  { top: '88%', left: '74%', size: 20, delay: '0.7s', rotate: -10, dur: 5700 },
+];
+
+const SPEAKNOW_CANDLES = [
+  { top: '22%', left: '22%', delay: '0s'   },
+  { top: '40%', left: '70%', delay: '1.6s' },
+  { top: '58%', left: '14%', delay: '0.9s' },
+  { top: '74%', left: '82%', delay: '2.4s' },
+  { top: '14%', left: '52%', delay: '3.1s' },
+];
+
+const SPEAKNOW_GLITTER = [
+  { top: '8%',  left: '38%', size: 3, delay: '0s'   },
+  { top: '16%', left: '62%', size: 2, delay: '0.7s' },
+  { top: '28%', left: '84%', size: 3, delay: '1.4s' },
+  { top: '34%', left: '32%', size: 2, delay: '0.3s' },
+  { top: '44%', left: '54%', size: 3, delay: '1.9s' },
+  { top: '52%', left: '78%', size: 2, delay: '0.6s' },
+  { top: '62%', left: '40%', size: 3, delay: '2.1s' },
+  { top: '70%', left: '20%', size: 2, delay: '1.0s' },
+  { top: '78%', left: '52%', size: 3, delay: '0.4s' },
+  { top: '86%', left: '36%', size: 2, delay: '1.6s' },
+];
+
+function SpeakNowScene() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}
+    >
+      <style>{`
+        @keyframes qs-speaknow-petal-sway {
+          0%, 100% { transform: translateY(0)    rotate(var(--qs-rot, 0deg)); }
+          50%      { transform: translateY(-14px) rotate(calc(var(--qs-rot, 0deg) + 22deg)); }
+        }
+        @keyframes qs-speaknow-candle-pulse {
+          0%, 100% { opacity: 0.18; transform: scale(0.9); }
+          50%      { opacity: 0.7;  transform: scale(1.15); }
+        }
+        @keyframes qs-speaknow-glint {
+          0%, 100% { opacity: 0.25; transform: scale(0.85); }
+          50%      { opacity: 0.95; transform: scale(1.15); }
+        }
+      `}</style>
+
+      {/* Floating violet petals */}
+      {SPEAKNOW_PETALS.map((p, i) => (
+        <svg
+          key={i}
+          width={p.size}
+          height={p.size * 1.45}
+          viewBox="0 0 24 36"
+          style={{
+            position: 'absolute',
+            top: p.top,
+            left: p.left,
+            opacity: 0.55,
+            '--qs-rot': `${p.rotate}deg`,
+            animation: `qs-speaknow-petal-sway ${p.dur}ms ${p.delay} ease-in-out infinite`,
+          }}
+        >
+          <defs>
+            <linearGradient id={`qs-petal-${i}`} x1="0" y1="0" x2="0.7" y2="1">
+              <stop offset="0%"  stopColor="#ddd6fe" />
+              <stop offset="55%" stopColor="#a78bfa" />
+              <stop offset="100%" stopColor="#7c3aed" />
+            </linearGradient>
+          </defs>
+          {/* Tear-drop petal silhouette */}
+          <path
+            d="M12 1 Q 22 11, 19 22 Q 15 32, 12 35 Q 9 32, 5 22 Q 2 11, 12 1 Z"
+            fill={`url(#qs-petal-${i})`}
+          />
+          {/* Highlight ridge along the inside of the petal */}
+          <path
+            d="M12 4 Q 16 10, 14 18"
+            fill="none"
+            stroke="#ede9fe"
+            strokeWidth="1"
+            strokeLinecap="round"
+            opacity="0.6"
+          />
+        </svg>
+      ))}
+
+      {/* Candelabra glow points — soft warm radial pulses */}
+      {SPEAKNOW_CANDLES.map((c, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            top: c.top,
+            left: c.left,
+            width: 56,
+            height: 56,
+            marginLeft: -28,
+            marginTop: -28,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(254, 215, 170, 0.55) 0%, rgba(252, 211, 77, 0.25) 50%, rgba(252, 211, 77, 0) 75%)',
+            animation: `qs-speaknow-candle-pulse 4s ${c.delay} ease-in-out infinite`,
+          }}
+        />
+      ))}
+
+      {/* Pale lavender glitter dots */}
+      {SPEAKNOW_GLITTER.map((g, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            top: g.top,
+            left: g.left,
+            width: g.size,
+            height: g.size,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, #ffffff 0%, #c4b5fd 100%)',
+            boxShadow: '0 0 4px rgba(196, 181, 253, 0.7)',
+            opacity: 0.5,
+            animation: `qs-speaknow-glint 2.8s ${g.delay} ease-in-out infinite`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 // ── Album-signature celebrations ──────────────────────────────────────────────
 // Maps (albumId, songName) → a celebration that runs after the user finishes
 // rating that song's last category. Returns null when no celebration applies.
@@ -451,6 +602,9 @@ function detectCelebration(albumId, songName) {
   }
   if (albumId === 'tv' && songName === 'Picture to Burn') {
     return { type: 'polaroid-burn', durationMs: 3500 };
+  }
+  if (albumId === 'st' && songName === 'Enchanted') {
+    return { type: 'waltz', durationMs: 3500 };
   }
   return null;
 }
@@ -491,6 +645,15 @@ const POLAROID_EMBERS = [
   { dx:   4, dy: -56, color: '#f59e0b', dur: 1600, delay: 700 },
 ];
 
+// Parchment-page wisps that drift up behind the picked stars during the
+// Enchanted waltz. Three wisps spaced across the row, each on its own
+// timing + tilt pair so they don't move in sync.
+const WALTZ_PARCHMENTS = [
+  { left: 18, tx: -6, r1: -10, r2:  4, r3: 14, dur: 2200, delay:    0 },
+  { left: 50, tx:  4, r1:   6, r2: -3, r3:  9, dur: 2400, delay:  500 },
+  { left: 82, tx: -2, r1:  -4, r2:  8, r3: -2, dur: 2300, delay: 1000 },
+];
+
 // ── Big interactive stars ─────────────────────────────────────────────────────
 // Gets a new `key` each question so hover state resets automatically.
 function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration = null, isNightTheme = false }) {
@@ -504,6 +667,7 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
   const isPolaroidSepia = celType === 'polaroid-sepia';
   const isPolaroidBurn  = celType === 'polaroid-burn';
   const isPolaroid = isPolaroidSepia || isPolaroidBurn;
+  const isWaltz = celType === 'waltz';
   // Label colors split for the two themes — dark-grey + dark-purple read
   // perfectly on the light category backgrounds; on the deep-night
   // gradient those go invisible, so we swap to off-white + bright purple.
@@ -538,6 +702,32 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
             0%   { opacity: 0; transform: translate(0, 0) scale(0.4); }
             25%  { opacity: 1; }
             100% { opacity: 0; transform: var(--qs-drift) scale(1.2); }
+          }
+        `}</style>
+      )}
+
+      {/* Enchanted waltz keyframes — 3/4 tempo pulse on the picked stars
+          plus a parchment-page-flip wisp drifting up behind them. */}
+      {isWaltz && (
+        <style>{`
+          @keyframes qs-waltz-pulse {
+            0%   { transform: scale(1); }
+            10%  { transform: scale(1.20); }   /* downbeat — strong */
+            33%  { transform: scale(1); }
+            43%  { transform: scale(1.08); }   /* light beat 2 */
+            66%  { transform: scale(1); }
+            76%  { transform: scale(1.08); }   /* light beat 3 */
+            100% { transform: scale(1); }
+          }
+          @keyframes qs-waltz-glow {
+            0%, 100% { filter: drop-shadow(0 0 4px rgba(196, 181, 253, 0.5)); }
+            50%      { filter: drop-shadow(0 0 14px rgba(196, 181, 253, 0.85)); }
+          }
+          @keyframes qs-waltz-parchment {
+            0%   { opacity: 0;   transform: translate(var(--qs-tx, 0px), 30px) rotate(var(--qs-r1, -8deg)); }
+            18%  { opacity: 0.7; }
+            55%  { opacity: 0.7; transform: translate(var(--qs-tx, 0px), -8px) rotate(var(--qs-r2, 6deg)); }
+            100% { opacity: 0;   transform: translate(var(--qs-tx, 0px), -48px) rotate(var(--qs-r3, 12deg)); }
           }
         `}</style>
       )}
@@ -584,6 +774,35 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
       )}
 
       <div style={{ display: 'flex', gap: 4, position: 'relative' }}>
+        {/* Parchment-page wisps — drift up behind the picked stars during
+            the Enchanted waltz, evoking the album's handwritten lyric pages. */}
+        {isWaltz && (
+          <>
+            {WALTZ_PARCHMENTS.map((p, i) => (
+              <div
+                key={`wisp-${i}`}
+                style={{
+                  position: 'absolute',
+                  bottom: -8,
+                  left: `${p.left}%`,
+                  width: 56,
+                  height: 70,
+                  marginLeft: -28,
+                  borderRadius: '2px 4px 3px 5px / 4px 2px 5px 3px',
+                  background: 'linear-gradient(160deg, rgba(254, 243, 199, 0.85) 0%, rgba(252, 231, 168, 0.7) 60%, rgba(180, 130, 80, 0.55) 100%)',
+                  boxShadow: '0 4px 14px rgba(91, 33, 182, 0.18)',
+                  pointerEvents: 'none',
+                  zIndex: 0,
+                  '--qs-tx': `${p.tx}px`,
+                  '--qs-r1': `${p.r1}deg`,
+                  '--qs-r2': `${p.r2}deg`,
+                  '--qs-r3': `${p.r3}deg`,
+                  animation: `qs-waltz-parchment ${p.dur}ms ${p.delay}ms ease-in-out infinite`,
+                }}
+              />
+            ))}
+          </>
+        )}
         {[1, 2, 3, 4, 5].map(star => {
           const active = star <= display;
           const isHoverTarget = hovered > 0 && star <= hovered;
@@ -591,12 +810,13 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
           // 60 ms each so the animation reads as a left-to-right sweep.
           const flashing = isFlashing && star <= flashLevel;
           // Album celebrations apply to the rated stars (1..celLevel)
-          const gem      = isBejeweled     && star <= celLevel;
-          const polaroid = isPolaroid      && star <= celLevel;
+          const gem      = isBejeweled && star <= celLevel;
+          const polaroid = isPolaroid  && star <= celLevel;
+          const waltz    = isWaltz     && star <= celLevel;
           // Tilt each polaroid like a stuck-on-the-fridge photo
           const tilt = POLAROID_TILTS[star - 1];
           // Disabled while any celebration is running
-          const celebrating = isFlashing || isBejeweled || isPolaroid;
+          const celebrating = isFlashing || isBejeweled || isPolaroid || isWaltz;
           return (
             <button
               key={star}
@@ -616,10 +836,13 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
                 WebkitTapHighlightColor: 'transparent',
                 animation: gem
                   ? `qs-bejeweled-pulse 0.9s ease-in-out infinite`
-                  : (flashing
+                  : waltz
+                    ? `qs-waltz-pulse 1700ms ${star * 70}ms ease-in-out infinite`
+                    : flashing
                       ? `qs-star-pulse 700ms ${star * 60}ms ease-out both`
-                      : undefined),
+                      : undefined,
                 position: 'relative',
+                zIndex: 1,
               }}
             >
               {polaroid ? (
@@ -669,7 +892,9 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
                     // fill prop while it's running.
                     animation: gem
                       ? `qs-bejeweled-shimmer 1.2s linear infinite, qs-bejeweled-glow 1.6s ease-in-out infinite`
-                      : undefined,
+                      : waltz
+                        ? `qs-waltz-glow 1700ms ${star * 70}ms ease-in-out infinite`
+                        : undefined,
                   }}
                 >
                   <path d="M10 1l2.39 4.84 5.34.78-3.86 3.76.91 5.32L10 13.27l-4.78 2.51.91-5.32L2.27 6.62l5.34-.78L10 1z" />
@@ -1095,7 +1320,7 @@ function NoBridgeScreen({ songName, onContinue }) {
 // ── Shuffle screen — Play/Skip question with song lyrics floating in background ─
 // Lyrics fade in softly, then pulse up and out when the user picks an answer,
 // creating a bridge into the detailed rating questions.
-function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRating = 0, isNightTheme = false, isDebutTheme = false }) {
+function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRating = 0, isNightTheme = false, isDebutTheme = false, isSpeakNowTheme = false }) {
   const [animating, setAnimating] = useState(false);
 
   // Show the previous pick (if any) by fading the unpicked side. Mirrors
@@ -1103,9 +1328,9 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
   const prevPlay = currentRating === 5;
   const prevSkip = currentRating === 1;
   const hasPrev = prevPlay || prevSkip;
-  // Both Midnights and Debut want their own backdrop to bleed through —
-  // any other album keeps the original soft white→lavender gradient.
-  const useThemeBackdrop = isNightTheme || isDebutTheme;
+  // Themed albums all want the parent backdrop to bleed through; only
+  // the un-themed default keeps the original soft white→lavender gradient.
+  const useThemeBackdrop = isNightTheme || isDebutTheme || isSpeakNowTheme;
 
   function handlePick(val) {
     if (animating) return;
@@ -1542,14 +1767,17 @@ export default function QuickScore({
 
   // Album themes — replace category backgrounds with an album-specific
   // backdrop and render an ambient decoration layer.
-  const isNightTheme = albumId === 'ml';   // Midnights — dark sky
-  const isDebutTheme = albumId === 'tv';   // Taylor Swift (Debut) — cream + memorabilia
+  const isNightTheme    = albumId === 'ml';   // Midnights — dark sky
+  const isDebutTheme    = albumId === 'tv';   // Taylor Swift (Debut) — cream + memorabilia
+  const isSpeakNowTheme = albumId === 'st';   // Speak Now — enchanted purple
 
   const albumBackground = isNightTheme
     ? NIGHT_BACKGROUND
     : isDebutTheme
       ? DEBUT_BACKGROUND
-      : null;
+      : isSpeakNowTheme
+        ? SPEAKNOW_BACKGROUND
+        : null;
 
   const overlayStyle = {
     position: 'fixed',
@@ -1598,6 +1826,7 @@ export default function QuickScore({
       {/* Album-specific ambient scenes */}
       {isNightTheme && <NightSky />}
       {isDebutTheme && <DebutScene />}
+      {isSpeakNowTheme && <SpeakNowScene />}
 
       {showTrees && <FallingTrees onDone={() => setShowTrees(false)} />}
 
@@ -1667,6 +1896,7 @@ export default function QuickScore({
           currentRating={currentRating}
           isNightTheme={isNightTheme}
           isDebutTheme={isDebutTheme}
+          isSpeakNowTheme={isSpeakNowTheme}
         />
       ) : (
         /* ── Fading wrapper — covers both NoBridgeScreen and star questions ── */
@@ -1747,23 +1977,45 @@ export default function QuickScore({
           {/* Category label — colors per theme.
               Night (Midnights): brand purple washes out → lavender + light grey.
               Debut: cream backdrop wants a deeper, dusty rose-mauve so the
-              label reads warmly against the wood-grain warmth. */}
+              label reads warmly against the wood-grain warmth.
+              Speak Now: light-purple backdrop demands a deep amethyst with a
+              serif italic feel to echo the album's handwritten lyric booklet. */}
           <div style={{
-            fontSize: 12,
+            fontSize: isSpeakNowTheme ? 13 : 12,
             fontWeight: 700,
-            color: isNightTheme ? '#e9d5ff' : (isDebutTheme ? '#9d3c5b' : '#a855f7'),
+            color: isNightTheme
+              ? '#e9d5ff'
+              : isDebutTheme
+                ? '#9d3c5b'
+                : isSpeakNowTheme
+                  ? '#5b21b6'
+                  : '#a855f7',
             textTransform: 'uppercase',
             letterSpacing: '0.12em',
             marginBottom: 4,
             textShadow: isNightTheme ? '0 1px 4px rgba(0,0,0,0.5)' : 'none',
+            fontFamily: isSpeakNowTheme
+              ? "'Georgia', 'Garamond', serif"
+              : 'inherit',
+            fontStyle: isSpeakNowTheme ? 'italic' : 'normal',
           }}>
             {currentCat?.name}
           </div>
           <div style={{
             fontSize: 12,
-            color: isNightTheme ? '#cbd5e1' : (isDebutTheme ? '#78716c' : '#c4b5fd'),
+            color: isNightTheme
+              ? '#cbd5e1'
+              : isDebutTheme
+                ? '#78716c'
+                : isSpeakNowTheme
+                  ? '#7c3aed'
+                  : '#c4b5fd',
             marginBottom: currentCat?.id === 'lyrics' ? 14 : 32,
             textShadow: isNightTheme ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
+            fontFamily: isSpeakNowTheme
+              ? "'Georgia', 'Garamond', serif"
+              : 'inherit',
+            fontStyle: isSpeakNowTheme ? 'italic' : 'normal',
           }}>
             Category {catPos + 1} of {currentSong?.cats.length}
           </div>
