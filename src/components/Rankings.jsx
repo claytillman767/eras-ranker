@@ -5,7 +5,9 @@ import RankingCard from './RankingCard';
 import SpotifyAttribution from './SpotifyAttribution';
 
 // Rankings tab — shows top songs or top albums sorted by composite score.
-export default function Rankings({ getCompositeScore, getAlbumScore, activeCategories, ratings, spotifyAlbumArt }) {
+// onSelectAlbum is optional; when provided, album rows in the Albums view
+// become tappable and route the user into that album's song list.
+export default function Rankings({ getCompositeScore, getAlbumScore, activeCategories, ratings, spotifyAlbumArt, onSelectAlbum }) {
   const [view, setView] = useState('songs'); // 'songs' | 'albums'
 
   // Build full songs list: every rated song across all albums, sorted desc.
@@ -114,17 +116,32 @@ export default function Rankings({ getCompositeScore, getAlbumScore, activeCateg
         />
       )}
 
-      {/* Albums leaderboard */}
+      {/* Albums leaderboard — rows are tappable and route into the album */}
       {view === 'albums' && topAlbums.map((album, i) => {
         const artUrl = spotifyAlbumArt?.[album.id];
+        const tappable = !!onSelectAlbum;
         return (
-          <div key={album.id} style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: '8px 0',
-            borderBottom: '0.5px solid #f3f4f6',
-          }}>
+          <div
+            key={album.id}
+            onClick={tappable ? () => onSelectAlbum(album.id) : undefined}
+            role={tappable ? 'button' : undefined}
+            tabIndex={tappable ? 0 : undefined}
+            onKeyDown={tappable ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSelectAlbum(album.id);
+              }
+            } : undefined}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '8px 0',
+              borderBottom: '0.5px solid #f3f4f6',
+              cursor: tappable ? 'pointer' : 'default',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
             <span style={{ fontSize: i < 3 ? 16 : 12, color: '#9ca3af', width: 28, textAlign: 'center' }}>
               {rankIcon(i)}
             </span>
