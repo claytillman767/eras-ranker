@@ -169,7 +169,9 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0 }) {
       </div>
 
       {/* Label list — always visible so mobile users can see descriptions without hovering.
-          The active row (hovered on desktop, selected on mobile) is fully opaque; others fade back. */}
+          Before any pick (or hover), every label renders solid and dark for
+          readability. As soon as the user hovers or picks a star, unselected
+          rows fade back to the muted grey so the chosen label stands out. */}
       {labels && (
         <div style={{
           marginTop: 18,
@@ -181,7 +183,9 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0 }) {
         }}>
           {labels.map((label, i) => {
             const starNum = i + 1;
+            const hasPick = activeLevel > 0;
             const isActive = starNum === activeLevel;
+            const isFaded = hasPick && !isActive;
             return (
               <div
                 key={i}
@@ -189,8 +193,8 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0 }) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
-                  opacity: isActive ? 1 : 0.32,
-                  transition: 'opacity 0.1s ease',
+                  opacity: isFaded ? 0.35 : 1,
+                  transition: 'opacity 0.15s ease',
                 }}
               >
                 <span style={{
@@ -204,8 +208,9 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0 }) {
                 </span>
                 <span style={{
                   fontSize: 12,
-                  color: isActive ? '#5b21b6' : '#9ca3af',
-                  fontWeight: isActive ? 600 : 400,
+                  color: isActive ? '#5b21b6' : '#374151',
+                  fontWeight: isActive ? 600 : 500,
+                  transition: 'color 0.15s ease, font-weight 0.15s ease',
                 }}>
                   {label}
                 </span>
