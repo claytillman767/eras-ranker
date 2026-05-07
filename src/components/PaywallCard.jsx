@@ -12,7 +12,7 @@ import { SignInRequiredStep } from './Settings';
 // requirement, which felt friendlier than gating their decision on it.
 export default function PaywallCard({ onUnlock, user, signIn }) {
   const [step, setStep] = useState('features');
-  const [plan, setPlan] = useState('annual'); // default to annual (better value)
+  const [plan, setPlan] = useState('monthly'); // monthly is the lower-commitment default
 
   function handleUnlock() {
     if (!user) {

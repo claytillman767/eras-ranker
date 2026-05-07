@@ -799,7 +799,7 @@ export default function Settings({
 //                     decision first, then explains the login requirement)
 function ProModal({ onUnlock, onClose, user, signIn }) {
   const [step, setStep] = useState('features');
-  const [plan, setPlan] = useState('annual'); // default to annual (better value)
+  const [plan, setPlan] = useState('monthly'); // monthly is the lower-commitment default
   const features = [
     { kind: 'spotify', label: 'Connect Spotify',     desc: 'Hear each song play while you rate it' },
     { kind: 'emoji',   icon: '📊', label: '8 extra categories', desc: 'Hook, Vocals, Cry Factor, and more' },
