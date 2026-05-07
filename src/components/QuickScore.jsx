@@ -883,7 +883,7 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
                   width={52}
                   height={52}
                   viewBox="0 0 20 20"
-                  fill={active ? (hovered > 0 ? '#f59e0b' : '#a855f7') : '#e9d5ff'}
+                  fill={active ? (hovered > 0 ? '#f59e0b' : '#a855f7') : '#a78bfa'}
                   style={{
                     display: 'block',
                     transition: 'fill 0.08s ease',
@@ -897,7 +897,15 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
                         : undefined,
                   }}
                 >
-                  <path d="M10 1l2.39 4.84 5.34.78-3.86 3.76.91 5.32L10 13.27l-4.78 2.51.91-5.32L2.27 6.62l5.34-.78L10 1z" />
+                  {/* Empty stars get a thin deeper-purple outline so they
+                      read as clearly tappable on any backdrop — without it,
+                      pale-purple cream / lavender backgrounds wash them out. */}
+                  <path
+                    d="M10 1l2.39 4.84 5.34.78-3.86 3.76.91 5.32L10 13.27l-4.78 2.51.91-5.32L2.27 6.62l5.34-.78L10 1z"
+                    stroke={active ? 'none' : '#7c3aed'}
+                    strokeWidth={active ? 0 : 0.5}
+                    strokeLinejoin="round"
+                  />
                 </svg>
               )}
 
