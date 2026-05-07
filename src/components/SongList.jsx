@@ -156,15 +156,25 @@ export default function SongList({
     JSON.stringify(manualOrder) === JSON.stringify(sortedSongs.map(s => s.index));
 
   function handleResortByScore() {
+    const performResort = () => {
+      onSetOrder(albumId, sortedSongs.map(s => s.index));
+      setSelectedIndex(null);
+    };
+    // Skip the "this cannot be undone" warning when there's no manual
+    // order to lose — i.e. the album is still in its default tracklist
+    // order. The default is just [0, 1, 2, ...n-1], so any list whose
+    // entries equal their position has never been hand-sorted.
+    const isUntouched = manualOrder.every((songIdx, listPos) => songIdx === listPos);
+    if (isUntouched) {
+      performResort();
+      return;
+    }
     setConfirmState({
       title: 'Rank by score?',
       body: 'Your manual order will be replaced with a High → Low score ranking. This cannot be undone.',
       confirmLabel: 'Rank by score',
       destructive: true,
-      onConfirm: () => {
-        onSetOrder(albumId, sortedSongs.map(s => s.index));
-        setSelectedIndex(null);
-      },
+      onConfirm: performResort,
     });
   }
 
