@@ -16,6 +16,19 @@ Newest entries go at the top.
 
 ---
 
+## 0.5.1 — 2026-05-07
+
+### Fixed
+- **Fearless Play/Skip screen showed a white bar over the gold backdrop.**
+  The shuffle screen had its own opaque white→lavender gradient that
+  wasn't aware of the Fearless theme, so the warm golden-hour
+  background only peeked out at the top progress bar and the bottom
+  status bar — the middle of the screen looked washed out. Fixed by
+  letting the Fearless theme bleed through, same as Midnights, Debut,
+  and Speak Now already did.
+
+---
+
 ## 0.5.0 — 2026-05-07
 
 ### Added
