@@ -16,6 +16,25 @@ Newest entries go at the top.
 
 ---
 
+## 0.6.0 — 2026-05-07
+
+### Changed
+- **New onboarding order.** After the Welcome tour, users now see a
+  dedicated "Sign in with Google" screen explaining that an account
+  keeps their rankings on every device. Users who decline with "Not
+  now" can keep using the app anonymously and sign in any time later
+  from Settings. The Spotify "real album art" pitch now comes after
+  Google sign-in (only for signed-in users) instead of before the
+  Welcome tour.
+
+### Added
+- **GoogleLoginPromo screen.** Full-screen sign-in pitch with the
+  Google branded button as the primary action and a smaller "Not now"
+  bypass below it. Auto-skips when a Google account is already
+  connected so it never reappears for returning users.
+
+---
+
 ## 0.5.1 — 2026-05-07
 
 ### Fixed

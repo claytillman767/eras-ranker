@@ -10,8 +10,8 @@ This is a **commercial product**, not a hobby or fan project. Treat every decisi
 
 Every user-facing decision should be evaluated against these four conversion goals, in this order. Each step builds on the previous one — completing one makes the next one a natural offer.
 
-1. **Account login (Google sign-in)** — the backbone. Required for cross-device sync, Pro billing, and identity. The BetaGate is a hard gate today; once `VITE_BETA_PASSWORD` is removed at public launch, Google sign-in becomes the *only* path into the app.
-2. **Spotify connection (free for everyone)** — gives real album art across the app and is the natural runway toward Pro playback. Connecting is FREE; no Pro required. Pushed via the post-login SpotifyIntro screen and the Settings → Spotify section.
+1. **Account login (Google sign-in)** — the backbone. Required for cross-device sync, Pro billing, and identity. Pushed via the dedicated GoogleLoginPromo screen that appears right after the Welcome tour for anyone not yet signed in. The BetaGate is a hard gate today; once `VITE_BETA_PASSWORD` is removed, the BetaGate effectively becomes the front-door Google-sign-in, and the GoogleLoginPromo becomes a soft fallback (auto-skips when the user is already signed in).
+2. **Spotify connection (free for everyone)** — gives real album art across the app and is the natural runway toward Pro playback. Connecting is FREE; no Pro required. Pushed via the SpotifyIntro screen (shown once for signed-in users after the GoogleLoginPromo) and the Settings → Spotify section.
 3. **Pro upgrade ($4.99/mo or $46.71/yr)** — the revenue. Pro adds in-app autoplay, Play Bridge, 8 extra rating categories, custom categories, and CSV export. Pushed softly via the 30-song AutoplayNudge for connected free users, the VibeCheckIntro on first Vibe Check, and the PaywallCard in Categories.
 4. **Sharing to social media** — viral growth. The shareable card unlocks once a user fully ranks at least one album (RankingCard / AlbumCompleteCard).
 
@@ -31,6 +31,7 @@ The current list of user-facing surfaces that list or reference Pro perks (find 
 - [src/components/ConnectSpotifyPrompt.jsx](src/components/ConnectSpotifyPrompt.jsx) — post-upgrade copy
 - [src/components/AlbumModeModal.jsx](src/components/AlbumModeModal.jsx) — Pro-but-disconnected nudge
 - [src/components/AutoplayNudge.jsx](src/components/AutoplayNudge.jsx) — 30-song soft upsell copy
+- [src/components/GoogleLoginPromo.jsx](src/components/GoogleLoginPromo.jsx) — post-Welcome Google sign-in pitch
 - [src/components/SpotifyIntro.jsx](src/components/SpotifyIntro.jsx) — post-login Spotify ask
 - [src/components/Welcome.jsx](src/components/Welcome.jsx) — slide 2 ModeCard mentions Pro
 - [src/components/CategoriesEditor.jsx](src/components/CategoriesEditor.jsx) — locks on extra/custom categories
