@@ -148,6 +148,37 @@ const SPEAKNOW_BACKGROUND =
 const FEARLESS_BACKGROUND =
   'linear-gradient(180deg, #fff8e1 0%, #fde68a 55%, #fcd34d 100%)';
 
+// Reputation — matte-black with a subtle grey gradient. Reads as the "after-hours,
+// bad-reputation" album: stark, neon-friendly, ink-on-black aesthetic. Star labels
+// and category text get neon-cyan accents (set in the per-theme tuning block).
+const REPUTATION_BACKGROUND =
+  'linear-gradient(180deg, #0a0a0a 0%, #1c1c1c 55%, #0a0a0a 100%)';
+
+// Lover — cotton-candy pastel. Pink → peach → lavender, soft and bright.
+const LOVER_BACKGROUND =
+  'linear-gradient(180deg, #fce7f3 0%, #fbcfe8 50%, #e9d5ff 100%)';
+
+// Folklore — misty grey-green with a faint film-grain feel. Backed by the
+// fog wisps + pine needles in FolkloreScene.
+const FOLKLORE_BACKGROUND =
+  'linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 55%, #94a3b8 100%)';
+
+// Evermore — deep amber and burgundy. Sister-album to Folklore but autumn-toned.
+const EVERMORE_BACKGROUND =
+  'linear-gradient(180deg, #422006 0%, #7c2d12 50%, #92400e 100%)';
+
+// The Tortured Poets Department — parchment cream fading to ink black.
+// Visually splits the screen into "page" and "ink" halves. Title and labels
+// switch to serif weights in the per-theme tuning block to lean literary.
+const TPD_BACKGROUND =
+  'linear-gradient(180deg, #f5f5f0 0%, #e7e5e4 60%, #1c1917 100%)';
+
+// The Life of a Showgirl — rich magenta-and-gold cabaret. Spotlight + sequin
+// glitter render on top via ShowgirlScene; album-complete pulls a red velvet
+// curtain across the screen.
+const SHOWGIRL_BACKGROUND =
+  'linear-gradient(180deg, #831843 0%, #be185d 50%, #d97706 100%)';
+
 // ── Night sky decoration (Midnights album theme) ─────────────────────────────
 // Crescent moon in the upper-right corner + a sprinkle of twinkling stars.
 // CSS-only — animation runs through @keyframes injected near the moon SVG so
@@ -847,6 +878,982 @@ function FearlessFireworks() {
   );
 }
 
+// ── Reputation ambient scene ─────────────────────────────────────────────────
+// Snake silhouette slithers across the bottom edge on a long loop, with a
+// few white ink-splatter pulses scattered around the screen.
+const REP_INK_BLOTS = [
+  { top: '12%', left: '14%', size: 28, delay:  '0s'   },
+  { top: '22%', left: '78%', size: 36, delay:  '4.2s' },
+  { top: '38%', left: '46%', size: 24, delay:  '2.1s' },
+  { top: '54%', left: '24%', size: 32, delay:  '6.0s' },
+  { top: '64%', left: '88%', size: 26, delay:  '1.4s' },
+  { top: '78%', left: '52%', size: 30, delay:  '3.7s' },
+];
+
+function ReputationScene() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}
+    >
+      <style>{`
+        @keyframes qs-rep-snake {
+          0%   { transform: translateX(-260px) translateY(0);   opacity: 0; }
+          5%   { opacity: 0.55; }
+          50%  { transform: translateX(50vw)   translateY(-2px); opacity: 0.55; }
+          95%  { opacity: 0.55; }
+          100% { transform: translateX(calc(100vw + 80px)) translateY(0); opacity: 0; }
+        }
+        @keyframes qs-rep-ink-pulse {
+          0%, 100% { opacity: 0;    transform: scale(0.85); }
+          40%      { opacity: 0.18; transform: scale(1.05); }
+          60%      { opacity: 0.18; transform: scale(1.05); }
+        }
+      `}</style>
+
+      {/* Ink splatter pulses — white blots that fade in/out at random
+          intervals. Low max-opacity so they read as paper-stain texture
+          on the matte-black backdrop, not loud decoration. */}
+      {REP_INK_BLOTS.map((b, i) => (
+        <svg
+          key={i}
+          width={b.size}
+          height={b.size}
+          viewBox="0 0 60 60"
+          style={{
+            position: 'absolute',
+            top: b.top,
+            left: b.left,
+            opacity: 0,
+            animation: `qs-rep-ink-pulse 8s ${b.delay} ease-in-out infinite`,
+          }}
+        >
+          <path
+            fill="#ffffff"
+            d="M30 8 C 38 6, 46 14, 44 22 C 52 22, 56 30, 50 38 C 56 44, 50 52, 42 50 C 40 56, 30 56, 26 50 C 18 54, 10 48, 14 40 C 6 38, 6 28, 14 26 C 12 18, 22 12, 30 8 Z"
+          />
+        </svg>
+      ))}
+
+      {/* Snake — slithers along the bottom on a 14s loop. Shape is a
+          stylized side-profile silhouette with subtle scale shading. */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '6vh',
+          left: 0,
+          width: 220,
+          height: 38,
+          animation: 'qs-rep-snake 14s 2s linear infinite',
+          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))',
+        }}
+      >
+        <svg viewBox="0 0 220 38" style={{ display: 'block', width: '100%', height: '100%' }}>
+          <defs>
+            <linearGradient id="qs-rep-snake-grad" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%"  stopColor="#1f2937" />
+              <stop offset="50%" stopColor="#0f172a" />
+              <stop offset="100%" stopColor="#020617" />
+            </linearGradient>
+          </defs>
+          {/* S-curve body */}
+          <path
+            d="M 4 22 Q 30 4, 56 22 T 110 22 T 168 22 Q 192 22, 200 14 L 212 14 L 214 18 L 204 20 Q 196 22, 188 24 Q 162 30, 140 24 Q 108 16, 80 26 Q 50 36, 24 28 Q 12 24, 4 22 Z"
+            fill="url(#qs-rep-snake-grad)"
+            stroke="#000"
+            strokeWidth="0.6"
+          />
+          {/* Eye dot */}
+          <circle cx="208" cy="16" r="1" fill="#fef3c7" />
+          {/* Forked tongue */}
+          <path d="M 214 17 L 218 16 M 214 17 L 218 18" stroke="#dc2626" strokeWidth="0.7" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// ── Lover ambient scene ──────────────────────────────────────────────────────
+// Rainbow ribbon arcs across the top, gentle hearts drift up from the bottom.
+const LOVER_HEARTS = [
+  { left: '6%',  size: 18, color: '#f9a8d4', delay: '0s',   dur: 12, drift:  10 },
+  { left: '14%', size: 14, color: '#fda4af', delay: '2.4s', dur: 14, drift: -10 },
+  { left: '22%', size: 16, color: '#c4b5fd', delay: '0.9s', dur: 13, drift:   8 },
+  { left: '32%', size: 12, color: '#fbcfe8', delay: '3.6s', dur: 15, drift:  -8 },
+  { left: '40%', size: 18, color: '#f9a8d4', delay: '1.5s', dur: 12, drift:  12 },
+  { left: '48%', size: 14, color: '#a5b4fc', delay: '4.2s', dur: 14, drift: -12 },
+  { left: '56%', size: 16, color: '#fda4af', delay: '0.6s', dur: 13, drift:   8 },
+  { left: '64%', size: 12, color: '#fbcfe8', delay: '2.9s', dur: 15, drift: -10 },
+  { left: '72%', size: 18, color: '#c4b5fd', delay: '1.2s', dur: 12, drift:  10 },
+  { left: '80%', size: 14, color: '#f9a8d4', delay: '3.3s', dur: 14, drift:  -8 },
+  { left: '88%', size: 16, color: '#fda4af', delay: '0.4s', dur: 13, drift:  12 },
+  { left: '96%', size: 12, color: '#a5b4fc', delay: '2.0s', dur: 15, drift: -14 },
+];
+
+function LoverScene() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}
+    >
+      <style>{`
+        @keyframes qs-lover-heart-float {
+          0%   { transform: translateY(0)        translateX(0); opacity: 0; }
+          12%  { opacity: 0.85; }
+          90%  { opacity: 0.85; }
+          100% { transform: translateY(-110vh)   translateX(var(--qs-drift, 0px)); opacity: 0; }
+        }
+        @keyframes qs-lover-ribbon-sway {
+          0%, 100% { transform: translateX(-2%) rotate(-1deg); }
+          50%      { transform: translateX(2%)  rotate(1deg);  }
+        }
+      `}</style>
+
+      {/* Pastel rainbow ribbon arcing slowly across the top */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '6%',
+          left: '-5%',
+          width: '110%',
+          height: 60,
+          opacity: 0.55,
+          animation: 'qs-lover-ribbon-sway 9s ease-in-out infinite',
+        }}
+      >
+        <svg viewBox="0 0 600 60" preserveAspectRatio="none" style={{ width: '100%', height: '100%' }}>
+          <defs>
+            <linearGradient id="qs-lover-rainbow" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0%"   stopColor="#fda4af" />
+              <stop offset="22%"  stopColor="#fcd34d" />
+              <stop offset="44%"  stopColor="#86efac" />
+              <stop offset="66%"  stopColor="#7dd3fc" />
+              <stop offset="88%"  stopColor="#c4b5fd" />
+              <stop offset="100%" stopColor="#f9a8d4" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M 0 50 Q 150 0, 300 30 T 600 50"
+            fill="none"
+            stroke="url(#qs-lover-rainbow)"
+            strokeWidth="14"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+
+      {/* Floating hearts drifting up */}
+      {LOVER_HEARTS.map((h, i) => (
+        <svg
+          key={i}
+          width={h.size}
+          height={h.size}
+          viewBox="0 0 24 24"
+          style={{
+            position: 'absolute',
+            bottom: -20,
+            left: h.left,
+            opacity: 0,
+            '--qs-drift': `${h.drift}px`,
+            animation: `qs-lover-heart-float ${h.dur}s ${h.delay} linear infinite`,
+            filter: 'drop-shadow(0 1px 3px rgba(244, 114, 182, 0.35))',
+          }}
+        >
+          <path
+            fill={h.color}
+            d="M12 21s-7.5-4.5-7.5-11A4.5 4.5 0 0 1 12 6a4.5 4.5 0 0 1 7.5 4c0 6.5-7.5 11-7.5 11z"
+          />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
+// ── Folklore ambient scene ───────────────────────────────────────────────────
+// Misty fog wisps drifting horizontally + occasional pine-needle silhouettes
+// drifting downward. The animation engine here also powers Evermore's leaves
+// (palette swap only) — sister-album visual family.
+const FOLKLORE_FOG = [
+  { top: '10%', left: '-30%', size: 280, delay:  '0s',   dur: 26, opacity: 0.45 },
+  { top: '34%', left: '-50%', size: 360, delay:  '6s',   dur: 32, opacity: 0.35 },
+  { top: '58%', left: '-30%', size: 240, delay:  '11s',  dur: 24, opacity: 0.40 },
+  { top: '78%', left: '-40%', size: 320, delay:  '3s',   dur: 30, opacity: 0.32 },
+];
+
+const FOLKLORE_NEEDLES = [
+  { left: '8%',  delay: '0s',   dur: 14, drift:   6, rot: 12 },
+  { left: '22%', delay: '4s',   dur: 18, drift:  -8, rot: -6 },
+  { left: '34%', delay: '1.5s', dur: 16, drift:   4, rot: 18 },
+  { left: '48%', delay: '6s',   dur: 15, drift:  -6, rot: -10 },
+  { left: '60%', delay: '2.5s', dur: 17, drift:   8, rot: 8 },
+  { left: '74%', delay: '5s',   dur: 14, drift:  -4, rot: -14 },
+  { left: '88%', delay: '0.8s', dur: 16, drift:  10, rot: 6 },
+];
+
+function FolkloreScene() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}
+    >
+      <style>{`
+        @keyframes qs-fog-drift {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(160vw); }
+        }
+        @keyframes qs-needle-fall {
+          0%   { transform: translateY(-30px) translateX(0)   rotate(var(--qs-rot, 0deg)); opacity: 0; }
+          12%  { opacity: 0.7; }
+          90%  { opacity: 0.7; }
+          100% { transform: translateY(110vh) translateX(var(--qs-drift, 0px)) rotate(calc(var(--qs-rot, 0deg) + 90deg)); opacity: 0; }
+        }
+      `}</style>
+
+      {/* Slow-moving fog wisps */}
+      {FOLKLORE_FOG.map((f, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            top: f.top,
+            left: f.left,
+            width: f.size,
+            height: f.size * 0.55,
+            borderRadius: '50%',
+            background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%)',
+            opacity: f.opacity,
+            animation: `qs-fog-drift ${f.dur}s ${f.delay} linear infinite`,
+            filter: 'blur(8px)',
+          }}
+        />
+      ))}
+
+      {/* Pine-needle silhouettes drifting down */}
+      {FOLKLORE_NEEDLES.map((n, i) => (
+        <svg
+          key={i}
+          width={14}
+          height={20}
+          viewBox="0 0 14 20"
+          style={{
+            position: 'absolute',
+            top: -30,
+            left: n.left,
+            opacity: 0,
+            '--qs-drift': `${n.drift}px`,
+            '--qs-rot': `${n.rot}deg`,
+            animation: `qs-needle-fall ${n.dur}s ${n.delay} linear infinite`,
+          }}
+        >
+          <path
+            d="M 7 0 L 7 18 M 7 4 L 3 7 M 7 4 L 11 7 M 7 8 L 3 11 M 7 8 L 11 11 M 7 12 L 3 15 M 7 12 L 11 15"
+            stroke="#3f6212"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
+// ── Evermore ambient scene ───────────────────────────────────────────────────
+// Sister to Folklore — same drift engine, autumn palette. Falling leaves in
+// orange/brown/deep-red tones.
+const EVERMORE_LEAVES = [
+  { left: '6%',  delay: '0s',   dur: 18, drift:   8, rot: 14, color: '#c2410c' },
+  { left: '16%', delay: '4s',   dur: 22, drift: -10, rot: -8, color: '#7c2d12' },
+  { left: '28%', delay: '1.8s', dur: 20, drift:   6, rot: 22, color: '#92400e' },
+  { left: '40%', delay: '7s',   dur: 19, drift:  -6, rot: -16, color: '#dc2626' },
+  { left: '52%', delay: '3s',   dur: 21, drift:  10, rot: 12, color: '#9a3412' },
+  { left: '64%', delay: '5.5s', dur: 18, drift:  -8, rot: -10, color: '#b45309' },
+  { left: '76%', delay: '2.2s', dur: 22, drift:  12, rot: 18, color: '#7c2d12' },
+  { left: '88%', delay: '6.5s', dur: 20, drift:  -4, rot: -20, color: '#c2410c' },
+  { left: '12%', delay: '8s',   dur: 19, drift:   6, rot: 8,  color: '#dc2626' },
+  { left: '70%', delay: '1s',   dur: 21, drift:  -8, rot: 14, color: '#92400e' },
+];
+
+function EvermoreScene() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}
+    >
+      <style>{`
+        @keyframes qs-leaf-fall {
+          0%   { transform: translateY(-40px) translateX(0)   rotate(var(--qs-rot, 0deg)); opacity: 0; }
+          10%  { opacity: 0.8; }
+          90%  { opacity: 0.8; }
+          100% { transform: translateY(110vh) translateX(var(--qs-drift, 0px)) rotate(calc(var(--qs-rot, 0deg) + 180deg)); opacity: 0; }
+        }
+      `}</style>
+
+      {EVERMORE_LEAVES.map((l, i) => (
+        <svg
+          key={i}
+          width={18}
+          height={22}
+          viewBox="0 0 18 22"
+          style={{
+            position: 'absolute',
+            top: -40,
+            left: l.left,
+            opacity: 0,
+            '--qs-drift': `${l.drift}px`,
+            '--qs-rot': `${l.rot}deg`,
+            animation: `qs-leaf-fall ${l.dur}s ${l.delay} linear infinite`,
+            filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.3))',
+          }}
+        >
+          <path
+            d="M 9 1 C 14 4, 17 11, 9 21 C 1 11, 4 4, 9 1 Z"
+            fill={l.color}
+          />
+          <path d="M 9 3 L 9 19" stroke="#451a03" strokeWidth="0.8" />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
+// ── Tortured Poets Department ambient scene ──────────────────────────────────
+// Typewriter caret blinks at random spots; ink-blot drips fade in and out.
+const TPD_CARETS = [
+  { top: '14%', left: '20%', delay: '0s'   },
+  { top: '28%', left: '64%', delay: '1.4s' },
+  { top: '42%', left: '36%', delay: '2.8s' },
+  { top: '58%', left: '78%', delay: '0.6s' },
+  { top: '70%', left: '24%', delay: '2.0s' },
+  { top: '86%', left: '54%', delay: '1.0s' },
+];
+
+const TPD_INK_DROPS = [
+  { top: '18%', left: '78%', size: 22, delay: '0s'   },
+  { top: '36%', left: '14%', size: 30, delay: '3.4s' },
+  { top: '52%', left: '52%', size: 18, delay: '1.6s' },
+  { top: '74%', left: '12%', size: 26, delay: '5s'   },
+  { top: '88%', left: '74%', size: 20, delay: '2.4s' },
+];
+
+function TPDScene() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}
+    >
+      <style>{`
+        @keyframes qs-tpd-caret-blink {
+          0%, 49%   { opacity: 0.85; }
+          50%, 100% { opacity: 0; }
+        }
+        @keyframes qs-tpd-ink-drip {
+          0%, 100% { opacity: 0;    transform: scaleY(1); }
+          30%      { opacity: 0.4;  transform: scaleY(1.05); }
+          60%      { opacity: 0.4;  transform: scaleY(1.05); }
+        }
+      `}</style>
+
+      {/* Blinking typewriter carets */}
+      {TPD_CARETS.map((c, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            top: c.top,
+            left: c.left,
+            width: 2,
+            height: 16,
+            background: '#1c1917',
+            opacity: 0,
+            animation: `qs-tpd-caret-blink 1s ${c.delay} steps(1, end) infinite`,
+          }}
+        />
+      ))}
+
+      {/* Ink drips — small dark splatters that fade in/out */}
+      {TPD_INK_DROPS.map((d, i) => (
+        <svg
+          key={i}
+          width={d.size}
+          height={d.size * 1.2}
+          viewBox="0 0 22 26"
+          style={{
+            position: 'absolute',
+            top: d.top,
+            left: d.left,
+            opacity: 0,
+            transformOrigin: 'top center',
+            animation: `qs-tpd-ink-drip 7s ${d.delay} ease-in-out infinite`,
+          }}
+        >
+          <path
+            fill="#1c1917"
+            d="M 11 2 C 16 4, 19 10, 17 16 C 15 22, 7 22, 5 16 C 3 10, 6 4, 11 2 Z M 11 19 L 11 24"
+          />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
+// ── The Life of a Showgirl ambient scene ─────────────────────────────────────
+// Spotlight cone sweeping back and forth, sequin glitter dots that catch
+// the light. The cabaret backdrop is rich on its own; the scene mostly adds
+// motion so the screen feels alive.
+const SHOWGIRL_SEQUINS = [
+  { top: '10%', left: '14%', size: 5, delay: '0s'   },
+  { top: '18%', left: '64%', size: 4, delay: '1.4s' },
+  { top: '24%', left: '42%', size: 6, delay: '0.6s' },
+  { top: '32%', left: '88%', size: 4, delay: '2.0s' },
+  { top: '40%', left: '20%', size: 5, delay: '0.9s' },
+  { top: '48%', left: '54%', size: 4, delay: '1.6s' },
+  { top: '56%', left: '76%', size: 6, delay: '0.3s' },
+  { top: '64%', left: '32%', size: 4, delay: '2.2s' },
+  { top: '72%', left: '60%', size: 5, delay: '1.0s' },
+  { top: '80%', left: '12%', size: 4, delay: '0.5s' },
+  { top: '86%', left: '82%', size: 6, delay: '1.8s' },
+  { top: '92%', left: '44%', size: 4, delay: '2.6s' },
+];
+
+function ShowgirlScene() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}
+    >
+      <style>{`
+        @keyframes qs-showgirl-spotlight {
+          0%, 100% { transform: translateX(-30%) rotate(-6deg); opacity: 0.35; }
+          50%      { transform: translateX(30%)  rotate(6deg);  opacity: 0.5;  }
+        }
+        @keyframes qs-showgirl-sequin {
+          0%, 100% { opacity: 0.35; transform: scale(0.85); filter: brightness(1); }
+          50%      { opacity: 1;    transform: scale(1.2);  filter: brightness(1.6); }
+        }
+      `}</style>
+
+      {/* Spotlight cone — translucent yellow wedge that sweeps left-right */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '-10%',
+          left: '50%',
+          marginLeft: -180,
+          width: 360,
+          height: '120%',
+          background: 'linear-gradient(180deg, rgba(254, 240, 138, 0.45) 0%, rgba(253, 224, 71, 0.18) 60%, transparent 100%)',
+          clipPath: 'polygon(40% 0%, 60% 0%, 100% 100%, 0% 100%)',
+          animation: 'qs-showgirl-spotlight 7s ease-in-out infinite',
+          mixBlendMode: 'screen',
+        }}
+      />
+
+      {/* Sequin dots that catch the light */}
+      {SHOWGIRL_SEQUINS.map((s, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            top: s.top,
+            left: s.left,
+            width: s.size,
+            height: s.size,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, #fffbeb 0%, #fcd34d 50%, #b45309 100%)',
+            boxShadow: '0 0 6px rgba(251,191,36,0.85)',
+            animation: `qs-showgirl-sequin 1.8s ${s.delay} ease-in-out infinite`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Look What You Made Me Do — broken neon sign ──────────────────────────────
+// Triggered when finishing rating LWYMMD on Reputation. Stars 1..celLevel
+// flicker like a busted neon tube, then snap to a steady red for the final hold.
+// Rendered as an absolute overlay above the StarPicker; the StarPicker also
+// applies broken-neon styling to its own stars (see isBrokenNeon flag).
+function BrokenNeonOverlay() {
+  return (
+    <>
+      <style>{`
+        @keyframes qs-rep-neon-flicker {
+          0%, 100% { opacity: 0; }
+          5%       { opacity: 0.6; }
+          7%       { opacity: 0.1; }
+          12%      { opacity: 0.7; }
+          14%      { opacity: 0;   }
+          24%      { opacity: 0.55; }
+          27%      { opacity: 0.05; }
+          40%      { opacity: 0.65; }
+          43%      { opacity: 0;   }
+          60%      { opacity: 0.6; }
+          70%      { opacity: 0.0; }
+          85%      { opacity: 0.5; }
+        }
+      `}</style>
+      {/* Cyan haze flicker behind the rated stars — sells the broken-tube
+          vibe without modifying StarPicker too invasively. */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: -20,
+          background: 'radial-gradient(circle at center, rgba(103, 232, 249, 0.55) 0%, rgba(103, 232, 249, 0) 65%)',
+          animation: 'qs-rep-neon-flicker 2s linear forwards',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+    </>
+  );
+}
+
+// ── Cruel Summer — heat shimmer + sunset bloom ───────────────────────────────
+function HeatShimmerOverlay() {
+  return (
+    <>
+      <style>{`
+        @keyframes qs-cs-shimmer {
+          0%   { opacity: 0;   transform: scaleY(1); }
+          25%  { opacity: 0.7; }
+          70%  { opacity: 0.7; }
+          100% { opacity: 0;   transform: scaleY(1.2); }
+        }
+        @keyframes qs-cs-bloom {
+          0%   { opacity: 0;   transform: scale(0.6); }
+          40%  { opacity: 0.85; }
+          80%  { opacity: 0.7;  transform: scale(1.4); }
+          100% { opacity: 0;    transform: scale(1.6); }
+        }
+      `}</style>
+      {/* Sunset radial bloom — pink → orange */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: -40,
+          background: 'radial-gradient(circle at center, rgba(251, 113, 133, 0.7) 0%, rgba(251, 146, 60, 0.5) 45%, rgba(251, 113, 133, 0) 80%)',
+          animation: 'qs-cs-bloom 2.5s ease-out forwards',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+      {/* Wavy heat haze — vertical band that wobbles. CSS-only approximation
+          using a repeating gradient + scaleY pulse — not a literal water-ripple
+          effect, but reads as heat distortion against the cotton-candy backdrop. */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: -20,
+          background: 'repeating-linear-gradient(180deg, rgba(255,255,255,0.0) 0px, rgba(255,255,255,0.18) 3px, rgba(255,255,255,0.0) 6px)',
+          animation: 'qs-cs-shimmer 2.5s ease-in-out forwards',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+    </>
+  );
+}
+
+// ── August — sun-flare arc ───────────────────────────────────────────────────
+function SunFlareOverlay() {
+  return (
+    <>
+      <style>{`
+        @keyframes qs-aug-sun-arc {
+          0%   { transform: translateX(-30vw) translateY(20px); opacity: 0; }
+          15%  { opacity: 1; }
+          85%  { opacity: 1; }
+          100% { transform: translateX(30vw)  translateY(-20px); opacity: 0; }
+        }
+      `}</style>
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: '12%',
+          left: '50%',
+          marginLeft: -36,
+          width: 72,
+          height: 72,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, #fef3c7 0%, #fcd34d 40%, #f59e0b 70%, rgba(245,158,11,0) 100%)',
+          boxShadow: '0 0 60px rgba(252, 211, 77, 0.85), 0 0 120px rgba(252, 211, 77, 0.5)',
+          animation: 'qs-aug-sun-arc 3s ease-in-out forwards',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+    </>
+  );
+}
+
+// ── Marjorie — candle halos around stars ─────────────────────────────────────
+function CandleHaloOverlay() {
+  return (
+    <>
+      <style>{`
+        @keyframes qs-marj-halo-fade {
+          0%   { opacity: 0;   transform: scale(0.5); }
+          50%  { opacity: 0.6; transform: scale(1); }
+          100% { opacity: 0.6; transform: scale(1.05); }
+        }
+      `}</style>
+      {/* The halos themselves render in the StarPicker per-star (isCandleHalo).
+          This wrapper just provides the keyframes. */}
+    </>
+  );
+}
+
+// ── The Manuscript signature — cursive ink fade ──────────────────────────────
+function ManuscriptSignatureOverlay() {
+  return (
+    <>
+      <style>{`
+        @keyframes qs-tpd-manuscript-text {
+          0%   { opacity: 0;   transform: translateY(8px); }
+          25%  { opacity: 1;   transform: translateY(0); }
+          85%  { opacity: 1;   transform: translateY(0); }
+          100% { opacity: 0;   transform: translateY(-4px); }
+        }
+      `}</style>
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: '38%',
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          fontSize: 26,
+          fontFamily: "'Brush Script MT', 'Lucida Handwriting', cursive",
+          fontStyle: 'italic',
+          color: '#1c1917',
+          letterSpacing: '0.02em',
+          animation: 'qs-tpd-manuscript-text 3s ease-in-out forwards',
+          pointerEvents: 'none',
+          zIndex: 2,
+          textShadow: '0 1px 0 rgba(245,245,240,0.6)',
+        }}
+      >
+        the manuscript
+      </div>
+    </>
+  );
+}
+
+// ── Album-complete: Showgirl curtain reveal ──────────────────────────────────
+// Two red velvet panels slide in from the edges and meet center as the
+// completion card arrives. Lives behind DoneFlash so the card pops against it.
+function ShowgirlCurtain() {
+  return (
+    <>
+      <style>{`
+        @keyframes qs-curtain-left {
+          0%   { transform: translateX(-100%); }
+          100% { transform: translateX(0); }
+        }
+        @keyframes qs-curtain-right {
+          0%   { transform: translateX(100%); }
+          100% { transform: translateX(0); }
+        }
+      `}</style>
+      {/* Left panel */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '50%',
+          height: '100%',
+          background: 'repeating-linear-gradient(95deg, #7f1d1d 0px, #7f1d1d 8px, #991b1b 8px, #991b1b 16px, #7f1d1d 16px, #7f1d1d 24px, #b91c1c 24px, #b91c1c 32px)',
+          boxShadow: 'inset -20px 0 40px rgba(0,0,0,0.6)',
+          animation: 'qs-curtain-left 1.4s cubic-bezier(0.7, 0, 0.2, 1) forwards',
+          zIndex: 0,
+        }}
+      />
+      {/* Right panel */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          width: '50%',
+          height: '100%',
+          background: 'repeating-linear-gradient(85deg, #7f1d1d 0px, #7f1d1d 8px, #991b1b 8px, #991b1b 16px, #7f1d1d 16px, #7f1d1d 24px, #b91c1c 24px, #b91c1c 32px)',
+          boxShadow: 'inset 20px 0 40px rgba(0,0,0,0.6)',
+          animation: 'qs-curtain-right 1.4s cubic-bezier(0.7, 0, 0.2, 1) forwards',
+          zIndex: 0,
+        }}
+      />
+    </>
+  );
+}
+
+// ── Album-complete: Evermore handwritten word ────────────────────────────────
+function EvermoreCompleteWord() {
+  return (
+    <>
+      <style>{`
+        @keyframes qs-ev-word-fade {
+          0%   { opacity: 0;   transform: scale(0.96); }
+          25%  { opacity: 0.9; transform: scale(1); }
+          75%  { opacity: 0.9; transform: scale(1); }
+          100% { opacity: 0;   transform: scale(1.02); }
+        }
+      `}</style>
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: '42%',
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          fontSize: 38,
+          fontFamily: "'Brush Script MT', 'Lucida Handwriting', cursive",
+          fontStyle: 'italic',
+          color: '#fef3c7',
+          letterSpacing: '0.06em',
+          animation: 'qs-ev-word-fade 2.8s ease-in-out forwards',
+          pointerEvents: 'none',
+          zIndex: 2,
+          textShadow: '0 2px 8px rgba(0,0,0,0.55)',
+        }}
+      >
+        evermore
+      </div>
+    </>
+  );
+}
+
+// ── Album-complete: Lover cursive logotype ───────────────────────────────────
+function LoverCompleteLogo() {
+  return (
+    <>
+      <style>{`
+        @keyframes qs-lv-logo-fade {
+          0%   { opacity: 0;   transform: translateY(8px); }
+          25%  { opacity: 0.9; transform: translateY(0); }
+          75%  { opacity: 0.9; transform: translateY(0); }
+          100% { opacity: 0;   transform: translateY(-4px); }
+        }
+      `}</style>
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: '40%',
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          fontSize: 56,
+          fontFamily: "'Brush Script MT', 'Lucida Handwriting', cursive",
+          fontStyle: 'italic',
+          background: 'linear-gradient(90deg, #ec4899, #f472b6, #c084fc)',
+          WebkitBackgroundClip: 'text',
+          backgroundClip: 'text',
+          color: 'transparent',
+          letterSpacing: '0.04em',
+          animation: 'qs-lv-logo-fade 2.8s ease-in-out forwards',
+          pointerEvents: 'none',
+          zIndex: 2,
+        }}
+      >
+        Lover
+      </div>
+    </>
+  );
+}
+
+// ── Album-complete: TPD parchment manuscript fade ────────────────────────────
+// Already partially planned in CLAUDE.md ("The Manuscript" easter egg). This
+// is the inline QuickScore version: a parchment overlay that types out a
+// short line, fades, and lets DoneFlash come through.
+function TPDManuscriptComplete() {
+  return (
+    <>
+      <style>{`
+        @keyframes qs-tpd-parchment-in {
+          0%   { opacity: 0; }
+          15%  { opacity: 1; }
+          80%  { opacity: 1; }
+          100% { opacity: 0; }
+        }
+        @keyframes qs-tpd-text-type {
+          0%   { opacity: 0; }
+          30%  { opacity: 1; }
+          85%  { opacity: 1; }
+          100% { opacity: 0; }
+        }
+      `}</style>
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(135deg, #f5f0e8 0%, #ede5d0 100%)',
+          opacity: 0,
+          animation: 'qs-tpd-parchment-in 2.6s ease-in-out forwards',
+          zIndex: 0,
+        }}
+      />
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: '44%',
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          fontSize: 18,
+          fontFamily: "'Courier New', 'Courier', monospace",
+          color: '#1c1917',
+          letterSpacing: '0.04em',
+          opacity: 0,
+          animation: 'qs-tpd-text-type 2.6s ease-in-out forwards',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      >
+        The story isn't mine anymore...
+      </div>
+    </>
+  );
+}
+
+// ── Album-complete: Reputation stage-light spot ──────────────────────────────
+function ReputationStageLight() {
+  return (
+    <>
+      <style>{`
+        @keyframes qs-rep-stage-pulse {
+          0%, 100% { opacity: 0.5; transform: scale(1); }
+          50%      { opacity: 0.8; transform: scale(1.08); }
+        }
+      `}</style>
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          width: 520,
+          height: 520,
+          marginTop: -260,
+          marginLeft: -260,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 35%, rgba(255,255,255,0) 70%)',
+          animation: 'qs-rep-stage-pulse 2.6s ease-in-out infinite',
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}
+      />
+    </>
+  );
+}
+
+// ── Album-complete: Folklore pine-needle snow ────────────────────────────────
+// Reuses the FolkloreScene needle visual but at much higher density and
+// with shorter durations so it reads as a snowfall finale rather than ambient.
+const FOLKLORE_SNOW_NEEDLES = [
+  { left: '4%',  delay: '0s',   dur: 2.6, drift:   8,  rot: 14 },
+  { left: '12%', delay: '0.2s', dur: 2.4, drift:  -6,  rot: -8 },
+  { left: '20%', delay: '0.4s', dur: 2.8, drift:   4,  rot: 18 },
+  { left: '28%', delay: '0.1s', dur: 2.5, drift: -10,  rot: -12 },
+  { left: '36%', delay: '0.6s', dur: 2.6, drift:   6,  rot: 8 },
+  { left: '44%', delay: '0.3s', dur: 2.7, drift:  -4,  rot: -16 },
+  { left: '52%', delay: '0.5s', dur: 2.5, drift:  10,  rot: 12 },
+  { left: '60%', delay: '0.0s', dur: 2.6, drift:  -6,  rot: -10 },
+  { left: '68%', delay: '0.4s', dur: 2.8, drift:   4,  rot: 14 },
+  { left: '76%', delay: '0.2s', dur: 2.5, drift:  -8,  rot: -6 },
+  { left: '84%', delay: '0.6s', dur: 2.7, drift:   6,  rot: 16 },
+  { left: '92%', delay: '0.3s', dur: 2.4, drift:  -4,  rot: -14 },
+];
+
+function FolkloreCompleteSnow() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}
+    >
+      {FOLKLORE_SNOW_NEEDLES.map((n, i) => (
+        <svg
+          key={i}
+          width={14}
+          height={20}
+          viewBox="0 0 14 20"
+          style={{
+            position: 'absolute',
+            top: -30,
+            left: n.left,
+            opacity: 0,
+            '--qs-drift': `${n.drift}px`,
+            '--qs-rot': `${n.rot}deg`,
+            animation: `qs-needle-fall ${n.dur}s ${n.delay}s linear forwards`,
+          }}
+        >
+          <path
+            d="M 7 0 L 7 18 M 7 4 L 3 7 M 7 4 L 11 7 M 7 8 L 3 11 M 7 8 L 11 11 M 7 12 L 3 15 M 7 12 L 11 15"
+            stroke="#3f6212"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
 // ── Album-signature celebrations ──────────────────────────────────────────────
 // Maps (albumId, songName) → a celebration that runs after the user finishes
 // rating that song's last category. Returns null when no celebration applies.
@@ -867,6 +1874,23 @@ function detectCelebration(albumId, songName) {
   }
   if (albumId === 'fe' && songName === 'Love Story') {
     return { type: 'horse-gallop', durationMs: 2000 };
+  }
+  if (albumId === 'rp' && songName === 'Look What You Made Me Do') {
+    return { type: 'broken-neon', durationMs: 3000 };
+  }
+  if (albumId === 'lv' && songName === 'Cruel Summer') {
+    return { type: 'heat-shimmer', durationMs: 2500 };
+  }
+  if (albumId === 'fl' && songName === 'August') {
+    return { type: 'sun-flare', durationMs: 3000 };
+  }
+  if (albumId === 'ev' && songName === 'Marjorie') {
+    return { type: 'candle-halo', durationMs: 3000 };
+  }
+  // TPD title track — matches both "The Tortured Poets Department" and any
+  // close-enough spelling so a tracklist tweak doesn't silently kill the egg.
+  if (albumId === 'tp' && /tortured poets department/i.test(songName ?? '')) {
+    return { type: 'manuscript-fade', durationMs: 3000 };
   }
   return null;
 }
@@ -918,7 +1942,7 @@ const WALTZ_PARCHMENTS = [
 
 // ── Big interactive stars ─────────────────────────────────────────────────────
 // Gets a new `key` each question so hover state resets automatically.
-function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration = null, isNightTheme = false }) {
+function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration = null, isNightTheme = false, isDarkTheme = false }) {
   const [hovered, setHovered] = useState(0);
   const isFlashing = flashLevel > 0;
   // While the post-pick flash is running, the new pick (flashLevel) wins
@@ -935,11 +1959,20 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
   const isPolaroidBurn  = celType === 'polaroid-burn';
   const isPolaroid = isPolaroidSepia || isPolaroidBurn;
   const isWaltz = celType === 'waltz';
-  // Label colors split for the two themes — dark-grey + dark-purple read
-  // perfectly on the light category backgrounds; on the deep-night
-  // gradient those go invisible, so we swap to off-white + bright purple.
-  const labelDefaultColor = isNightTheme ? '#e5e7eb' : '#374151';
-  const labelActiveColor  = isNightTheme ? '#e9d5ff' : '#5b21b6';
+  // New album-signature celebrations — keep these as flag pairs alongside the
+  // existing pattern so the per-star fill / animation can be conditional in
+  // the star render below.
+  const isBrokenNeon     = celType === 'broken-neon';
+  const isHeatShimmer    = celType === 'heat-shimmer';
+  const isSunFlare       = celType === 'sun-flare';
+  const isCandleHalo     = celType === 'candle-halo';
+  const isManuscriptFade = celType === 'manuscript-fade';
+  // True when any dark-bg theme is active — Midnights, Reputation, Evermore,
+  // Showgirl. These all need the lighter label palette so the under-star
+  // calibration text remains readable.
+  const useDarkLabels = isNightTheme || isDarkTheme;
+  const labelDefaultColor = useDarkLabels ? '#e5e7eb' : '#374151';
+  const labelActiveColor  = useDarkLabels ? '#e9d5ff' : '#5b21b6';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
@@ -1040,6 +2073,45 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
         `}</style>
       )}
 
+      {/* New album-signature keyframes — broken-neon flicker (Reputation),
+          heat-shimmer warming (Lover), sun-warm amber (Folklore),
+          candle-halo dim (Evermore), manuscript-fade (TPD). */}
+      {(isBrokenNeon || isHeatShimmer || isSunFlare || isCandleHalo || isManuscriptFade) && (
+        <style>{`
+          @keyframes qs-broken-neon-flicker {
+            0%   { opacity: 1;   filter: drop-shadow(0 0 6px #67e8f9); }
+            10%  { opacity: 0.2; }
+            14%  { opacity: 1;   }
+            22%  { opacity: 0.3; }
+            32%  { opacity: 1;   }
+            45%  { opacity: 0.1; }
+            55%  { opacity: 1;   }
+            70%  { opacity: 1;   filter: drop-shadow(0 0 8px #dc2626); }
+            100% { opacity: 1;   filter: drop-shadow(0 0 10px #dc2626); }
+          }
+          @keyframes qs-heat-warm {
+            0%   { filter: hue-rotate(0deg)   saturate(1); }
+            50%  { filter: hue-rotate(-30deg) saturate(1.6); }
+            100% { filter: hue-rotate(-15deg) saturate(1.4); }
+          }
+          @keyframes qs-sun-warm {
+            0%   { filter: brightness(1)    saturate(1); }
+            40%  { filter: brightness(1.25) saturate(1.6); }
+            100% { filter: brightness(1.15) saturate(1.4); }
+          }
+          @keyframes qs-candle-glow {
+            0%   { filter: brightness(0.55) drop-shadow(0 0 0 rgba(255,255,255,0)); }
+            40%  { filter: brightness(0.7)  drop-shadow(0 0 8px rgba(255,255,255,0.55)); }
+            100% { filter: brightness(0.7)  drop-shadow(0 0 14px rgba(255,255,255,0.7)); }
+          }
+          @keyframes qs-manuscript-fade {
+            0%   { opacity: 1; }
+            60%  { opacity: 0.15; }
+            100% { opacity: 0; }
+          }
+        `}</style>
+      )}
+
       <div style={{ display: 'flex', gap: 4, position: 'relative' }}>
         {/* Parchment-page wisps — drift up behind the picked stars during
             the Enchanted waltz, evoking the album's handwritten lyric pages. */}
@@ -1080,10 +2152,18 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
           const gem      = isBejeweled && star <= celLevel;
           const polaroid = isPolaroid  && star <= celLevel;
           const waltz    = isWaltz     && star <= celLevel;
+          // New album-signature celebrations (Reputation/Lover/Folklore/Evermore/TPD)
+          const broken     = isBrokenNeon     && star <= celLevel;
+          const heat       = isHeatShimmer    && star <= celLevel;
+          const sun        = isSunFlare       && star <= celLevel;
+          const candle     = isCandleHalo     && star <= celLevel;
+          const manuscript = isManuscriptFade && star <= celLevel;
           // Tilt each polaroid like a stuck-on-the-fridge photo
           const tilt = POLAROID_TILTS[star - 1];
           // Disabled while any celebration is running
-          const celebrating = isFlashing || isBejeweled || isPolaroid || isWaltz;
+          const celebrating =
+            isFlashing || isBejeweled || isPolaroid || isWaltz ||
+            isBrokenNeon || isHeatShimmer || isSunFlare || isCandleHalo || isManuscriptFade;
           return (
             <button
               key={star}
@@ -1105,9 +2185,19 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
                   ? `qs-bejeweled-pulse 0.9s ease-in-out infinite`
                   : waltz
                     ? `qs-waltz-pulse 1700ms ${star * 70}ms ease-in-out infinite`
-                    : flashing
-                      ? `qs-star-pulse 700ms ${star * 60}ms ease-out both`
-                      : undefined,
+                    : broken
+                      ? `qs-broken-neon-flicker 2.5s ${star * 60}ms ease-out both, qs-star-pulse 700ms ${star * 60}ms ease-out both`
+                      : heat
+                        ? `qs-heat-warm 2s ${star * 50}ms ease-in-out forwards`
+                        : sun
+                          ? `qs-sun-warm 2s ${star * 60}ms ease-in-out forwards`
+                          : candle
+                            ? `qs-candle-glow 2.5s ${star * 180}ms ease-in-out forwards`
+                            : manuscript
+                              ? `qs-manuscript-fade 2.5s ${star * 100}ms ease-out forwards`
+                              : flashing
+                                ? `qs-star-pulse 700ms ${star * 60}ms ease-out both`
+                                : undefined,
                 position: 'relative',
                 zIndex: 1,
               }}
@@ -2104,10 +3194,20 @@ export default function QuickScore({
 
   // Album themes — replace category backgrounds with an album-specific
   // backdrop and render an ambient decoration layer.
-  const isNightTheme    = albumId === 'ml';   // Midnights — dark sky
-  const isDebutTheme    = albumId === 'tv';   // Taylor Swift (Debut) — cream + memorabilia
-  const isSpeakNowTheme = albumId === 'st';   // Speak Now — enchanted purple
-  const isFearlessTheme = albumId === 'fe';   // Fearless — golden hour + glitter motes
+  const isNightTheme      = albumId === 'ml';   // Midnights — dark sky
+  const isDebutTheme      = albumId === 'tv';   // Taylor Swift (Debut) — cream + memorabilia
+  const isSpeakNowTheme   = albumId === 'st';   // Speak Now — enchanted purple
+  const isFearlessTheme   = albumId === 'fe';   // Fearless — golden hour + glitter motes
+  const isReputationTheme = albumId === 'rp';   // Reputation — matte-black + snake + ink
+  const isLoverTheme      = albumId === 'lv';   // Lover — cotton-candy + rainbow + hearts
+  const isFolkloreTheme   = albumId === 'fl';   // Folklore — misty grey-green + fog + pines
+  const isEvermoreTheme   = albumId === 'ev';   // Evermore — amber + autumn leaves
+  const isTPDTheme        = albumId === 'tp';   // Tortured Poets — parchment + ink
+  const isShowgirlTheme   = albumId === 'ls';   // Life of a Showgirl — cabaret + spotlight
+
+  // True for any theme whose backdrop runs dark (light text required). Used
+  // to swap progress-bar bg, exit-button styling, and song-title colors.
+  const isDarkTheme = isNightTheme || isReputationTheme || isEvermoreTheme || isShowgirlTheme;
 
   const albumBackground = isNightTheme
     ? NIGHT_BACKGROUND
@@ -2117,7 +3217,19 @@ export default function QuickScore({
         ? SPEAKNOW_BACKGROUND
         : isFearlessTheme
           ? FEARLESS_BACKGROUND
-          : null;
+          : isReputationTheme
+            ? REPUTATION_BACKGROUND
+            : isLoverTheme
+              ? LOVER_BACKGROUND
+              : isFolkloreTheme
+                ? FOLKLORE_BACKGROUND
+                : isEvermoreTheme
+                  ? EVERMORE_BACKGROUND
+                  : isTPDTheme
+                    ? TPD_BACKGROUND
+                    : isShowgirlTheme
+                      ? SHOWGIRL_BACKGROUND
+                      : null;
 
   const overlayStyle = {
     position: 'fixed',
@@ -2137,9 +3249,20 @@ export default function QuickScore({
   if (done) {
     return (
       <div style={overlayStyle}>
-        {/* Brief golden firework crackle behind the completion card —
-            only on a full Fearless album session, not a single-song re-rate. */}
-        {isFearlessTheme && !isSingleSong && <FearlessFireworks />}
+        {/* Album-complete decorations — only on full album sessions, not
+            single-song re-rates. Each renders behind DoneFlash so the card
+            still pops cleanly in the foreground. */}
+        {!isSingleSong && (
+          <>
+            {isFearlessTheme   && <FearlessFireworks />}
+            {isReputationTheme && <ReputationStageLight />}
+            {isLoverTheme      && <LoverCompleteLogo />}
+            {isFolkloreTheme   && <FolkloreCompleteSnow />}
+            {isEvermoreTheme   && <EvermoreCompleteWord />}
+            {isTPDTheme        && <TPDManuscriptComplete />}
+            {isShowgirlTheme   && <ShowgirlCurtain />}
+          </>
+        )}
         <DoneFlash
           albumIcon={albumIcon}
           albumName={albumName}
@@ -2171,18 +3294,28 @@ export default function QuickScore({
       {isDebutTheme && <DebutScene />}
       {isSpeakNowTheme && <SpeakNowScene />}
       {isFearlessTheme && <FearlessScene />}
+      {isReputationTheme && <ReputationScene />}
+      {isLoverTheme && <LoverScene />}
+      {isFolkloreTheme && <FolkloreScene />}
+      {isEvermoreTheme && <EvermoreScene />}
+      {isTPDTheme && <TPDScene />}
+      {isShowgirlTheme && <ShowgirlScene />}
 
       {showTrees && <FallingTrees onDone={() => setShowTrees(false)} />}
 
-      {/* Love Story horse — gallops across the bottom for ~2s after the
-          user finishes rating Love Story. Unmounts when QuickScore clears
-          the celebration after detectCelebration's durationMs. */}
-      {celebration?.type === 'horse-gallop' && <LoveStoryHorse />}
+      {/* Song-signature celebration moments — render once per song's last
+          category, alongside the StarPicker. Each unmounts when QuickScore
+          clears the celebration after detectCelebration's durationMs. */}
+      {celebration?.type === 'horse-gallop'    && <LoveStoryHorse />}
+      {celebration?.type === 'sun-flare'       && <SunFlareOverlay />}
+      {/* Broken-neon, heat-shimmer, candle-halo, and manuscript-fade overlays
+          live alongside the star area; they're rendered inside the question
+          column further down so they wrap the picked stars correctly. */}
 
       {/* Progress bar */}
       <div style={{
         height: 4,
-        background: isNightTheme ? 'rgba(168,85,247,0.18)' : '#f3e8ff',
+        background: isDarkTheme ? 'rgba(168,85,247,0.18)' : '#f3e8ff',
         flexShrink: 0,
         position: 'relative',
         zIndex: 1,
@@ -2190,7 +3323,7 @@ export default function QuickScore({
         <div
           style={{
             height: '100%',
-            background: '#a855f7',
+            background: isReputationTheme ? '#67e8f9' : isShowgirlTheme ? '#fbbf24' : '#a855f7',
             width: `${progress}%`,
             transition: 'width 0.25s ease',
             borderRadius: '0 2px 2px 0',
@@ -2209,7 +3342,7 @@ export default function QuickScore({
         zIndex: 1,
       }}>
         <div style={{ width: 60 }} />
-        <div style={{ fontSize: 12, color: isNightTheme ? '#cbd5e1' : '#9ca3af' }}>
+        <div style={{ fontSize: 12, color: isDarkTheme ? '#cbd5e1' : '#9ca3af' }}>
           {isSingleSong ? '\u00a0' : `Song ${songPos + 1} of ${songs.length}`}
         </div>
         <button
@@ -2221,13 +3354,13 @@ export default function QuickScore({
             }
           }}
           style={{
-            background: isNightTheme ? 'rgba(255,255,255,0.08)' : 'none',
-            border: isNightTheme ? '0.5px solid rgba(255,255,255,0.18)' : '0.5px solid #e5e7eb',
+            background: isDarkTheme ? 'rgba(255,255,255,0.08)' : 'none',
+            border: isDarkTheme ? '0.5px solid rgba(255,255,255,0.18)' : '0.5px solid #e5e7eb',
             borderRadius: 8,
             padding: '5px 12px',
             cursor: 'pointer',
             fontSize: 13,
-            color: isNightTheme ? '#e5e7eb' : '#6b7280',
+            color: isDarkTheme ? '#e5e7eb' : '#6b7280',
           }}
         >
           ✕ Exit
@@ -2294,7 +3427,13 @@ export default function QuickScore({
           <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
 
           {/* Album context */}
-          <div style={{ fontSize: 12, color: '#c4b5fd', marginBottom: 20, letterSpacing: '0.02em' }}>
+          <div style={{
+            fontSize: 12,
+            color: isDarkTheme ? '#fde68a' : '#c4b5fd',
+            marginBottom: 20,
+            letterSpacing: '0.02em',
+            textShadow: isDarkTheme ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
+          }}>
             {albumIcon} {albumName}
           </div>
 
@@ -2316,12 +3455,23 @@ export default function QuickScore({
           ) : (
             <div style={{
               fontSize: 22,
-              fontWeight: 700,
-              color: isNightTheme ? '#f3f4f6' : '#111827',
+              fontWeight: isTPDTheme ? 800 : 700,
+              color: isReputationTheme
+                ? '#ffffff'
+                : isEvermoreTheme
+                  ? '#fef3c7'
+                  : isShowgirlTheme
+                    ? '#fffbeb'
+                    : isDarkTheme
+                      ? '#f3f4f6'
+                      : '#111827',
               lineHeight: 1.3,
               marginBottom: currentCat?.id === 'lyrics' ? 16 : 32,
               maxWidth: 320,
-              textShadow: isNightTheme ? '0 1px 8px rgba(0,0,0,0.4)' : 'none',
+              textShadow: isDarkTheme ? '0 1px 8px rgba(0,0,0,0.45)' : 'none',
+              fontFamily: isTPDTheme
+                ? "'Georgia', 'Garamond', serif"
+                : 'inherit',
             }}>
               {currentSong?.name}
             </div>
@@ -2337,7 +3487,7 @@ export default function QuickScore({
               golden-hour gradient. */}
           <div style={{
             fontSize: isSpeakNowTheme ? 13 : 12,
-            fontWeight: 700,
+            fontWeight: isLoverTheme || isTPDTheme ? 800 : 700,
             color: isNightTheme
               ? '#e9d5ff'
               : isDebutTheme
@@ -2346,12 +3496,26 @@ export default function QuickScore({
                   ? '#5b21b6'
                   : isFearlessTheme
                     ? '#b45309'
-                    : '#a855f7',
+                    : isReputationTheme
+                      ? '#67e8f9'   // neon cyan on matte black
+                      : isLoverTheme
+                        ? '#7c3aed' // bold purple on cotton candy
+                        : isFolkloreTheme
+                          ? '#1e293b' // deep slate on misty grey-green
+                          : isEvermoreTheme
+                            ? '#fbbf24' // warm gold on burgundy
+                            : isTPDTheme
+                              ? '#1c1917' // bold black on parchment
+                              : isShowgirlTheme
+                                ? '#fbbf24' // bright gold on magenta
+                                : '#a855f7',
             textTransform: 'uppercase',
             letterSpacing: '0.12em',
             marginBottom: 4,
-            textShadow: isNightTheme ? '0 1px 4px rgba(0,0,0,0.5)' : 'none',
-            fontFamily: isSpeakNowTheme
+            textShadow: isNightTheme || isReputationTheme || isShowgirlTheme
+              ? '0 1px 4px rgba(0,0,0,0.5)'
+              : 'none',
+            fontFamily: isSpeakNowTheme || isTPDTheme
               ? "'Georgia', 'Garamond', serif"
               : 'inherit',
             fontStyle: isSpeakNowTheme ? 'italic' : 'normal',
@@ -2368,10 +3532,22 @@ export default function QuickScore({
                   ? '#7c3aed'
                   : isFearlessTheme
                     ? '#92400e'
-                    : '#c4b5fd',
+                    : isReputationTheme
+                      ? '#9ca3af'
+                      : isLoverTheme
+                        ? '#6d28d9'
+                        : isFolkloreTheme
+                          ? '#475569'
+                          : isEvermoreTheme
+                            ? '#fde68a'
+                            : isTPDTheme
+                              ? '#44403c'
+                              : isShowgirlTheme
+                                ? '#fde68a'
+                                : '#c4b5fd',
             marginBottom: currentCat?.id === 'lyrics' ? 14 : 32,
-            textShadow: isNightTheme ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
-            fontFamily: isSpeakNowTheme
+            textShadow: isDarkTheme ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
+            fontFamily: isSpeakNowTheme || isTPDTheme
               ? "'Georgia', 'Garamond', serif"
               : 'inherit',
             fontStyle: isSpeakNowTheme ? 'italic' : 'normal',
@@ -2442,24 +3618,34 @@ export default function QuickScore({
             </button>
           )}
 
-          {/* Stars or Yes/No depending on category type */}
-          {currentCat?.type === 'yesno' ? (
-            <YesNoPicker
-              key={`${songPos}-${catPos}`}
-              currentRating={currentRating}
-              onRate={handleRate}
-            />
-          ) : (
-            <StarPicker
-              key={`${songPos}-${catPos}`}
-              currentRating={currentRating}
-              onRate={handleRate}
-              labels={STAR_LABELS[currentCat?.id] ?? null}
-              flashLevel={flashLevel}
-              celebration={celebration}
-              isNightTheme={isNightTheme}
-            />
-          )}
+          {/* Stars or Yes/No depending on category type. Wrapped in a
+              positioned div so song-signature celebration overlays can
+              anchor around the stars themselves rather than the whole
+              question column. */}
+          <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', minHeight: 60 }}>
+            {celebration?.type === 'broken-neon'     && <BrokenNeonOverlay />}
+            {celebration?.type === 'heat-shimmer'    && <HeatShimmerOverlay />}
+            {celebration?.type === 'candle-halo'     && <CandleHaloOverlay />}
+            {celebration?.type === 'manuscript-fade' && <ManuscriptSignatureOverlay />}
+            {currentCat?.type === 'yesno' ? (
+              <YesNoPicker
+                key={`${songPos}-${catPos}`}
+                currentRating={currentRating}
+                onRate={handleRate}
+              />
+            ) : (
+              <StarPicker
+                key={`${songPos}-${catPos}`}
+                currentRating={currentRating}
+                onRate={handleRate}
+                labels={STAR_LABELS[currentCat?.id] ?? null}
+                flashLevel={flashLevel}
+                celebration={celebration}
+                isNightTheme={isNightTheme}
+                isDarkTheme={isDarkTheme}
+              />
+            )}
+          </div>
 
           {/* Back + Skip buttons */}
           <div style={{ display: 'flex', gap: 10, marginTop: 28 }}>

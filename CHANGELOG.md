@@ -16,6 +16,59 @@ Newest entries go at the top.
 
 ---
 
+## 0.8.0 — 2026-05-07
+
+### Added
+- **Six new album themes — first rough draft.** Backgrounds and ambient
+  effects now adapt for Reputation, Lover, Folklore, Evermore, The
+  Tortured Poets Department, and The Life of a Showgirl. Highlights:
+  - **Reputation:** matte-black backdrop with a snake silhouette
+    slithering along the bottom and white ink-splatter pulses scattered
+    across the screen. Neon-cyan category labels for sharp contrast.
+  - **Lover:** cotton-candy gradient with a pastel rainbow ribbon
+    arcing across the top and small floating hearts in pink, peach,
+    and lavender drifting up.
+  - **Folklore:** misty grey-green backdrop with slow fog wisps
+    drifting horizontally and pine-needle silhouettes drifting down.
+  - **Evermore:** deep amber-and-burgundy backdrop with autumn leaves
+    falling in oranges, browns, and deep reds — the visual sister to
+    Folklore but autumn-toned.
+  - **The Tortured Poets Department:** parchment cream fading to ink
+    black, with typewriter carets blinking at random spots and small
+    ink drips fading in and out. Serif-weighted titles.
+  - **The Life of a Showgirl:** rich magenta-and-gold cabaret backdrop
+    with a spotlight cone sweeping back and forth and sequin glitter
+    that catches the light. Bright gold category labels.
+- **Five new song-signature moments** triggered when you finish rating
+  the named song:
+  - **Look What You Made Me Do (Reputation):** stars flicker like a
+    broken neon sign, then snap to red.
+  - **Cruel Summer (Lover):** stars heat-shimmer and bloom into a
+    pink-orange sunset.
+  - **August (Folklore):** a single bright golden sun-flare arcs
+    across the top of the screen; stars warm to amber.
+  - **Marjorie (Evermore):** stars dim and a soft white halo fades
+    around each — a candlelight tribute.
+  - **The Tortured Poets Department (TPD title track):** stars fade
+    out one by one, then "the manuscript" appears in cursive ink.
+- **Album-complete decorations** that play behind the completion card:
+  - **Reputation:** a soft stage-light spot pulses behind the card.
+  - **Lover:** the cursive *Lover* logotype briefly fades in.
+  - **Folklore:** pine-needle snow rains down across the screen.
+  - **Evermore:** a handwritten *evermore* fades in then back out.
+  - **TPD:** a parchment overlay fades in with the line "The story
+    isn't mine anymore..." in typewriter font.
+  - **Showgirl:** a red velvet curtain slides closed across the screen
+    as the card arrives.
+
+### Notes
+- This is a first rough draft. Visual polish is intentionally light;
+  individual scenes (snake silhouette, ink blots, fog wisps, etc.) are
+  basic CSS-only renders and will likely get refined in follow-ups
+  based on feel-test feedback.
+
+---
+
 ## 0.7.2 — 2026-05-07
 
 ### Changed
