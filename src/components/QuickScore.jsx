@@ -123,25 +123,32 @@ const NIGHT_BACKGROUND =
 // Crescent moon in the upper-right corner + a sprinkle of twinkling stars.
 // CSS-only — animation runs through @keyframes injected near the moon SVG so
 // no React state churns during the rating flow.
+// 18 twinkling stars + 3 fresh ones for ~17% more density, plus 4 of them
+// flagged `constant: true` so they read as steady-lit anchor stars rather
+// than blinking decoration.
 const NIGHT_STARS = [
-  { top: '8%',  left: '12%', size: 6, delay: '0s'    },
-  { top: '14%', left: '32%', size: 4, delay: '1.4s'  },
-  { top: '6%',  left: '60%', size: 5, delay: '0.6s'  },
-  { top: '22%', left: '74%', size: 3, delay: '1.9s'  },
-  { top: '18%', left: '46%', size: 5, delay: '0.9s'  },
-  { top: '28%', left: '18%', size: 4, delay: '0.3s'  },
-  { top: '34%', left: '38%', size: 3, delay: '1.6s'  },
-  { top: '40%', left: '8%',  size: 5, delay: '0.7s'  },
-  { top: '44%', left: '88%', size: 4, delay: '1.2s'  },
-  { top: '55%', left: '20%', size: 3, delay: '2.1s'  },
-  { top: '60%', left: '56%', size: 5, delay: '0.4s'  },
-  { top: '64%', left: '82%', size: 4, delay: '1.7s'  },
-  { top: '72%', left: '14%', size: 3, delay: '0.8s'  },
-  { top: '78%', left: '40%', size: 5, delay: '1.3s'  },
-  { top: '84%', left: '70%', size: 4, delay: '0.2s'  },
-  { top: '90%', left: '24%', size: 3, delay: '1.0s'  },
-  { top: '92%', left: '54%', size: 4, delay: '1.8s'  },
-  { top: '88%', left: '88%', size: 5, delay: '0.5s'  },
+  { top: '8%',  left: '12%', size: 6, delay: '0s'   },
+  { top: '14%', left: '32%', size: 4, delay: '1.4s' },
+  { top: '6%',  left: '60%', size: 5, delay: '0.6s', constant: true },
+  { top: '22%', left: '74%', size: 3, delay: '1.9s' },
+  { top: '18%', left: '46%', size: 5, delay: '0.9s' },
+  { top: '28%', left: '18%', size: 4, delay: '0.3s' },
+  { top: '34%', left: '38%', size: 3, delay: '1.6s' },
+  { top: '40%', left: '8%',  size: 5, delay: '0.7s', constant: true },
+  { top: '44%', left: '88%', size: 4, delay: '1.2s' },
+  { top: '55%', left: '20%', size: 3, delay: '2.1s' },
+  { top: '60%', left: '56%', size: 5, delay: '0.4s' },
+  { top: '64%', left: '82%', size: 4, delay: '1.7s', constant: true },
+  { top: '72%', left: '14%', size: 3, delay: '0.8s' },
+  { top: '78%', left: '40%', size: 5, delay: '1.3s' },
+  { top: '84%', left: '70%', size: 4, delay: '0.2s' },
+  { top: '90%', left: '24%', size: 3, delay: '1.0s' },
+  { top: '92%', left: '54%', size: 4, delay: '1.8s' },
+  { top: '88%', left: '88%', size: 5, delay: '0.5s' },
+  // +3 new stars for added density
+  { top: '12%', left: '88%', size: 4, delay: '1.5s' },
+  { top: '50%', left: '42%', size: 3, delay: '0.6s', constant: true },
+  { top: '70%', left: '62%', size: 4, delay: '1.1s' },
 ];
 
 function NightSky() {
@@ -192,7 +199,7 @@ function NightSky() {
         />
       </svg>
 
-      {/* Twinkling stars */}
+      {/* Twinkling stars (and a handful of constant-lit ones for steady glow) */}
       {NIGHT_STARS.map((s, i) => (
         <svg
           key={i}
@@ -203,8 +210,9 @@ function NightSky() {
             position: 'absolute',
             top: s.top,
             left: s.left,
-            opacity: 0.3,
-            animation: `qs-night-twinkle 3s ${s.delay} ease-in-out infinite`,
+            opacity: s.constant ? 0.85 : 0.3,
+            animation: s.constant ? undefined : `qs-night-twinkle 3s ${s.delay} ease-in-out infinite`,
+            filter: s.constant ? 'drop-shadow(0 0 4px rgba(255,255,255,0.45))' : undefined,
           }}
         >
           <path
@@ -217,13 +225,27 @@ function NightSky() {
   );
 }
 
+// Sparkle particles that drift outward from each gemstone during the
+// Bejeweled celebration. Drift offsets aim in 6 directions so the
+// effect feels omnidirectional; durations and delays are mixed so
+// they don't pulse in unison.
+const BEJEWELED_SPARKS = [
+  { dx:  34, dy: -28, color: '#fde68a', dur: 1100, delay:  0   },
+  { dx: -32, dy: -34, color: '#f9a8d4', dur: 1300, delay: 120  },
+  { dx:  40, dy:  16, color: '#c4b5fd', dur: 1000, delay: 260  },
+  { dx: -40, dy:  10, color: '#93c5fd', dur: 1200, delay: 380  },
+  { dx:  10, dy:  38, color: '#6ee7b7', dur: 1100, delay: 540  },
+  { dx: -10, dy: -42, color: '#fca5a5', dur: 1250, delay: 700  },
+];
+
 // ── Big interactive stars ─────────────────────────────────────────────────────
 // Gets a new `key` each question so hover state resets automatically.
-function StarPicker({ currentRating, onRate, labels, flashLevel = 0, isNightTheme = false }) {
+function StarPicker({ currentRating, onRate, labels, flashLevel = 0, bejeweledLevel = 0, isNightTheme = false }) {
   const [hovered, setHovered] = useState(0);
   const display = hovered || currentRating;
   const activeLevel = hovered || currentRating;
   const isFlashing = flashLevel > 0;
+  const isBejeweled = bejeweledLevel > 0;
   // Label colors split for the two themes — dark-grey + dark-purple read
   // perfectly on the light category backgrounds; on the deep-night
   // gradient those go invisible, so we swap to off-white + bright purple.
@@ -232,33 +254,68 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, isNightThem
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
-      <div style={{ display: 'flex', gap: 4 }}>
+      {/* Bejeweled celebration keyframes — only injected while the
+          gem-flash is active so the rest of the rating flow stays light. */}
+      {isBejeweled && (
+        <style>{`
+          @keyframes qs-bejeweled-shimmer {
+            0%   { fill: #fbbf24; }
+            16%  { fill: #f472b6; }
+            33%  { fill: #c084fc; }
+            50%  { fill: #60a5fa; }
+            66%  { fill: #34d399; }
+            83%  { fill: #f87171; }
+            100% { fill: #fbbf24; }
+          }
+          @keyframes qs-bejeweled-glow {
+            0%, 100% { filter: drop-shadow(0 0 8px rgba(252,211,77,0.8)) drop-shadow(0 0 14px rgba(244,114,182,0.5)); }
+            50%      { filter: drop-shadow(0 0 14px rgba(192,132,252,0.85)) drop-shadow(0 0 22px rgba(96,165,250,0.6)); }
+          }
+          @keyframes qs-bejeweled-pulse {
+            0%, 100% { transform: scale(1)    rotate(0deg);   }
+            25%      { transform: scale(1.18) rotate(-4deg);  }
+            75%      { transform: scale(1.18) rotate(4deg);   }
+          }
+          @keyframes qs-bejeweled-spark-drift {
+            0%   { opacity: 0; transform: translate(0, 0) scale(0.4); }
+            25%  { opacity: 1; }
+            100% { opacity: 0; transform: var(--qs-drift) scale(1.2); }
+          }
+        `}</style>
+      )}
+
+      <div style={{ display: 'flex', gap: 4, position: 'relative' }}>
         {[1, 2, 3, 4, 5].map(star => {
           const active = star <= display;
           const isHoverTarget = hovered > 0 && star <= hovered;
           // Pulse stars 1..flashLevel during the post-pick hold. Stagger by
           // 60 ms each so the animation reads as a left-to-right sweep.
           const flashing = isFlashing && star <= flashLevel;
+          // Gemstone celebration applies to the rated stars (1..bejeweledLevel)
+          const gem = isBejeweled && star <= bejeweledLevel;
           return (
             <button
               key={star}
               onMouseEnter={() => setHovered(star)}
               onMouseLeave={() => setHovered(0)}
               onClick={() => onRate(star)}
-              disabled={isFlashing}
+              disabled={isFlashing || isBejeweled}
               aria-label={`${star} star`}
               style={{
                 background: 'none',
                 border: 'none',
-                cursor: isFlashing ? 'default' : 'pointer',
+                cursor: (isFlashing || isBejeweled) ? 'default' : 'pointer',
                 padding: '6px',
                 lineHeight: 0,
                 transition: 'transform 0.1s ease',
                 transform: isHoverTarget ? 'scale(1.18)' : 'scale(1)',
                 WebkitTapHighlightColor: 'transparent',
-                animation: flashing
-                  ? `qs-star-pulse 700ms ${star * 60}ms ease-out both`
-                  : undefined,
+                animation: gem
+                  ? `qs-bejeweled-pulse 0.9s ease-in-out infinite`
+                  : (flashing
+                      ? `qs-star-pulse 700ms ${star * 60}ms ease-out both`
+                      : undefined),
+                position: 'relative',
               }}
             >
               <svg
@@ -266,10 +323,49 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, isNightThem
                 height={52}
                 viewBox="0 0 20 20"
                 fill={active ? (hovered > 0 ? '#f59e0b' : '#a855f7') : '#e9d5ff'}
-                style={{ display: 'block', transition: 'fill 0.08s ease' }}
+                style={{
+                  display: 'block',
+                  transition: 'fill 0.08s ease',
+                  // Cycling rainbow fill + multi-color glow during the
+                  // Bejeweled flash. Animation 'fill' overrides the inline
+                  // fill prop while it's running.
+                  animation: gem
+                    ? `qs-bejeweled-shimmer 1.2s linear infinite, qs-bejeweled-glow 1.6s ease-in-out infinite`
+                    : undefined,
+                }}
               >
                 <path d="M10 1l2.39 4.84 5.34.78-3.86 3.76.91 5.32L10 13.27l-4.78 2.51.91-5.32L2.27 6.62l5.34-.78L10 1z" />
               </svg>
+
+              {/* Sparkle particles — 6 per gem, drifting outward in
+                  different directions, each on its own delay. */}
+              {gem && (
+                <>
+                  {BEJEWELED_SPARKS.map((spark, i) => (
+                    <svg
+                      key={i}
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        marginLeft: -7,
+                        marginTop: -7,
+                        pointerEvents: 'none',
+                        '--qs-drift': `translate(${spark.dx}px, ${spark.dy}px)`,
+                        animation: `qs-bejeweled-spark-drift ${spark.dur}ms ${spark.delay}ms ease-out infinite`,
+                      }}
+                    >
+                      <path
+                        fill={spark.color}
+                        d="M12 2l1.6 6L20 10l-6.4 1.6L12 18l-1.6-6.4L4 10l6.4-1.6z"
+                      />
+                    </svg>
+                  ))}
+                </>
+              )}
             </button>
           );
         })}
@@ -858,6 +954,12 @@ export default function QuickScore({
   const [flashLevel, setFlashLevel] = useState(0);
   const advanceTimeoutRef = useRef(null);
 
+  // Bejeweled celebration — when the user finishes rating "Bejeweled" on
+  // Midnights, the stars turn into shimmering gemstones with heavy sparkle
+  // for ~3 seconds before advancing. Tracks the picked rating so only the
+  // active stars get the gem treatment.
+  const [bejeweledLevel, setBejeweledLevel] = useState(0);
+
   const isSingleSong = songs.length === 1;
 
   // ── Spotify autoplay: start playing from shuffle timestamp on new song ───
@@ -980,6 +1082,7 @@ export default function QuickScore({
       clearTimeout(advanceTimeoutRef.current);
       advanceTimeoutRef.current = null;
       setFlashLevel(0);
+      setBejeweledLevel(0);
     }
     pendingRef.current = catPos > 0
       ? { catPos: catPos - 1 }
@@ -1014,12 +1117,23 @@ export default function QuickScore({
     onRate(currentSong.index, currentCat.id, val);
     if (currentSong.name === 'Wood') setShowTrees(true);
     setFlashLevel(val);
+
+    // Detect the moment the user finishes rating Bejeweled — i.e. the last
+    // category of that song on Midnights. Triggers a longer, heavier
+    // gemstone celebration before advancing to the next song.
+    const isLastBejeweled =
+      albumId === 'ml' &&
+      currentSong?.name === 'Bejeweled' &&
+      catPos === (currentSong?.cats.length - 1);
+    if (isLastBejeweled) setBejeweledLevel(val);
+
     if (advanceTimeoutRef.current) clearTimeout(advanceTimeoutRef.current);
     advanceTimeoutRef.current = setTimeout(() => {
       advanceTimeoutRef.current = null;
       setFlashLevel(0);
+      setBejeweledLevel(0);
       advance();
-    }, 900);
+    }, isLastBejeweled ? 3000 : 900);
   }
 
   // Called by ShuffleScreen after its own transition animation finishes (~720ms)
@@ -1225,11 +1339,25 @@ export default function QuickScore({
             </div>
           )}
 
-          {/* Category label */}
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#a855f7', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+          {/* Category label — on the deep-night background, the brand purple
+              washes out, so we use a brighter lavender + light grey pair. */}
+          <div style={{
+            fontSize: 12,
+            fontWeight: 700,
+            color: isNightTheme ? '#e9d5ff' : '#a855f7',
+            textTransform: 'uppercase',
+            letterSpacing: '0.12em',
+            marginBottom: 4,
+            textShadow: isNightTheme ? '0 1px 4px rgba(0,0,0,0.5)' : 'none',
+          }}>
             {currentCat?.name}
           </div>
-          <div style={{ fontSize: 12, color: '#c4b5fd', marginBottom: currentCat?.id === 'lyrics' ? 14 : 32 }}>
+          <div style={{
+            fontSize: 12,
+            color: isNightTheme ? '#cbd5e1' : '#c4b5fd',
+            marginBottom: currentCat?.id === 'lyrics' ? 14 : 32,
+            textShadow: isNightTheme ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
+          }}>
             Category {catPos + 1} of {currentSong?.cats.length}
           </div>
 
@@ -1310,6 +1438,7 @@ export default function QuickScore({
               onRate={handleRate}
               labels={STAR_LABELS[currentCat?.id] ?? null}
               flashLevel={flashLevel}
+              bejeweledLevel={bejeweledLevel}
               isNightTheme={isNightTheme}
             />
           )}
