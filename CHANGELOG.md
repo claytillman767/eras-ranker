@@ -16,6 +16,32 @@ Newest entries go at the top.
 
 ---
 
+## 0.5.2 — 2026-05-07
+
+### Changed
+- **Welcome tour "Two ways to rank" cards are now tappable.** Tapping
+  either the Vibe Check or Sort It Yourself preview card advances the
+  tour, instead of forcing you down to the Next button at the bottom.
+  These previews already mirror the buttons you'll tap in the album-mode
+  picker, so they should behave like buttons.
+- **Welcome tour album carousel is ~30% faster.** Each album now sits
+  on screen for about 2.9 seconds instead of 3.8, so you reach the
+  end of the rotation noticeably quicker without losing readability.
+
+### Fixed
+- **Welcome tour "Sort It Yourself" preview no longer overlaps rows.**
+  The animated demo where "Cruel Summer" jumps to the top was sliding
+  too far up — it ended up bumping into the song below it. The slide
+  distance now respects the gap between rows, so the moved row lands
+  cleanly in the top slot.
+- **Star animation looks right when you re-rate a category.** If you
+  previously gave a song 5 stars and you re-rate down to 3, only the
+  first 3 stars now stay highlighted during the post-pick flash —
+  instead of leaving the old stars 4 and 5 still purple alongside the
+  new ones.
+
+---
+
 ## 0.5.1 — 2026-05-07
 
 ### Fixed

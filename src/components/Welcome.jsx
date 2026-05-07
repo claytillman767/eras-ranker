@@ -128,7 +128,7 @@ export default function Welcome({ onClose, spotifyAlbumArt }) {
         }}
       >
         {step === 0 && <SlideWelcome spotifyAlbumArt={spotifyAlbumArt} />}
-        {step === 1 && <SlideModes />}
+        {step === 1 && <SlideModes onAdvance={next} />}
         {step === 2 && <SlideVibeCheck />}
         {step === 3 && <SlideManual />}
         {step === 4 && <SlideRankings />}
@@ -291,9 +291,11 @@ function SlideWelcome({ spotifyAlbumArt }) {
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
+    // 2920ms is ~30% faster than the original 3800ms — keeps the carousel
+    // peppy without making any single album hard to read.
     const id = setInterval(() => {
       setIdx(i => (i + 1) % ALBUMS.length);
-    }, 3800);
+    }, 2920);
     return () => clearInterval(id);
   }, []);
 
@@ -436,7 +438,11 @@ function CarouselSide({ album, side, artUrl }) {
 }
 
 // ── Slide 2 — Two ways to rank ────────────────────────────────────────────────
-function SlideModes() {
+// The two preview cards mirror the real "Vibe Check" / "Sort It Yourself"
+// buttons in the album-mode picker, so tapping either of them advances the
+// tour to the next slide — easier than reaching for the Next button below
+// when the cards already look like the choices the user will make in-app.
+function SlideModes({ onAdvance }) {
   return (
     <div style={{ textAlign: 'center', width: '100%' }}>
       <div style={{
@@ -454,12 +460,14 @@ function SlideModes() {
           // without re-reading the description.
           proLine="Songs autoplay through Spotify while you rate."
           delay="0s"
+          onTap={onAdvance}
         />
         <ModeCard
           icon="✋"
           title="Sort It Yourself"
           desc="Drag songs into your perfect order, top to bottom."
           delay="0.1s"
+          onTap={onAdvance}
         />
       </div>
       <div style={shimmerTitleStyle}>Two ways to rank</div>
@@ -468,19 +476,29 @@ function SlideModes() {
   );
 }
 
-function ModeCard({ icon, title, desc, proLine, delay = '0s' }) {
+function ModeCard({ icon, title, desc, proLine, delay = '0s', onTap }) {
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 14,
-      padding: '14px 16px',
-      background: '#fafafa',
-      border: '0.5px solid #e5e7eb',
-      borderRadius: 14,
-      textAlign: 'left',
-      animation: `welcome-card-pop 0.5s ${delay} cubic-bezier(0.2, 0.8, 0.3, 1.1) both`,
-    }}>
+    <button
+      onClick={onTap}
+      type="button"
+      aria-label={`${title} — continue tour`}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 14,
+        padding: '14px 16px',
+        background: '#fafafa',
+        border: '0.5px solid #e5e7eb',
+        borderRadius: 14,
+        textAlign: 'left',
+        cursor: onTap ? 'pointer' : 'default',
+        font: 'inherit',
+        color: 'inherit',
+        width: '100%',
+        boxSizing: 'border-box',
+        WebkitTapHighlightColor: 'transparent',
+        animation: `welcome-card-pop 0.5s ${delay} cubic-bezier(0.2, 0.8, 0.3, 1.1) both`,
+      }}>
       <div style={{
         width: 48,
         height: 48,
@@ -527,7 +545,7 @@ function ModeCard({ icon, title, desc, proLine, delay = '0s' }) {
           </div>
         )}
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -626,18 +644,24 @@ function SlideManual() {
   // Songs (always the same demo titles). After the move, song id 'mv'
   // sits at the top.
   const ROW_HEIGHT = 50;
+  // Rows are absolutely positioned at slots `slot * (ROW_HEIGHT + ROW_GAP)`,
+  // so the translate distances when shuffling slots must include the same
+  // 6px gap — otherwise the moving row lands 12px too high and overlaps
+  // the row below it.
+  const ROW_GAP = 6;
+  const SLOT_DELTA = ROW_HEIGHT + ROW_GAP;
 
   // Position offset (vertical pixels) for each row at each phase.
   // mv = the moving row (originally bottom)
   // a, b = the other rows that get pushed down
   function offsetFor(row) {
     if (row === 'mv') {
-      if (phase >= 2) return -ROW_HEIGHT * 2; // top slot
+      if (phase >= 2) return -SLOT_DELTA * 2; // top slot
       return 0;
     }
     // For 'a' and 'b', they shift down by one slot once mv moves
     if (phase >= 2) {
-      return ROW_HEIGHT;
+      return SLOT_DELTA;
     }
     return 0;
   }

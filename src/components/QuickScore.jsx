@@ -920,9 +920,14 @@ const WALTZ_PARCHMENTS = [
 // Gets a new `key` each question so hover state resets automatically.
 function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration = null, isNightTheme = false }) {
   const [hovered, setHovered] = useState(0);
-  const display = hovered || currentRating;
-  const activeLevel = hovered || currentRating;
   const isFlashing = flashLevel > 0;
+  // While the post-pick flash is running, the new pick (flashLevel) wins
+  // over the previous rating still sitting in `currentRating`. Without this,
+  // re-rating from 5★ down to 3★ would leave stars 4 + 5 looking selected
+  // for the duration of the hold animation, even though the user just
+  // picked 3 — the new 1–3 stars flash, but the stale 4–5 stay filled.
+  const display     = hovered || (isFlashing ? flashLevel : currentRating);
+  const activeLevel = hovered || (isFlashing ? flashLevel : currentRating);
   const celType = celebration?.type ?? null;
   const celLevel = celebration?.level ?? 0;
   const isBejeweled = celType === 'bejeweled';
