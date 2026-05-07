@@ -42,7 +42,7 @@ export default function ConnectSpotifyPrompt({ onConnect, onDismiss, isLoading }
           You're Pro!
         </div>
         <div style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.5, marginBottom: 24 }}>
-          Want to connect Spotify now so you can hear each song while you rate it?
+          Connect Spotify now to start the autoplay you just unlocked — and pull in real album art everywhere.
         </div>
 
         {/* Connect button — Spotify branding (green on white, logo + label) */}
@@ -89,7 +89,7 @@ export default function ConnectSpotifyPrompt({ onConnect, onDismiss, isLoading }
         </button>
 
         <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 14, lineHeight: 1.5 }}>
-          You can connect any time from Settings → Spotify. Requires a Spotify Premium account.
+          You can connect any time from Settings → Spotify. Spotify Premium is required for in-app playback.
         </div>
       </div>
     </div>

@@ -14,7 +14,7 @@ import { DEFAULT_CATEGORIES } from '../data/categories';
 //   3. Vibe Check (star rating mechanics)
 //   4. Sort It Yourself (drag-reorder mechanics)
 //   5. Your rankings grow (animated rate-then-place demo)
-export default function Welcome({ onClose }) {
+export default function Welcome({ onClose, spotifyAlbumArt }) {
   const [step, setStep] = useState(0);
   const touchStartX = useRef(null);
 
@@ -127,7 +127,7 @@ export default function Welcome({ onClose }) {
           animation: 'welcome-slide-in 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) both',
         }}
       >
-        {step === 0 && <SlideWelcome />}
+        {step === 0 && <SlideWelcome spotifyAlbumArt={spotifyAlbumArt} />}
         {step === 1 && <SlideModes />}
         {step === 2 && <SlideVibeCheck />}
         {step === 3 && <SlideManual />}
@@ -209,22 +209,41 @@ export default function Welcome({ onClose }) {
 }
 
 // ── Sparkle decoration ────────────────────────────────────────────────────────
-// 12 small star/diamond glyphs scattered across the screen at preset
-// positions. Each twinkles on its own delay so they feel alive but never
+// Small star/diamond glyphs scattered across the screen at preset positions.
+// Each twinkles on its own delay + duration so they feel alive but never
 // distract. CSS-only — no React state, no re-renders.
 const SPARKLE_POSITIONS = [
-  { top: '8%',  left: '12%', size: 14, color: '#fcd34d', delay: '0s'   },
-  { top: '14%', left: '85%', size: 10, color: '#a855f7', delay: '0.6s' },
-  { top: '22%', left: '7%',  size: 8,  color: '#f472b6', delay: '1.2s' },
+  // Top edge
+  { top: '4%',  left: '8%',  size: 14, color: '#fcd34d', delay: '0s'   },
+  { top: '5%',  left: '32%', size: 9,  color: '#f472b6', delay: '1.0s', dur: '2.6s' },
+  { top: '7%',  left: '58%', size: 8,  color: '#a855f7', delay: '0.4s' },
+  { top: '12%', left: '85%', size: 11, color: '#a855f7', delay: '0.6s' },
+  // Upper third
+  { top: '20%', left: '7%',  size: 8,  color: '#f472b6', delay: '1.2s' },
+  { top: '22%', left: '46%', size: 7,  color: '#fcd34d', delay: '1.7s', dur: '4s' },
+  { top: '24%', left: '74%', size: 9,  color: '#fcd34d', delay: '0.2s' },
   { top: '32%', left: '92%', size: 12, color: '#fcd34d', delay: '1.8s' },
-  { top: '47%', left: '4%',  size: 9,  color: '#a855f7', delay: '0.9s' },
-  { top: '52%', left: '88%', size: 14, color: '#f472b6', delay: '0.3s' },
-  { top: '68%', left: '10%', size: 11, color: '#fcd34d', delay: '1.5s' },
-  { top: '72%', left: '90%', size: 8,  color: '#a855f7', delay: '0.4s' },
-  { top: '82%', left: '15%', size: 10, color: '#f472b6', delay: '1.1s' },
-  { top: '88%', left: '82%', size: 13, color: '#fcd34d', delay: '0.7s' },
+  // Mid
+  { top: '38%', left: '20%', size: 7,  color: '#a855f7', delay: '0.7s' },
   { top: '40%', left: '50%', size: 7,  color: '#a855f7', delay: '2.0s' },
+  { top: '45%', left: '78%', size: 8,  color: '#f472b6', delay: '1.3s', dur: '2.8s' },
+  { top: '47%', left: '4%',  size: 9,  color: '#a855f7', delay: '0.9s' },
+  // Lower-mid
+  { top: '52%', left: '88%', size: 14, color: '#f472b6', delay: '0.3s' },
+  { top: '56%', left: '32%', size: 8,  color: '#fcd34d', delay: '1.5s' },
   { top: '60%', left: '48%', size: 6,  color: '#f472b6', delay: '1.4s' },
+  // Lower
+  { top: '68%', left: '10%', size: 11, color: '#fcd34d', delay: '1.5s' },
+  { top: '70%', left: '60%', size: 9,  color: '#a855f7', delay: '0.5s', dur: '3.6s' },
+  { top: '72%', left: '90%', size: 8,  color: '#a855f7', delay: '0.4s' },
+  // Bottom
+  { top: '80%', left: '15%', size: 10, color: '#f472b6', delay: '1.1s' },
+  { top: '82%', left: '42%', size: 7,  color: '#fcd34d', delay: '0.6s' },
+  { top: '84%', left: '70%', size: 9,  color: '#f472b6', delay: '1.9s', dur: '2.5s' },
+  { top: '88%', left: '82%', size: 13, color: '#fcd34d', delay: '0.7s' },
+  // Bottom edge
+  { top: '93%', left: '24%', size: 8,  color: '#a855f7', delay: '0.3s' },
+  { top: '94%', left: '88%', size: 7,  color: '#f472b6', delay: '1.6s' },
 ];
 
 function SparkleLayer() {
@@ -251,7 +270,7 @@ function SparkleLayer() {
             left: s.left,
             color: s.color,
             opacity: 0.25,
-            animation: `welcome-twinkle 3.2s ${s.delay} ease-in-out infinite`,
+            animation: `welcome-twinkle ${s.dur || '3.2s'} ${s.delay} ease-in-out infinite`,
           }}
         >
           <path
@@ -265,52 +284,153 @@ function SparkleLayer() {
 }
 
 // ── Slide 1 — Welcome ─────────────────────────────────────────────────────────
-function SlideWelcome() {
-  const heroIds = ['ml', 'fl', 'rd', '89', 'lv'];
-  const heroAlbums = heroIds
-    .map(id => ALBUMS.find(a => a.id === id))
-    .filter(Boolean);
+// A slow carousel that rotates through every album, with the album name
+// shown beneath the icon — so it's immediately clear that the colored
+// tiles users see throughout the app each represent one Taylor Swift era.
+function SlideWelcome({ spotifyAlbumArt }) {
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setIdx(i => (i + 1) % ALBUMS.length);
+    }, 3800);
+    return () => clearInterval(id);
+  }, []);
+
+  const prevAlbum = ALBUMS[(idx - 1 + ALBUMS.length) % ALBUMS.length];
+  const currAlbum = ALBUMS[idx];
+  const nextAlbum = ALBUMS[(idx + 1) % ALBUMS.length];
+
+  // Pull a real cover image from Spotify when available — otherwise fall
+  // back to the colored emoji tile.
+  const artFor = id => spotifyAlbumArt?.[id] ?? null;
 
   return (
     <div style={{ textAlign: 'center', width: '100%' }}>
-      {/* Fanned album cards — each pops in with a little stagger */}
+      <style>{`
+        @keyframes welcome-carousel-side {
+          0%   { opacity: 0; }
+          100% { opacity: 0.45; }
+        }
+        @keyframes welcome-carousel-center {
+          0%   { transform: scale(0.86); opacity: 0; }
+          60%  { transform: scale(1.04); opacity: 1; }
+          100% { transform: scale(1);    opacity: 1; }
+        }
+        @keyframes welcome-carousel-name {
+          0%   { opacity: 0; transform: translateY(4px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+
       <div style={{
         position: 'relative',
-        width: 240,
-        height: 160,
-        margin: '0 auto 36px',
+        width: 280,
+        height: 130,
+        margin: '0 auto 12px',
       }}>
-        {heroAlbums.map((album, i) => {
-          const offset = i - 2; // -2 .. 2
-          return (
-            <div
-              key={album.id}
-              style={{
-                position: 'absolute',
-                left: '50%',
-                top: 20,
-                width: 96,
-                height: 96,
-                marginLeft: -48,
-                transform: `translateX(${offset * 36}px) rotate(${offset * 8}deg)`,
-                background: album.color,
-                borderRadius: 14,
-                boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 44,
-                border: '3px solid #ffffff',
-                animation: `welcome-card-pop 0.5s ${i * 0.08}s cubic-bezier(0.2, 0.8, 0.3, 1.1) both`,
-              }}
-            >
-              {album.icon}
-            </div>
-          );
-        })}
+        <CarouselSide album={prevAlbum} side="left" artUrl={artFor(prevAlbum.id)} />
+        <CarouselCenter album={currAlbum} artUrl={artFor(currAlbum.id)} />
+        <CarouselSide album={nextAlbum} side="right" artUrl={artFor(nextAlbum.id)} />
       </div>
+
+      {/* Album name caption — fades + nudges up on each rotation so it's
+          clearly tied to the icon above */}
+      <div
+        key={`name-${currAlbum.id}`}
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: '#7c3aed',
+          letterSpacing: '0.04em',
+          marginBottom: 24,
+          minHeight: 18,
+          padding: '0 16px',
+          animation: 'welcome-carousel-name 0.5s ease-out both',
+        }}
+      >
+        {currAlbum.name}
+      </div>
+
       <div style={shimmerTitleStyle}>Welcome to The Eras Ranker ✨</div>
       <div style={subtitleStyle}>Rank every Taylor Swift song, your way.</div>
+    </div>
+  );
+}
+
+function CarouselCenter({ album, artUrl }) {
+  return (
+    <div
+      key={`c-${album.id}`}
+      style={{
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        margin: 'auto',
+        width: 108,
+        height: 108,
+        background: album.color,
+        borderRadius: 18,
+        boxShadow: '0 8px 22px rgba(0,0,0,0.16)',
+        border: '3px solid #ffffff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 54,
+        zIndex: 2,
+        overflow: 'hidden',
+        animation: 'welcome-carousel-center 0.6s cubic-bezier(0.2, 0.8, 0.3, 1.1) both',
+      }}
+    >
+      {artUrl ? (
+        <img
+          src={artUrl}
+          alt={album.name}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+      ) : (
+        album.icon
+      )}
+    </div>
+  );
+}
+
+function CarouselSide({ album, side, artUrl }) {
+  return (
+    <div
+      key={`${side}-${album.id}`}
+      style={{
+        position: 'absolute',
+        [side]: 0,
+        top: '50%',
+        marginTop: -34,
+        width: 68,
+        height: 68,
+        background: album.color,
+        borderRadius: 12,
+        boxShadow: '0 3px 10px rgba(0,0,0,0.10)',
+        border: '2px solid #ffffff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 30,
+        opacity: 0.45,
+        zIndex: 1,
+        overflow: 'hidden',
+        animation: 'welcome-carousel-side 0.55s ease-out both',
+      }}
+    >
+      {artUrl ? (
+        <img
+          src={artUrl}
+          alt=""
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+      ) : (
+        album.icon
+      )}
     </div>
   );
 }
@@ -328,7 +448,11 @@ function SlideModes() {
         <ModeCard
           icon="🎧"
           title="Vibe Check"
-          desc="Tap through quick questions to score each song. With Pro, songs play while you rate."
+          desc="Tap through quick questions to score each song."
+          // Pro upsell line gets its own visual weight — purple pill + line so
+          // the user can scan that there's a paid version of this experience
+          // without re-reading the description.
+          proLine="Songs autoplay through Spotify while you rate."
           delay="0s"
         />
         <ModeCard
@@ -344,7 +468,7 @@ function SlideModes() {
   );
 }
 
-function ModeCard({ icon, title, desc, delay = '0s' }) {
+function ModeCard({ icon, title, desc, proLine, delay = '0s' }) {
   return (
     <div style={{
       display: 'flex',
@@ -377,6 +501,31 @@ function ModeCard({ icon, title, desc, delay = '0s' }) {
         <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.5 }}>
           {desc}
         </div>
+        {proLine && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            marginTop: 6,
+            fontSize: 12,
+            color: '#7c3aed',
+            lineHeight: 1.4,
+          }}>
+            <span style={{
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: '0.06em',
+              color: '#ffffff',
+              background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+              padding: '2px 7px',
+              borderRadius: 99,
+              flexShrink: 0,
+            }}>
+              PRO
+            </span>
+            <span style={{ fontWeight: 500 }}>{proLine}</span>
+          </div>
+        )}
       </div>
     </div>
   );

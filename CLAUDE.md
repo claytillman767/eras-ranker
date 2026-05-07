@@ -6,6 +6,72 @@ Not a developer. Use plain, simple language — no jargon.
 ## App intent
 This is a **commercial product**, not a hobby or fan project. Treat every decision — licensing, architecture, legal risk, monetization, scalability — accordingly. Do not assume small scale or low stakes.
 
+## Conversion goals — the four key activities
+
+Every user-facing decision should be evaluated against these four conversion goals, in this order. Each step builds on the previous one — completing one makes the next one a natural offer.
+
+1. **Account login (Google sign-in)** — the backbone. Required for cross-device sync, Pro billing, and identity. The BetaGate is a hard gate today; once `VITE_BETA_PASSWORD` is removed at public launch, Google sign-in becomes the *only* path into the app.
+2. **Spotify connection (free for everyone)** — gives real album art across the app and is the natural runway toward Pro playback. Connecting is FREE; no Pro required. Pushed via the post-login SpotifyIntro screen and the Settings → Spotify section.
+3. **Pro upgrade ($4.99/mo or $46.71/yr)** — the revenue. Pro adds in-app autoplay, Play Bridge, 8 extra rating categories, custom categories, and CSV export. Pushed softly via the 30-song AutoplayNudge for connected free users, the VibeCheckIntro on first Vibe Check, and the PaywallCard in Categories.
+4. **Sharing to social media** — viral growth. The shareable card unlocks once a user fully ranks at least one album (RankingCard / AlbumCompleteCard).
+
+**Stance the app takes:** the natural path is *Login → Connect Spotify → Pro → Share*. Any other path is an "avoidance" — always allowed, but never framed as the obvious thing to do. Skip buttons exist, but they sit in secondary positioning (smaller, lower contrast, farther from the primary CTA).
+
+**Design for the post-launch flow, not the beta gate.** The beta password (`VITE_BETA_PASSWORD`) is a dev/test artifact — when the env var is removed at public launch, the password field disappears entirely and Google sign-in is the only way in. Treat *post-launch Google-only* as the canonical user flow. Do NOT raise concerns about how password-bypass users experience the funnel; that path is not user-facing in the shipped product. The BetaGate screen itself is locked — do not redesign it.
+
+## When you change Pro benefits — audit protocol
+
+**Whenever a Pro benefit is added, removed, renamed, repriced, or has its scope changed, you MUST proactively audit every place that mentions Pro perks and update them consistently.** Inconsistent Pro copy across screens (e.g. one screen says "Connect Spotify with Pro" while another says "free for everyone") is a credibility hit on a paid product.
+
+The current list of user-facing surfaces that list or reference Pro perks (find these whenever Pro changes):
+
+- [src/components/PaywallCard.jsx](src/components/PaywallCard.jsx) — Categories tab paywall (feature list)
+- [src/components/Settings.jsx](src/components/Settings.jsx) — `ProModal` feature list, Spotify section copy, `ProGatedRow` usage
+- [src/components/VibeCheckIntro.jsx](src/components/VibeCheckIntro.jsx) — first-Vibe-Check Pro pitch + Spotify Premium footnote
+- [src/components/ConnectSpotifyPrompt.jsx](src/components/ConnectSpotifyPrompt.jsx) — post-upgrade copy
+- [src/components/AlbumModeModal.jsx](src/components/AlbumModeModal.jsx) — Pro-but-disconnected nudge
+- [src/components/AutoplayNudge.jsx](src/components/AutoplayNudge.jsx) — 30-song soft upsell copy
+- [src/components/SpotifyIntro.jsx](src/components/SpotifyIntro.jsx) — post-login Spotify ask
+- [src/components/Welcome.jsx](src/components/Welcome.jsx) — slide 2 ModeCard mentions Pro
+- [src/components/CategoriesEditor.jsx](src/components/CategoriesEditor.jsx) — locks on extra/custom categories
+- [src/components/SpotifyMiniPlayer.jsx](src/components/SpotifyMiniPlayer.jsx) — disconnect-state copy
+
+Use grep to catch surfaces added later:
+```
+grep -rni "Spotify\|Pro\b\|Premium\|autoplay\|cover art\|album art\|Connect Spotify" src/components/*.jsx
+```
+
+If you add a new Pro-mentioning surface, add it to the list above so future audits are complete.
+
+## Acting as a user-flow consultant
+
+When a change touches **any of the four conversion goals**, don't just implement what was asked — proactively consult on funnel impact. Specifically, ask yourself (and surface concerns to the user *before* implementing if any answer is no):
+
+- **Does this nudge the user toward the next conversion step, or away?** A change that helps Spotify connection but accidentally makes Pro upgrade harder is a net loss.
+- **Does the natural path still feel natural after this change?** Each step should be the obvious thing to do. The skip/decline option should feel like opting out, never the default.
+- **Are other surfaces in the app still consistent with this change?** Use the audit list above. If a paywall is loosened or tightened, every surface that references that boundary needs to align.
+- **Is there a sharing moment we're underusing?** Album-complete cards, rankings cards, and the public profile are all viral surfaces. When someone hits a milestone (e.g. first fully-rated album), is the share path obvious?
+- **Does this respect the order of the funnel?** Don't ask a user to upgrade Pro before they've signed in; don't push Spotify before they've signed in; don't ask them to share before they have something worth sharing.
+
+### How to format consultant notes
+
+Every consultant concern must lead with the conversion goal it affects, in **bold ALL CAPS**, so the user can scan the funnel impact at a glance. The four labels:
+
+- **LOGIN FUNNEL** — Google sign-in
+- **SPOTIFY FUNNEL** — Spotify connection (free)
+- **PRO FUNNEL** — Pro subscription
+- **SHARING FUNNEL** — social-media share moments
+
+Format every concern as a short bullet beginning with the impact, then a sentence or two of detail. Examples:
+
+- *"**Major impact: this reduces PRO FUNNEL.** The Welcome tour says 'songs play with Pro' but doesn't make Pro feel desirable — it reads as a footnote, not a feature pitch."*
+- *"**Minor impact on SHARING FUNNEL.** Album completion is currently the only share trigger. A user who's rated 8 of 13 songs has no obvious way to share progress."*
+- *"**Cross-funnel risk (LOGIN + SPOTIFY).** Password-bypass users skip SpotifyIntro entirely, so they get a weaker Spotify push than Google-signed-in users."*
+
+Use **Major impact** when a primary funnel step is meaningfully harder/easier; **Minor impact** for nudges and edge cases; **Cross-funnel risk** when the change affects two or more conversion goals at once.
+
+Mention these considerations in your response *before* writing code, as a brief consultant note. The user is non-technical and explicitly relies on Claude to flag flow problems they might miss. Don't assume — surface the trade-off and let them decide.
+
 ## Design rules
 - **Music lifecycle:** Any screen that plays music owns the full start-to-stop. Music begins when the screen opens (or a phase starts) and stops when the screen closes or unmounts. Never leave audio playing with no way to control it.
 - **Play/pause always visible:** Whenever audio is playing or has played on the current screen, a play/pause button must be visible without scrolling — typically pinned in the header. This rule applies to every screen that uses Spotify playback: Matchup, DailyMatchup, and any future screens that call `playTrack`.

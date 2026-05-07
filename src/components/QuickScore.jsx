@@ -1,6 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { getBridgeLyrics, getSnippetLyrics, hasBridge } from '../data/lyricsAccess';
 import SpotifyMiniPlayer from './SpotifyMiniPlayer';
+import AutoplayNudge, { hasSeenAutoplayNudge, markAutoplayNudgeSeen } from './AutoplayNudge';
+
+// Threshold for the soft autoplay Pro upsell. Anchored at 30 — the trigger
+// fires the next time we transition between songs once totalRatings ≥ this,
+// which lets a vibe-check session finish naturally and pushes the actual
+// nudge into the 25–35-song window depending on how many songs are in flight.
+const AUTOPLAY_NUDGE_THRESHOLD = 30;
 
 // Calibration phrases for each category × star level (index 0 = ★1).
 // Goal: make ★1–★2 feel like valid, honest ratings — not insults.
@@ -1817,12 +1824,26 @@ export default function QuickScore({
   onClose,
   initialSongPos = 0,
   spotify,
+  // Pro-only playback gate — autoplay, mini player, and Play Bridge button all
+  // depend on this. Free users with Spotify connected still get album art
+  // through useSpotify, but the rating screen treats them like any other
+  // non-playback user.
+  isPro = false,
   spotifyAutoplay = true,
   spotifyBridgeAutoplay = false,
   confirmExit = true,
   onGoToSpotifySettings,
   updateSetting,
 }) {
+  // Set true for the rest of the session when the user taps "Try it" on the
+  // 30-song Pro upsell. Acts as a one-session bypass on the isPro gate so
+  // the next songs autoplay as a free taste of the Pro experience.
+  const [demoAutoplay, setDemoAutoplay] = useState(false);
+  // The 30-song upsell modal — set to a deferred-advance object when we want
+  // to interrupt the song-to-song transition with the nudge.
+  const [pendingNudgeAdvance, setPendingNudgeAdvance] = useState(null);
+
+  const playbackEnabled = isPro || demoAutoplay;
   const [songPos, setSongPos] = useState(initialSongPos);
   const [catPos, setCatPos] = useState(0);
   const [done, setDone] = useState(false);
@@ -1850,12 +1871,15 @@ export default function QuickScore({
   const isSingleSong = songs.length === 1;
 
   // ── Spotify autoplay: start playing from shuffle timestamp on new song ───
+  // Gated on playbackEnabled so free users (who can connect Spotify for album
+  // art) don't get autoplay unless they're Pro or in a one-time "Try it" demo.
   useEffect(() => {
+    if (!playbackEnabled) return;
     if (!spotify?.isConnected || !spotify?.playerReady || !spotifyAutoplay) return;
     const song = songs[songPos];
     if (!song) return;
     spotify.playTrack(albumId, song.index, song.name, albumName, 'shuffle');
-  }, [songPos, spotify?.playerReady]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [songPos, spotify?.playerReady, playbackEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
   // ── Bridge autoplay: seek to bridge timestamp when Bridge category appears ─
@@ -1864,6 +1888,7 @@ export default function QuickScore({
   // which is false whenever LYRICS_DISPLAY_ENABLED is off — meaning autoplay
   // never fired and the manual button was also hidden, leaving users stuck.
   useEffect(() => {
+    if (!playbackEnabled) return;
     if (
       currentCat?.id === 'bridge' &&
       spotifyBridgeAutoplay &&
@@ -1874,7 +1899,7 @@ export default function QuickScore({
     ) {
       spotify.playTrack(albumId, currentSong.index, currentSong.name, albumName, 'bridge');
     }
-  }, [songPos, catPos]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [songPos, catPos, playbackEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pause when QuickScore closes ─────────────────────────────────────────
   useEffect(() => {
@@ -1958,7 +1983,8 @@ export default function QuickScore({
     currentCat?.id === 'bridge' &&
     songHasBridge &&
     spotify?.isConnected &&
-    spotify?.playerReady;
+    spotify?.playerReady &&
+    playbackEnabled;
 
   const isFirstStep = songPos === 0 && catPos === 0;
 
@@ -1977,27 +2003,67 @@ export default function QuickScore({
     setIsVisible(false);
   }
 
-  function advance() {
-    const nextCat = catPos + 1;
-    let next;
-    if (nextCat < currentSong.cats.length) {
-      next = { catPos: nextCat };
-    } else {
-      const nextSong = songPos + 1;
-      next = nextSong < songsWithCats.length
-        ? { songPos: nextSong, catPos: 0 }
-        : { done: true };
-    }
-
-    // ShuffleScreen already handles its own 720ms fade-out; update state directly
+  // Performs the actual transition — ShuffleScreen has its own fade timing,
+  // every other category uses the cross-fade helper below.
+  function performAdvance(next) {
     if (currentCat?.id === 'replay') {
       if (next.done) { setDone(true); }
       else { if (next.songPos !== undefined) setSongPos(next.songPos); setCatPos(next.catPos ?? 0); }
       return;
     }
-
     pendingRef.current = next;
     setIsVisible(false);
+  }
+
+  function advance() {
+    const nextCat = catPos + 1;
+    let next;
+    let isNextSong = false;
+    if (nextCat < currentSong.cats.length) {
+      next = { catPos: nextCat };
+    } else {
+      const nextSong = songPos + 1;
+      if (nextSong < songsWithCats.length) {
+        next = { songPos: nextSong, catPos: 0 };
+        isNextSong = true;
+      } else {
+        next = { done: true };
+      }
+    }
+
+    // Soft Pro upsell: only fires between songs (not between categories,
+    // not on the very last song), only for Spotify-connected free users
+    // who haven't seen the prompt yet, once they've crossed the threshold.
+    // Counting Object.keys(ratings).length matches how useUserStats tracks
+    // unique songs rated.
+    if (
+      isNextSong &&
+      !isPro &&
+      !demoAutoplay &&
+      spotify?.isConnected &&
+      !hasSeenAutoplayNudge() &&
+      Object.keys(ratings).length >= AUTOPLAY_NUDGE_THRESHOLD
+    ) {
+      setPendingNudgeAdvance(next);
+      return;
+    }
+
+    performAdvance(next);
+  }
+
+  function handleTryAutoplay() {
+    markAutoplayNudgeSeen();
+    setDemoAutoplay(true);
+    const next = pendingNudgeAdvance;
+    setPendingNudgeAdvance(null);
+    if (next) performAdvance(next);
+  }
+
+  function handleNudgeLater() {
+    markAutoplayNudgeSeen();
+    const next = pendingNudgeAdvance;
+    setPendingNudgeAdvance(null);
+    if (next) performAdvance(next);
   }
 
   function handleRate(val) {
@@ -2223,8 +2289,11 @@ export default function QuickScore({
             {albumIcon} {albumName}
           </div>
 
-          {/* Song name / Spotify mini player */}
-          {spotify?.isConnected ? (
+          {/* Song name / Spotify mini player. Free Spotify-connected users get
+              album art across the app, but the inline mini player implies
+              playback control — gated on playbackEnabled so they see the plain
+              song title here instead of a non-functional player. */}
+          {spotify?.isConnected && playbackEnabled ? (
             <SpotifyMiniPlayer
               isConnected={!!spotify?.isConnected}
               playerReady={!!spotify?.playerReady}
@@ -2505,6 +2574,14 @@ export default function QuickScore({
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── 30-song Pro upsell — pops between songs once eligibility is met ── */}
+      {pendingNudgeAdvance && (
+        <AutoplayNudge
+          onTryIt={handleTryAutoplay}
+          onLater={handleNudgeLater}
+        />
       )}
 
       {/* ── Bridge autoplay suggestion (shown on 11th manual bridge play) ── */}
