@@ -750,13 +750,18 @@ export default function QuickScore({
 
 
   // ── Bridge autoplay: seek to bridge timestamp when Bridge category appears ─
+  // Gated on hasBridge (data-only) so the lyrics display kill switch can't
+  // silently disable bridge playback. Previously this used showBridgeLyrics,
+  // which is false whenever LYRICS_DISPLAY_ENABLED is off — meaning autoplay
+  // never fired and the manual button was also hidden, leaving users stuck.
   useEffect(() => {
     if (
       currentCat?.id === 'bridge' &&
       spotifyBridgeAutoplay &&
       spotify?.isConnected &&
       spotify?.playerReady &&
-      showBridgeLyrics
+      currentSong &&
+      hasBridge(albumId, currentSong.index)
     ) {
       spotify.playTrack(albumId, currentSong.index, currentSong.name, albumName, 'bridge');
     }
@@ -834,6 +839,9 @@ export default function QuickScore({
   // Whether to show the Play Bridge button. Computed from data-only checks
   // (hasBridge, spotify state) so the lyrics display kill switch can hide
   // the on-screen lyrics without also hiding the seek-to-bridge feature.
+  // Always shown when the song actually has a bridge and Spotify is ready —
+  // even if bridge-autoplay is on, the user can use this to replay the
+  // bridge or rescue a missed autoplay.
   const songHasBridge = currentSong
     ? hasBridge(albumId, currentSong.index)
     : false;
@@ -841,8 +849,7 @@ export default function QuickScore({
     currentCat?.id === 'bridge' &&
     songHasBridge &&
     spotify?.isConnected &&
-    spotify?.playerReady &&
-    !spotifyBridgeAutoplay;
+    spotify?.playerReady;
 
   const isFirstStep = songPos === 0 && catPos === 0;
 
