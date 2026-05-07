@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
+import { isDevEmail } from '../uat';
 
 // Lemon Squeezy storefront slug — the prefix on the checkout URL.
 // Hardcoded because it rarely changes and avoids a new env var per store.
@@ -165,10 +166,14 @@ export function usePro(user) {
   const unlockPro = useCallback((plan = 'monthly') => {
     if (!user || !db) return false;
 
-    // Mock fallback for local dev / pre-LS environments. When the variant-ID
-    // env vars aren't set, we treat the click as a successful unlock so
-    // other features (Spotify, extra categories, etc.) can still be tested.
-    if (!LS_WIRED) {
+    // Mock-grant path. Used in two cases:
+    //   1. Local dev / pre-LS environments where the variant-ID env vars
+    //      aren't set, so other Pro features can be tested without LS.
+    //   2. Developer accounts (isDevEmail) so we can test upgrade-gated UI
+    //      end-to-end without running real cards through Lemon Squeezy.
+    // Both paths write isPro=true to Firestore + localStorage and skip the
+    // LS checkout entirely.
+    if (!LS_WIRED || isDevEmail(user.email)) {
       localStorage.setItem(KEY_IS_PRO, 'true');
       setIsPro(true);
       setDoc(
