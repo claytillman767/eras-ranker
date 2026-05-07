@@ -10,14 +10,14 @@ This is a **commercial product**, not a hobby or fan project. Treat every decisi
 
 Every user-facing decision should be evaluated against these four conversion goals, in this order. Each step builds on the previous one — completing one makes the next one a natural offer.
 
-1. **Account login (Google sign-in)** — the backbone. Required for cross-device sync, Pro billing, and identity. Pushed via the dedicated GoogleLoginPromo screen that appears right after the Welcome tour for anyone not yet signed in. The BetaGate is a hard gate today; once `VITE_BETA_PASSWORD` is removed, the BetaGate effectively becomes the front-door Google-sign-in, and the GoogleLoginPromo becomes a soft fallback (auto-skips when the user is already signed in).
+1. **Account login (Google sign-in)** — the backbone. Required for cross-device sync, Pro billing, and identity. Pushed via the dedicated GoogleLoginPromo screen that appears right after the Welcome tour for anyone not yet signed in, with "Sign in with Google" as the primary CTA and "Not now" as the bypass.
 2. **Spotify connection (free for everyone)** — gives real album art across the app and is the natural runway toward Pro playback. Connecting is FREE; no Pro required. Pushed via the SpotifyIntro screen (shown once for signed-in users after the GoogleLoginPromo) and the Settings → Spotify section.
 3. **Pro upgrade ($4.99/mo or $46.71/yr)** — the revenue. Pro adds in-app autoplay, Play Bridge, 8 extra rating categories, custom categories, and CSV export. Pushed softly via the 30-song AutoplayNudge for connected free users, the VibeCheckIntro on first Vibe Check, and the PaywallCard in Categories.
 4. **Sharing to social media** — viral growth. The shareable card unlocks once a user fully ranks at least one album (RankingCard / AlbumCompleteCard).
 
 **Stance the app takes:** the natural path is *Login → Connect Spotify → Pro → Share*. Any other path is an "avoidance" — always allowed, but never framed as the obvious thing to do. Skip buttons exist, but they sit in secondary positioning (smaller, lower contrast, farther from the primary CTA).
 
-**Design for the post-launch flow, not the beta gate.** The beta password (`VITE_BETA_PASSWORD`) is a dev/test artifact — when the env var is removed at public launch, the password field disappears entirely and Google sign-in is the only way in. Treat *post-launch Google-only* as the canonical user flow. Do NOT raise concerns about how password-bypass users experience the funnel; that path is not user-facing in the shipped product. The BetaGate screen itself is locked — do not redesign it.
+**Design as if the BetaGate doesn't exist.** The BetaGate is a short-term beta-access artifact and will be removed entirely before any real users are directed at the site. Treat the *first screen users actually see* as the Welcome tour, and the *first conversion ask* as the GoogleLoginPromo right after it. Do NOT factor BetaGate behaviour into funnel analysis, do NOT raise concerns about the password-bypass path, and do NOT redesign the BetaGate — it is locked because it's going away anyway. The canonical post-launch flow is: Welcome → GoogleLoginPromo → (if signed in) SpotifyIntro → Home.
 
 ## When you change Pro benefits — audit protocol
 
