@@ -119,6 +119,16 @@ const CAT_BACKGROUNDS = {
 const NIGHT_BACKGROUND =
   'linear-gradient(180deg, #0b0b2e 0%, #1a1849 45%, #0d0d35 100%)';
 
+// Cream-and-grain backdrop for Taylor Swift (Debut) — base gradient layered
+// with two faint diagonal stripe patterns so the surface reads as warm guitar
+// wood without overpowering the rating UI.
+const DEBUT_BACKGROUND =
+  // Subtle wood-grain stripes — alpha kept low so the cream stays warm.
+  'repeating-linear-gradient(95deg, rgba(146, 89, 26, 0.05) 0px, rgba(146, 89, 26, 0.05) 1px, transparent 1px, transparent 6px), ' +
+  'repeating-linear-gradient(95deg, rgba(146, 89, 26, 0.04) 0px, rgba(146, 89, 26, 0.04) 2px, transparent 2px, transparent 17px), ' +
+  // Base cream gradient — the actual album color.
+  'linear-gradient(180deg, #fdf6e3 0%, #faeeda 50%, #fff7e0 100%)';
+
 // ── Night sky decoration (Midnights album theme) ─────────────────────────────
 // Crescent moon in the upper-right corner + a sprinkle of twinkling stars.
 // CSS-only — animation runs through @keyframes injected near the moon SVG so
@@ -225,6 +235,190 @@ function NightSky() {
   );
 }
 
+// ── Taylor Swift (Debut) ambient scene ───────────────────────────────────────
+// Gentle, low-opacity decoration over the cream backdrop:
+//  • A faint stadium silhouette across the bottom (high-school football vibe)
+//  • A few drifting boots
+//  • One or two graffiti-style hearts with "T + T" cursive inside
+//  • Tiny blue glitter dots that twinkle
+// All elements are CSS animation only — no React state, no per-frame re-renders.
+
+const DEBUT_BOOTS = [
+  { top: '12%', left: '8%',  delay: '0s'   },
+  { top: '32%', left: '85%', delay: '1.8s' },
+  { top: '60%', left: '6%',  delay: '0.9s' },
+];
+
+const DEBUT_HEARTS = [
+  { top: '20%', left: '74%', delay: '0.4s', rotate: -8 },
+  { top: '54%', left: '12%', delay: '1.2s', rotate: 6  },
+];
+
+const DEBUT_GLITTER = [
+  { top: '6%',  left: '24%', size: 4, delay: '0s'   },
+  { top: '11%', left: '54%', size: 3, delay: '0.6s' },
+  { top: '17%', left: '88%', size: 4, delay: '1.4s' },
+  { top: '24%', left: '40%', size: 3, delay: '0.3s' },
+  { top: '30%', left: '64%', size: 4, delay: '1.9s' },
+  { top: '38%', left: '20%', size: 3, delay: '0.7s' },
+  { top: '42%', left: '52%', size: 4, delay: '1.1s' },
+  { top: '48%', left: '78%', size: 3, delay: '0.2s' },
+  { top: '52%', left: '38%', size: 3, delay: '1.6s' },
+  { top: '58%', left: '70%', size: 4, delay: '0.5s' },
+  { top: '64%', left: '50%', size: 3, delay: '1.3s' },
+  { top: '70%', left: '20%', size: 4, delay: '0.8s' },
+  { top: '74%', left: '88%', size: 3, delay: '2.0s' },
+  { top: '80%', left: '36%', size: 3, delay: '1.5s' },
+  { top: '85%', left: '64%', size: 4, delay: '0.4s' },
+];
+
+function DebutScene() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}
+    >
+      <style>{`
+        @keyframes qs-debut-drift {
+          0%, 100% { transform: translateY(0)    rotate(var(--qs-rot, 0deg)); }
+          50%      { transform: translateY(-12px) rotate(var(--qs-rot, 0deg)); }
+        }
+        @keyframes qs-debut-glint {
+          0%, 100% { opacity: 0.3; transform: scale(0.8); }
+          50%      { opacity: 1;   transform: scale(1.15); }
+        }
+      `}</style>
+
+      {/* Stadium silhouette — sits along the bottom, low opacity so it
+          reads as memory rather than illustration. */}
+      <svg
+        viewBox="0 0 600 80"
+        preserveAspectRatio="none"
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          width: '100%',
+          height: 80,
+          opacity: 0.18,
+        }}
+      >
+        {/* Light poles */}
+        <rect x="40"  y="8"  width="2" height="72" fill="#3f2f1a" />
+        <rect x="22"  y="6"  width="38" height="6"  fill="#3f2f1a" rx="1" />
+        <rect x="240" y="4"  width="2" height="76" fill="#3f2f1a" />
+        <rect x="222" y="2"  width="38" height="6"  fill="#3f2f1a" rx="1" />
+        <rect x="440" y="10" width="2" height="70" fill="#3f2f1a" />
+        <rect x="422" y="8"  width="38" height="6"  fill="#3f2f1a" rx="1" />
+        {/* Bleachers — sloped lines */}
+        <path d="M0 78 L120 56 L240 60 L360 50 L480 58 L600 52 L600 80 L0 80 Z" fill="#3f2f1a" />
+      </svg>
+
+      {/* Drifting boots */}
+      {DEBUT_BOOTS.map((b, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            top: b.top,
+            left: b.left,
+            fontSize: 30,
+            opacity: 0.32,
+            animation: `qs-debut-drift 6s ${b.delay} ease-in-out infinite`,
+          }}
+        >
+          🥾
+        </div>
+      ))}
+
+      {/* Graffiti T + T hearts */}
+      {DEBUT_HEARTS.map((h, i) => (
+        <svg
+          key={i}
+          width="56"
+          height="50"
+          viewBox="0 0 100 90"
+          style={{
+            position: 'absolute',
+            top: h.top,
+            left: h.left,
+            opacity: 0.5,
+            // Pass per-instance rotation through a CSS variable so the drift
+            // keyframe can preserve it instead of zeroing it on each loop.
+            '--qs-rot': `${h.rotate}deg`,
+            animation: `qs-debut-drift 7s ${h.delay} ease-in-out infinite`,
+          }}
+        >
+          {/* Hand-drawn marker heart */}
+          <path
+            d="M50 78 C 18 56, 10 36, 18 22 C 26 8, 44 8, 50 26 C 56 8, 74 8, 82 22 C 90 36, 82 56, 50 78 Z"
+            fill="#dc2626"
+            stroke="#7f1d1d"
+            strokeWidth="2"
+            strokeLinejoin="round"
+          />
+          {/* "T + T" text */}
+          <text
+            x="50"
+            y="50"
+            textAnchor="middle"
+            fontFamily="'Brush Script MT', cursive"
+            fontSize="22"
+            fontWeight="700"
+            fill="#ffffff"
+            style={{ paintOrder: 'stroke', stroke: '#7f1d1d', strokeWidth: 1.5 }}
+          >
+            T + T
+          </text>
+        </svg>
+      ))}
+
+      {/* Tiny blue glitter dots */}
+      {DEBUT_GLITTER.map((g, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            top: g.top,
+            left: g.left,
+            width: g.size,
+            height: g.size,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, #93c5fd 0%, #3b82f6 100%)',
+            boxShadow: '0 0 4px rgba(59,130,246,0.6)',
+            opacity: 0.5,
+            animation: `qs-debut-glint 2.6s ${g.delay} ease-in-out infinite`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Album-signature celebrations ──────────────────────────────────────────────
+// Maps (albumId, songName) → a celebration that runs after the user finishes
+// rating that song's last category. Returns null when no celebration applies.
+// Keep this small and album-scoped so the rating flow never freezes on songs
+// the user expects to fly through.
+function detectCelebration(albumId, songName) {
+  if (albumId === 'ml' && songName === 'Bejeweled') {
+    return { type: 'bejeweled', durationMs: 3000 };
+  }
+  if (albumId === 'tv' && songName === 'Tim McGraw') {
+    return { type: 'polaroid-sepia', durationMs: 2500 };
+  }
+  if (albumId === 'tv' && songName === 'Picture to Burn') {
+    return { type: 'polaroid-burn', durationMs: 3500 };
+  }
+  return null;
+}
+
 // Sparkle particles that drift outward from each gemstone during the
 // Bejeweled celebration. Drift offsets aim in 6 directions so the
 // effect feels omnidirectional; durations and delays are mixed so
@@ -238,14 +432,42 @@ const BEJEWELED_SPARKS = [
   { dx: -10, dy: -42, color: '#fca5a5', dur: 1250, delay: 700  },
 ];
 
+// Slight rotation per polaroid so the row reads like photos stuck on
+// a corkboard rather than a perfectly-aligned grid.
+const POLAROID_TILTS = [-6, 4, -2, 5, -4];
+
+// Flames that erupt from the bottom of each polaroid during the Picture
+// to Burn celebration. Four flames per polaroid, offset along the bottom
+// edge with mixed durations + flicker speeds so they don't pulse in sync.
+const POLAROID_FLAMES = [
+  { dx: -10, dur:  900, delay:   0, flicker: 220 },
+  { dx:  -2, dur: 1100, delay: 130, flicker: 280 },
+  { dx:   8, dur:  950, delay: 240, flicker: 200 },
+  { dx:  16, dur: 1050, delay: 380, flicker: 260 },
+];
+
+// Glowing embers that drift up + outward from each burning polaroid.
+const POLAROID_EMBERS = [
+  { dx:   8, dy: -34, color: '#fbbf24', dur: 1300, delay:  60 },
+  { dx: -10, dy: -42, color: '#f97316', dur: 1500, delay: 220 },
+  { dx:  16, dy: -50, color: '#fde047', dur: 1400, delay: 380 },
+  { dx: -16, dy: -30, color: '#dc2626', dur: 1200, delay: 540 },
+  { dx:   4, dy: -56, color: '#f59e0b', dur: 1600, delay: 700 },
+];
+
 // ── Big interactive stars ─────────────────────────────────────────────────────
 // Gets a new `key` each question so hover state resets automatically.
-function StarPicker({ currentRating, onRate, labels, flashLevel = 0, bejeweledLevel = 0, isNightTheme = false }) {
+function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration = null, isNightTheme = false }) {
   const [hovered, setHovered] = useState(0);
   const display = hovered || currentRating;
   const activeLevel = hovered || currentRating;
   const isFlashing = flashLevel > 0;
-  const isBejeweled = bejeweledLevel > 0;
+  const celType = celebration?.type ?? null;
+  const celLevel = celebration?.level ?? 0;
+  const isBejeweled = celType === 'bejeweled';
+  const isPolaroidSepia = celType === 'polaroid-sepia';
+  const isPolaroidBurn  = celType === 'polaroid-burn';
+  const isPolaroid = isPolaroidSepia || isPolaroidBurn;
   // Label colors split for the two themes — dark-grey + dark-purple read
   // perfectly on the light category backgrounds; on the deep-night
   // gradient those go invisible, so we swap to off-white + bright purple.
@@ -284,6 +506,47 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, bejeweledLe
         `}</style>
       )}
 
+      {/* Polaroid celebration keyframes — sepia fade for Tim McGraw, and a
+          flames + char + ember sequence for Picture to Burn. */}
+      {isPolaroid && (
+        <style>{`
+          @keyframes qs-polaroid-sepia {
+            0%   { filter: sepia(0)    saturate(1)   brightness(1); transform: rotate(var(--qs-tilt, 0deg)) translateY(0); }
+            20%  { filter: sepia(0.85) saturate(0.7) brightness(0.95); transform: rotate(var(--qs-tilt, 0deg)) translateY(-2px); }
+            70%  { filter: sepia(0.85) saturate(0.7) brightness(0.95); transform: rotate(var(--qs-tilt, 0deg)) translateY(-2px); }
+            100% { filter: sepia(0)    saturate(1)   brightness(1); transform: rotate(var(--qs-tilt, 0deg)) translateY(0); }
+          }
+          @keyframes qs-polaroid-burn-img {
+            0%   { filter: sepia(0.6) saturate(1)    brightness(1); }
+            25%  { filter: sepia(1)   saturate(1.4)  brightness(1) hue-rotate(-15deg); }
+            55%  { filter: sepia(1)   saturate(2)    brightness(0.6) hue-rotate(-25deg); }
+            80%  { filter: sepia(1)   saturate(0.4)  brightness(0.18) hue-rotate(-30deg); }
+            100% { filter: sepia(1)   saturate(0)    brightness(0); opacity: 0; }
+          }
+          @keyframes qs-polaroid-burn-frame {
+            0%   { background: #ffffff; border-color: #d6d3d1; transform: rotate(var(--qs-tilt, 0deg)) translateY(0); }
+            40%  { background: #fde68a; border-color: #b45309; transform: rotate(calc(var(--qs-tilt, 0deg) - 1deg)) translateY(-1px); }
+            70%  { background: #92400e; border-color: #1c0a02; transform: rotate(calc(var(--qs-tilt, 0deg) + 2deg)) translateY(2px); }
+            100% { background: #1c0a02; border-color: #1c0a02; opacity: 0.2; transform: rotate(calc(var(--qs-tilt, 0deg) - 4deg)) translateY(8px) scale(0.92); }
+          }
+          @keyframes qs-flame-rise {
+            0%   { opacity: 0;   transform: translateY(8px)  scaleY(0.4); }
+            15%  { opacity: 0.95; }
+            70%  { opacity: 1;    transform: translateY(-2px) scaleY(1.1); }
+            100% { opacity: 0;   transform: translateY(-14px) scaleY(0.6); }
+          }
+          @keyframes qs-flame-flicker {
+            0%, 100% { transform: translateX(0)  scaleX(1); }
+            50%      { transform: translateX(2px) scaleX(0.85); }
+          }
+          @keyframes qs-ember-rise {
+            0%   { opacity: 0; transform: translate(0, 0) scale(0.6); }
+            20%  { opacity: 1; }
+            100% { opacity: 0; transform: var(--qs-drift) scale(0.4); }
+          }
+        `}</style>
+      )}
+
       <div style={{ display: 'flex', gap: 4, position: 'relative' }}>
         {[1, 2, 3, 4, 5].map(star => {
           const active = star <= display;
@@ -291,20 +554,25 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, bejeweledLe
           // Pulse stars 1..flashLevel during the post-pick hold. Stagger by
           // 60 ms each so the animation reads as a left-to-right sweep.
           const flashing = isFlashing && star <= flashLevel;
-          // Gemstone celebration applies to the rated stars (1..bejeweledLevel)
-          const gem = isBejeweled && star <= bejeweledLevel;
+          // Album celebrations apply to the rated stars (1..celLevel)
+          const gem      = isBejeweled     && star <= celLevel;
+          const polaroid = isPolaroid      && star <= celLevel;
+          // Tilt each polaroid like a stuck-on-the-fridge photo
+          const tilt = POLAROID_TILTS[star - 1];
+          // Disabled while any celebration is running
+          const celebrating = isFlashing || isBejeweled || isPolaroid;
           return (
             <button
               key={star}
               onMouseEnter={() => setHovered(star)}
               onMouseLeave={() => setHovered(0)}
               onClick={() => onRate(star)}
-              disabled={isFlashing || isBejeweled}
+              disabled={celebrating}
               aria-label={`${star} star`}
               style={{
                 background: 'none',
                 border: 'none',
-                cursor: (isFlashing || isBejeweled) ? 'default' : 'pointer',
+                cursor: celebrating ? 'default' : 'pointer',
                 padding: '6px',
                 lineHeight: 0,
                 transition: 'transform 0.1s ease',
@@ -318,24 +586,59 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, bejeweledLe
                 position: 'relative',
               }}
             >
-              <svg
-                width={52}
-                height={52}
-                viewBox="0 0 20 20"
-                fill={active ? (hovered > 0 ? '#f59e0b' : '#a855f7') : '#e9d5ff'}
-                style={{
-                  display: 'block',
-                  transition: 'fill 0.08s ease',
-                  // Cycling rainbow fill + multi-color glow during the
-                  // Bejeweled flash. Animation 'fill' overrides the inline
-                  // fill prop while it's running.
-                  animation: gem
-                    ? `qs-bejeweled-shimmer 1.2s linear infinite, qs-bejeweled-glow 1.6s ease-in-out infinite`
-                    : undefined,
-                }}
-              >
-                <path d="M10 1l2.39 4.84 5.34.78-3.86 3.76.91 5.32L10 13.27l-4.78 2.51.91-5.32L2.27 6.62l5.34-.78L10 1z" />
-              </svg>
+              {polaroid ? (
+                /* Polaroid frame replaces the star — used for both the
+                   sepia (Tim McGraw) and burning (Picture to Burn)
+                   celebrations on Debut. The animation diverges below. */
+                <div
+                  style={{
+                    width: 52,
+                    height: 62,
+                    background: '#ffffff',
+                    border: '1.5px solid #d6d3d1',
+                    borderRadius: 2,
+                    padding: '4px 4px 14px',
+                    boxSizing: 'border-box',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.18)',
+                    transform: `rotate(${tilt}deg)`,
+                    '--qs-tilt': `${tilt}deg`,
+                    animation: isPolaroidSepia
+                      ? `qs-polaroid-sepia 2500ms ${star * 80}ms ease forwards`
+                      : `qs-polaroid-burn-frame 3500ms ${star * 100}ms ease forwards`,
+                  }}
+                >
+                  {/* Photo area — looks like a faded snapshot */}
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      background: 'linear-gradient(135deg, #fde68a 0%, #d6a96b 50%, #a16207 100%)',
+                      animation: isPolaroidBurn
+                        ? `qs-polaroid-burn-img 3500ms ${star * 100}ms ease forwards`
+                        : undefined,
+                    }}
+                  />
+                </div>
+              ) : (
+                <svg
+                  width={52}
+                  height={52}
+                  viewBox="0 0 20 20"
+                  fill={active ? (hovered > 0 ? '#f59e0b' : '#a855f7') : '#e9d5ff'}
+                  style={{
+                    display: 'block',
+                    transition: 'fill 0.08s ease',
+                    // Cycling rainbow fill + multi-color glow during the
+                    // Bejeweled flash. Animation 'fill' overrides the inline
+                    // fill prop while it's running.
+                    animation: gem
+                      ? `qs-bejeweled-shimmer 1.2s linear infinite, qs-bejeweled-glow 1.6s ease-in-out infinite`
+                      : undefined,
+                  }}
+                >
+                  <path d="M10 1l2.39 4.84 5.34.78-3.86 3.76.91 5.32L10 13.27l-4.78 2.51.91-5.32L2.27 6.62l5.34-.78L10 1z" />
+                </svg>
+              )}
 
               {/* Sparkle particles — 6 per gem, drifting outward in
                   different directions, each on its own delay. */}
@@ -363,6 +666,62 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, bejeweledLe
                         d="M12 2l1.6 6L20 10l-6.4 1.6L12 18l-1.6-6.4L4 10l6.4-1.6z"
                       />
                     </svg>
+                  ))}
+                </>
+              )}
+
+              {/* Flames — Picture to Burn celebration only. Four flames
+                  start small at the bottom, rise + flicker, then fade. */}
+              {polaroid && isPolaroidBurn && (
+                <>
+                  {POLAROID_FLAMES.map((f, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        position: 'absolute',
+                        bottom: -4,
+                        left: `calc(50% + ${f.dx}px)`,
+                        marginLeft: -8,
+                        width: 16,
+                        height: 22,
+                        pointerEvents: 'none',
+                        animation: `qs-flame-rise ${f.dur}ms ${f.delay + star * 100}ms ease-out infinite, qs-flame-flicker ${f.flicker}ms ease-in-out infinite`,
+                        transformOrigin: 'bottom center',
+                      }}
+                    >
+                      <svg viewBox="0 0 16 22" style={{ display: 'block' }}>
+                        <path
+                          d="M8 0 C 5 5, 2 8, 2 12 C 2 18, 5 21, 8 21 C 11 21, 14 18, 14 12 C 14 8, 11 5, 8 0 Z"
+                          fill="url(#qs-flame-grad)"
+                        />
+                        <defs>
+                          <linearGradient id="qs-flame-grad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%"  stopColor="#fde047" />
+                            <stop offset="40%" stopColor="#fb923c" />
+                            <stop offset="100%" stopColor="#dc2626" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                    </div>
+                  ))}
+                  {POLAROID_EMBERS.map((e, i) => (
+                    <div
+                      key={`e${i}`}
+                      style={{
+                        position: 'absolute',
+                        bottom: 6,
+                        left: '50%',
+                        width: 4,
+                        height: 4,
+                        marginLeft: -2,
+                        borderRadius: '50%',
+                        background: e.color,
+                        boxShadow: `0 0 4px ${e.color}`,
+                        pointerEvents: 'none',
+                        '--qs-drift': `translate(${e.dx}px, ${e.dy}px)`,
+                        animation: `qs-ember-rise ${e.dur}ms ${e.delay + star * 90}ms ease-out infinite`,
+                      }}
+                    />
                   ))}
                 </>
               )}
@@ -954,11 +1313,12 @@ export default function QuickScore({
   const [flashLevel, setFlashLevel] = useState(0);
   const advanceTimeoutRef = useRef(null);
 
-  // Bejeweled celebration — when the user finishes rating "Bejeweled" on
-  // Midnights, the stars turn into shimmering gemstones with heavy sparkle
-  // for ~3 seconds before advancing. Tracks the picked rating so only the
-  // active stars get the gem treatment.
-  const [bejeweledLevel, setBejeweledLevel] = useState(0);
+  // Album-signature celebration — a longer, fancier moment that fires
+  // after the user finishes rating a specific song on a themed album.
+  // Shape: { type: 'bejeweled' | 'polaroid' | ..., level: 1..5 } | null
+  // level is the picked star value so the celebration can target only the
+  // rated stars. detectCelebration() below decides which (if any) applies.
+  const [celebration, setCelebration] = useState(null);
 
   const isSingleSong = songs.length === 1;
 
@@ -1082,7 +1442,7 @@ export default function QuickScore({
       clearTimeout(advanceTimeoutRef.current);
       advanceTimeoutRef.current = null;
       setFlashLevel(0);
-      setBejeweledLevel(0);
+      setCelebration(null);
     }
     pendingRef.current = catPos > 0
       ? { catPos: catPos - 1 }
@@ -1118,22 +1478,21 @@ export default function QuickScore({
     if (currentSong.name === 'Wood') setShowTrees(true);
     setFlashLevel(val);
 
-    // Detect the moment the user finishes rating Bejeweled — i.e. the last
-    // category of that song on Midnights. Triggers a longer, heavier
-    // gemstone celebration before advancing to the next song.
-    const isLastBejeweled =
-      albumId === 'ml' &&
-      currentSong?.name === 'Bejeweled' &&
-      catPos === (currentSong?.cats.length - 1);
-    if (isLastBejeweled) setBejeweledLevel(val);
+    // After the user finishes rating the song's last category, check
+    // whether this song earns an album-signature celebration moment.
+    const isLastCategory = catPos === (currentSong?.cats.length - 1);
+    const cel = isLastCategory
+      ? detectCelebration(albumId, currentSong?.name)
+      : null;
+    if (cel) setCelebration({ type: cel.type, level: val });
 
     if (advanceTimeoutRef.current) clearTimeout(advanceTimeoutRef.current);
     advanceTimeoutRef.current = setTimeout(() => {
       advanceTimeoutRef.current = null;
       setFlashLevel(0);
-      setBejeweledLevel(0);
+      setCelebration(null);
       advance();
-    }, isLastBejeweled ? 3000 : 900);
+    }, cel ? cel.durationMs : 900);
   }
 
   // Called by ShuffleScreen after its own transition animation finishes (~720ms)
@@ -1142,17 +1501,22 @@ export default function QuickScore({
     advance();
   }
 
-  // Night theme — applied while rating Midnights ('ml'). Replaces all
-  // category backgrounds with a deep-night gradient and renders a moon +
-  // twinkling stars decoration layer; text colors are lightened where
-  // they'd otherwise be unreadable.
-  const isNightTheme = albumId === 'ml';
+  // Album themes — replace category backgrounds with an album-specific
+  // backdrop and render an ambient decoration layer.
+  const isNightTheme = albumId === 'ml';   // Midnights — dark sky
+  const isDebutTheme = albumId === 'tv';   // Taylor Swift (Debut) — cream + memorabilia
+
+  const albumBackground = isNightTheme
+    ? NIGHT_BACKGROUND
+    : isDebutTheme
+      ? DEBUT_BACKGROUND
+      : null;
 
   const overlayStyle = {
     position: 'fixed',
     inset: 0,
-    background: isNightTheme
-      ? NIGHT_BACKGROUND
+    background: albumBackground
+      ? albumBackground
       : (currentCat && currentCat.id !== 'replay'
           ? (CAT_BACKGROUNDS[currentCat.id] ?? '#ffffff')
           : '#ffffff'),
@@ -1192,8 +1556,9 @@ export default function QuickScore({
         }
       `}</style>
 
-      {/* Night-sky decoration — Midnights theme only */}
+      {/* Album-specific ambient scenes */}
       {isNightTheme && <NightSky />}
+      {isDebutTheme && <DebutScene />}
 
       {showTrees && <FallingTrees onDone={() => setShowTrees(false)} />}
 
@@ -1339,12 +1704,14 @@ export default function QuickScore({
             </div>
           )}
 
-          {/* Category label — on the deep-night background, the brand purple
-              washes out, so we use a brighter lavender + light grey pair. */}
+          {/* Category label — colors per theme.
+              Night (Midnights): brand purple washes out → lavender + light grey.
+              Debut: cream backdrop wants a deeper, dusty rose-mauve so the
+              label reads warmly against the wood-grain warmth. */}
           <div style={{
             fontSize: 12,
             fontWeight: 700,
-            color: isNightTheme ? '#e9d5ff' : '#a855f7',
+            color: isNightTheme ? '#e9d5ff' : (isDebutTheme ? '#9d3c5b' : '#a855f7'),
             textTransform: 'uppercase',
             letterSpacing: '0.12em',
             marginBottom: 4,
@@ -1354,7 +1721,7 @@ export default function QuickScore({
           </div>
           <div style={{
             fontSize: 12,
-            color: isNightTheme ? '#cbd5e1' : '#c4b5fd',
+            color: isNightTheme ? '#cbd5e1' : (isDebutTheme ? '#78716c' : '#c4b5fd'),
             marginBottom: currentCat?.id === 'lyrics' ? 14 : 32,
             textShadow: isNightTheme ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
           }}>
@@ -1438,7 +1805,7 @@ export default function QuickScore({
               onRate={handleRate}
               labels={STAR_LABELS[currentCat?.id] ?? null}
               flashLevel={flashLevel}
-              bejeweledLevel={bejeweledLevel}
+              celebration={celebration}
               isNightTheme={isNightTheme}
             />
           )}
