@@ -139,7 +139,7 @@ export default function SpotifyIntro({ spotify, onContinue }) {
         }}>
           Connect Spotify and every album in the app —
           including this welcome tour — shows the real cover.
-          Free to connect; no Premium needed for cover art.
+          A free Spotify account is enough for album art; Spotify Premium is only required if you also want songs to play in-app.
         </div>
 
         {/* Connect Spotify — Spotify branding (green on white) */}
@@ -195,7 +195,7 @@ export default function SpotifyIntro({ spotify, onContinue }) {
           lineHeight: 1.6,
         }}>
           You can connect any time from Settings → Spotify.
-          Pro unlocks song playback while you rate.
+          With Eras Ranker Pro plus a Spotify Premium account, songs autoplay while you rate.
         </div>
 
         {/* Spotify connection error (rare, but surface it instead of silently failing) */}
