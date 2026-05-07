@@ -4,6 +4,7 @@ import AlbumHero from './AlbumHero';
 import QuickScore from './QuickScore';
 import AlbumCompleteCard from './AlbumCompleteCard';
 import MidnightsEasterEgg from './MidnightsEasterEgg';
+import ConfirmModal from './ConfirmModal';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
 
 const DRAG_HINT_KEY = 'eras_sort_it_yourself_hint_seen';
@@ -68,6 +69,9 @@ export default function SongList({
     localStorage.setItem(DRAG_HINT_KEY, '1');
     setShowDragHint(false);
   }
+
+  // Custom confirm modal state (replaces window.confirm)
+  const [confirmState, setConfirmState] = useState(null);
 
   // Drag state: which positions are being dragged from/to
   const [dragState, setDragState] = useState(null); // { fromPos, toPos } | null
@@ -152,13 +156,16 @@ export default function SongList({
     JSON.stringify(manualOrder) === JSON.stringify(sortedSongs.map(s => s.index));
 
   function handleResortByScore() {
-    const confirmed = window.confirm(
-      'Rank by score?\n\nYour manual order will be replaced with a High → Low score ranking. This cannot be undone.\n\nContinue?'
-    );
-    if (confirmed) {
-      onSetOrder(albumId, sortedSongs.map(s => s.index));
-      setSelectedIndex(null);
-    }
+    setConfirmState({
+      title: 'Rank by score?',
+      body: 'Your manual order will be replaced with a High → Low score ranking. This cannot be undone.',
+      confirmLabel: 'Rank by score',
+      destructive: true,
+      onConfirm: () => {
+        onSetOrder(albumId, sortedSongs.map(s => s.index));
+        setSelectedIndex(null);
+      },
+    });
   }
 
   // ── Drag handlers ───────────────────────────────────────────────
@@ -212,9 +219,6 @@ export default function SongList({
     cursor: 'pointer',
     flexShrink: 0,
   });
-
-  // Build the section-header legend: abbreviations of the first 4 active categories
-  const catLegend = activeCategories.slice(0, 4).map(c => abbrevLabel(c.name)).join(' · ');
 
   return (
     <div>
@@ -307,7 +311,7 @@ export default function SongList({
             boxShadow: '0 1px 2px rgba(168,85,247,0.25)',
           }}
         >
-          ★ Score Album
+          ★ Vibe Check
         </button>
 
         {hasAnyScore && (
@@ -349,11 +353,6 @@ export default function SongList({
           }}>
             Songs
           </div>
-          {hasAnyScore && showCategoryBars !== false && (
-            <div style={{ fontSize: 10, color: '#9ca3af' }}>
-              {catLegend}
-            </div>
-          )}
         </div>
 
         {/* One-time drag hint — shown only on first entry into Sort It
@@ -443,6 +442,13 @@ export default function SongList({
           })}
         </div>
       </div>
+
+      {confirmState && (
+        <ConfirmModal
+          {...confirmState}
+          onClose={() => setConfirmState(null)}
+        />
+      )}
     </div>
   );
 }
@@ -519,23 +525,4 @@ function DragHint({ onDismiss }) {
       }} />
     </div>
   );
-}
-
-function abbrevLabel(name) {
-  const MAP = {
-    'Lyrics': 'Lyrics',
-    'Music / melody': 'Music',
-    'Bridge': 'Bridge',
-    'Nostalgia': 'Nostlg',
-    'Skip on shuffle?': 'Skip',
-    'Hook / chorus': 'Hook',
-    'Vocal performance': 'Vocal',
-    'Cry factor': 'Cry',
-    'Romantic feel': 'Rom',
-    'Hype / energy': 'Hype',
-    'Opening line': 'Open',
-    'Vibe / atmosphere': 'Vibe',
-    'Storytelling': 'Story',
-  };
-  return MAP[name] || name.slice(0, 6);
 }

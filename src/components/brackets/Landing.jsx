@@ -14,6 +14,11 @@ const STYLE = `
 }
 `;
 
+const DAILY_DISMISS_KEY = 'eras_daily_matchup_dismissed_date';
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 // Sunday 8pm CT (≈ Monday 02:00 UTC for CST). Approximation matches BracketHome.
 function getNextSundayReveal() {
   const now = new Date();
@@ -135,6 +140,15 @@ export default function Landing({
     ? personalInProgress.contestants.length - 1
     : 0;
 
+  // Daily-matchup card dismissal — local-only, resets at midnight
+  const [dailyDismissed, setDailyDismissed] = useState(
+    () => localStorage.getItem(DAILY_DISMISS_KEY) === todayStr()
+  );
+  function dismissDaily() {
+    localStorage.setItem(DAILY_DISMISS_KEY, todayStr());
+    setDailyDismissed(true);
+  }
+
   return (
     <>
       <style>{STYLE}</style>
@@ -144,7 +158,7 @@ export default function Landing({
       }}>
 
         {/* ── Daily Matchup ──────────────────────────────────────────────── */}
-        {dailyState && (
+        {dailyState && !dailyDismissed && (
           <div style={{
             marginBottom: 12,
             borderRadius: 12,
@@ -178,6 +192,21 @@ export default function Landing({
                 }}
               >Play</button>
             )}
+            <button
+              onClick={dismissDaily}
+              aria-label="Dismiss for today"
+              title="Dismiss for today"
+              style={{
+                width: 24, height: 24, borderRadius: 12,
+                border: 'none',
+                background: 'rgba(255,255,255,0.08)',
+                color: '#94a3b8',
+                cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 13, lineHeight: 1, padding: 0,
+                flexShrink: 0,
+              }}
+            >✕</button>
           </div>
         )}
 

@@ -1,8 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import { writeFileSync } from 'fs'
+import { writeFileSync, readFileSync } from 'fs'
 import { resolve } from 'path'
+
+// Read app version from package.json so it can be injected into the bundle
+// and displayed in the Settings tab. Updated whenever a new version ships.
+const pkg = JSON.parse(readFileSync(resolve(process.cwd(), 'package.json'), 'utf-8'))
 
 // Dev-only middleware: lets the in-app developer audit UI write back to
 // src/data/categoryTimesAudit.json. Only registered during `vite` (dev),
@@ -50,4 +54,7 @@ export default defineConfig({
     react(),
     auditWriterPlugin(),
   ],
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
 })

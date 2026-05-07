@@ -35,6 +35,30 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Lemon Squeezy checkout overlay script. Loaded once at app start so
+// usePro.unlockPro can call window.LemonSqueezy.Url.Open(checkoutUrl)
+// without an extra round-trip when the user clicks Subscribe.
+//
+// The script is small (~25KB) and async, so it doesn't block first paint.
+// If it fails to load (offline, ad blocker, network glitch), unlockPro
+// falls back to a new-tab redirect — the upgrade still works, just
+// without the in-page overlay.
+if (typeof window !== 'undefined' && !document.getElementById('lemon-js')) {
+  const s = document.createElement('script');
+  s.id = 'lemon-js';
+  s.src = 'https://app.lemonsqueezy.com/js/lemon.js';
+  s.async = true;
+  s.defer = true;
+  s.onload = () => {
+    // LS exposes window.createLemonSqueezy() once the script loads;
+    // calling it sets up window.LemonSqueezy.Url.Open(...).
+    if (typeof window.createLemonSqueezy === 'function') {
+      window.createLemonSqueezy();
+    }
+  };
+  document.head.appendChild(s);
+}
+
 // Dev-only: visiting /?dev=audit during `npm run dev` opens the category-pick
 // review UI instead of the main app. /?dev=cards opens the shareable card
 // preview. The query check is gated on import.meta.env.DEV so the dev

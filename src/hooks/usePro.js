@@ -1,7 +1,26 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
+
+// Lemon Squeezy storefront slug — the prefix on the checkout URL.
+// Hardcoded because it rarely changes and avoids a new env var per store.
+const LS_STORE_SLUG = 'erasranker';
+
+// Variant IDs come from Vercel env vars so we can swap them without code
+// changes (e.g. switching from test to live mode in the future). When the
+// env var is missing, unlockPro falls back to the mock-grant path so local
+// dev still works for testing other features.
+const LS_VARIANT_MONTHLY = import.meta.env.VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY;
+const LS_VARIANT_ANNUAL  = import.meta.env.VITE_LEMON_SQUEEZY_VARIANT_ID_ANNUAL;
+const LS_WIRED = !!(LS_VARIANT_MONTHLY && LS_VARIANT_ANNUAL);
+
+// How long to keep the "Processing your payment…" banner up after the
+// LS overlay closes before giving up and clearing the in-flight state.
+// 90s comfortably covers the typical 1–5s webhook delivery window plus
+// LS API hiccups, while still feeling un-stuck if the user closed without
+// paying.
+const UPGRADE_FAILSAFE_MS = 90_000;
 
 // localStorage keys
 const KEY_IS_PRO            = 'eras_is_pro';
@@ -43,27 +62,43 @@ export function usePro(user) {
   const [disabledCustoms, setDisabledCustoms] = useState(loadDisabledCustoms);
   const [disabledDefaults, setDisabledDefaults] = useState(loadDisabledDefaults);
 
+  // Subscription metadata mirrored from the Firestore doc. The webhook
+  // populates these fields on every subscription event so the UI can show:
+  //   - a "Manage subscription" button when a portal URL is present
+  //   - "Cancels on {date}" copy when the user has cancelled but still has
+  //     access until period end
+  const [customerPortalUrl, setCustomerPortalUrl] = useState(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+  const [subscriptionEndsAt, setSubscriptionEndsAt] = useState(null);
+
+  // True from the moment the user opens the LS checkout until the webhook
+  // writes isPro=true (or the failsafe timer expires). Drives the
+  // "Processing your payment…" banner. Tracked via a ref so unlockPro can
+  // arm the failsafe without re-running every render.
+  const [isUpgrading, setIsUpgrading] = useState(false);
+  const upgradeTimerRef = useRef(null);
+
+  function clearUpgradeTimer() {
+    if (upgradeTimerRef.current) {
+      clearTimeout(upgradeTimerRef.current);
+      upgradeTimerRef.current = null;
+    }
+  }
+
   // Tracks the previous user so we can detect a real sign-out transition
   // (had a user, now don't) without firing on the initial null→null render.
   const prevUserRef = useRef(null);
 
-  // Watches `user` changes — handles both sign-in (hydrate from Firestore)
-  // and sign-out (revoke Pro locally) for the same entitlement flag.
+  // Live Firestore subscription on users/{uid}.
   //
-  // SIGN-IN — CLOUD WINS unconditionally. Unlike the other hooks (ratings,
-  // manualOrder, settings) we do NOT migrate localStorage up to the cloud
-  // here. A paid Pro purchase only ever exists in Firestore (written by
-  // unlockPro while signed in), so a localStorage 'eras_is_pro=true' without
-  // a matching cloud record is either stale state or DevTools tampering —
-  // either way, cloud is the truth and local resets to match.
+  // Cloud wins unconditionally — a localStorage 'eras_is_pro=true' without
+  // a matching cloud record is either stale state or DevTools tampering, so
+  // we mirror cloud truth on every snapshot.
   //
-  // SIGN-OUT — clears the local Pro flag so the device stops claiming the
-  // entitlement once the account that paid for it leaves. Firestore still
-  // has the isPro record on the user's doc, so signing back in restores
-  // Pro instantly via the hydration branch.
-  //
-  // Other Pro-related state (extras, custom categories, weights) is left
-  // alone — those are user preferences, not entitlements.
+  // We use onSnapshot (not getDoc) so the moment the LS webhook writes
+  // isPro=true to the user doc, the UI flips to Pro within a second or two
+  // — no refresh needed. Same listener catches subscription cancellations,
+  // payment failures, and webhook-driven status changes in real time.
   useEffect(() => {
     const prevUser = prevUserRef.current;
     prevUserRef.current = user;
@@ -72,47 +107,108 @@ export function usePro(user) {
     // initial null→null render (prevUser starts null too).
     if (prevUser && !user) {
       setIsPro(false);
+      setCustomerPortalUrl(null);
+      setSubscriptionStatus(null);
+      setSubscriptionEndsAt(null);
       localStorage.removeItem(KEY_IS_PRO);
       return;
     }
 
     if (!user || !db) return;
-    getDoc(doc(db, 'users', user.uid)).then(snap => {
-      const cloudIsPro = snap.exists() && snap.data().isPro === true;
-      if (cloudIsPro) {
-        setIsPro(true);
-        localStorage.setItem(KEY_IS_PRO, 'true');
-      } else {
-        setIsPro(false);
-        localStorage.removeItem(KEY_IS_PRO);
+
+    const unsubscribe = onSnapshot(
+      doc(db, 'users', user.uid),
+      (snap) => {
+        const data = snap.exists() ? snap.data() : null;
+        const cloudIsPro = data?.isPro === true;
+        if (cloudIsPro) {
+          setIsPro(true);
+          localStorage.setItem(KEY_IS_PRO, 'true');
+        } else {
+          setIsPro(false);
+          localStorage.removeItem(KEY_IS_PRO);
+        }
+        setCustomerPortalUrl(data?.customerPortalUrl ?? null);
+        setSubscriptionStatus(data?.subscriptionStatus ?? null);
+        setSubscriptionEndsAt(data?.subscriptionEndsAt ?? null);
+      },
+      () => {
+        // Network or permission error — keep local state for now rather
+        // than wrongly revoking Pro because Firestore was momentarily
+        // unreachable.
       }
-    }).catch(() => {
-      // Network or permission error — keep local state for now rather than
-      // wrongly revoking Pro because Firestore was momentarily unreachable.
-    });
+    );
+
+    return unsubscribe;
   }, [user]);
 
-  // Mock unlock — sets isPro immediately without any payment.
-  // Replace this with Lemon Squeezy Checkout in production (see CLAUDE.md
-  // "Payment provider plan"). The `plan` argument ('monthly' | 'annual') is
-  // captured now so the LS hook-up later only needs to read it and open the
-  // matching checkout variant.
+  // When isPro flips to true (webhook landed), clear the in-flight banner.
+  useEffect(() => {
+    if (isPro && isUpgrading) {
+      setIsUpgrading(false);
+      clearUpgradeTimer();
+    }
+  }, [isPro, isUpgrading]);
+
+  // Open the Lemon Squeezy checkout overlay (if lemon.js loaded) or fall
+  // back to a redirect. user.uid is passed as custom_data so the webhook
+  // can find the right Firestore doc when the subscription is created.
   //
-  // Pro upgrades REQUIRE a signed-in account. This ties the purchase to a
-  // user identity (so it carries to other devices and survives a localStorage
-  // wipe), and it's a hard prerequisite once Lemon Squeezy is wired up —
-  // LS needs a customer record. Returns true on success, false if no user.
+  // Returns true if the checkout was opened, false if blocked (no user, or
+  // we're in mock-fallback mode and the legacy mock unlock fired instead).
+  // The caller doesn't need to await — Pro state flips via the onSnapshot
+  // listener once the webhook lands.
+  //
+  // Pro upgrades REQUIRE a signed-in account. LS's customer record needs a
+  // stable identity, and the entitlement should follow the user across
+  // devices.
   const unlockPro = useCallback((plan = 'monthly') => {
     if (!user || !db) return false;
-    localStorage.setItem(KEY_IS_PRO, 'true');
-    setIsPro(true);
-    setDoc(
-      doc(db, 'users', user.uid),
-      { isPro: true, proPlan: plan, proUpgradedAt: serverTimestamp() },
-      { merge: true }
-    ).catch(() => {});
+
+    // Mock fallback for local dev / pre-LS environments. When the variant-ID
+    // env vars aren't set, we treat the click as a successful unlock so
+    // other features (Spotify, extra categories, etc.) can still be tested.
+    if (!LS_WIRED) {
+      localStorage.setItem(KEY_IS_PRO, 'true');
+      setIsPro(true);
+      setDoc(
+        doc(db, 'users', user.uid),
+        { isPro: true, proPlan: plan, proUpgradedAt: serverTimestamp() },
+        { merge: true }
+      ).catch(() => {});
+      return true;
+    }
+
+    const variantId = plan === 'annual' ? LS_VARIANT_ANNUAL : LS_VARIANT_MONTHLY;
+    const params = new URLSearchParams();
+    params.set('checkout[custom][uid]', user.uid);
+    if (user.email) params.set('checkout[email]', user.email);
+    const checkoutUrl = `https://${LS_STORE_SLUG}.lemonsqueezy.com/buy/${variantId}?${params.toString()}`;
+
+    // Mark in-flight and arm the failsafe so the banner doesn't hang forever
+    // if the user closes the overlay without paying. The success path clears
+    // it sooner via the isPro→true effect above.
+    setIsUpgrading(true);
+    clearUpgradeTimer();
+    upgradeTimerRef.current = setTimeout(() => {
+      setIsUpgrading(false);
+      upgradeTimerRef.current = null;
+    }, UPGRADE_FAILSAFE_MS);
+
+    // Open the LS overlay if lemon.js has loaded; otherwise fall back to a
+    // new-tab redirect so the user still gets to checkout. main.jsx loads
+    // the script at app start, so the overlay is normally available.
+    if (typeof window !== 'undefined' && window.LemonSqueezy?.Url?.Open) {
+      window.LemonSqueezy.Url.Open(checkoutUrl);
+    } else {
+      window.open(checkoutUrl, '_blank', 'noopener');
+    }
+
     return true;
   }, [user]);
+
+  // Cleanup any pending failsafe timer when the hook unmounts.
+  useEffect(() => () => clearUpgradeTimer(), []);
 
   // Toggle an extra category on or off
   const toggleExtra = useCallback((id) => {
@@ -226,6 +322,10 @@ export function usePro(user) {
   return {
     isPro,
     unlockPro,
+    isUpgrading,
+    customerPortalUrl,
+    subscriptionStatus,
+    subscriptionEndsAt,
     enabledExtras,
     toggleExtra,
     customCategories,

@@ -7,6 +7,7 @@ import { useAlbumModes } from './hooks/useAlbumModes';
 import { useSettings } from './hooks/useSettings';
 import { useSpotify } from './hooks/useSpotify';
 import { useUserStats } from './hooks/useUserStats';
+import { useProfile } from './hooks/useProfile';
 import BetaGate from './components/BetaGate';
 import Welcome from './components/Welcome';
 import VibeCheckIntro, { hasSeenVibeCheckIntro } from './components/VibeCheckIntro';
@@ -19,13 +20,29 @@ import Categories from './components/Categories';
 import Settings from './components/Settings';
 import Brackets from './components/brackets/Brackets';
 import ConnectSpotifyPrompt from './components/ConnectSpotifyPrompt';
+import ProcessingBanner from './components/ProcessingBanner';
+import ProfileView from './components/ProfileView';
 import { ALL_ALBUMS } from './data/albums';
+
+// Hand-rolled URL routing for the public-profile feature. The app is
+// otherwise tab-driven, so adding react-router for one extra route would
+// be overkill. If we add more deep-linkable screens later, swap this for
+// a real router.
+function getProfileUidFromPath() {
+  const m = window.location.pathname.match(/^\/u\/([^/?#]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+// Brackets feature is hidden from the published app until phase 2 of launch.
+// Flip to `true` to re-enable the Brackets tab — all underlying code (the tab
+// render, the Brackets components, the useBrackets hook) is intact.
+const BRACKETS_ENABLED = false;
 
 // Tab definitions — Categories lives inside Settings
 const TABS = [
   { id: 'home',     label: 'Home' },
   { id: 'albums',   label: 'Albums' },
-  { id: 'brackets', label: 'Brackets' },
+  ...(BRACKETS_ENABLED ? [{ id: 'brackets', label: 'Brackets' }] : []),
   { id: 'rankings', label: 'Rankings' },
   { id: 'settings', label: 'Settings' },
 ];
@@ -34,6 +51,16 @@ const BETA_KEY = 'eras_beta_unlocked';
 const WELCOME_KEY = 'eras_welcome_seen';
 
 export default function App() {
+  // Public-profile route gate — checked once at mount and again on
+  // back/forward navigation. Pre-empts the rest of the app and the beta gate
+  // so a shared profile link is reachable without signing in.
+  const [profileUid, setProfileUid] = useState(getProfileUidFromPath);
+  useEffect(() => {
+    function onPop() { setProfileUid(getProfileUidFromPath()); }
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
   const [activeTab, setActiveTab] = useState('home');
   const [selectedAlbumId, setSelectedAlbumId] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -65,6 +92,10 @@ export default function App() {
   const {
     isPro,
     unlockPro,
+    isUpgrading,
+    customerPortalUrl,
+    subscriptionStatus,
+    subscriptionEndsAt,
     enabledExtras,
     toggleExtra,
     customCategories,
@@ -87,6 +118,10 @@ export default function App() {
   const { getAlbumMode, setAlbumMode } = useAlbumModes(user);
   const { settings, updateSetting } = useSettings(user);
   const spotify = useSpotify(user);
+
+  // Public profile (anyone-with-link sharing). Mirrors album rankings to
+  // a separate Firestore doc when the user has it turned on.
+  const profile = useProfile(user, getAlbumScore, activeCategories);
 
   // Per-user analytics: lastActiveAt, sessionCount, totalRatings, albumsCompleted, signup origin
   useUserStats(user, ratings);
@@ -165,6 +200,13 @@ export default function App() {
   function handleRejectedSignOut() {
     setBetaRejected(false);
     signOut();
+  }
+
+  // Public profile route takes precedence over both the beta gate and the
+  // welcome tour — a shared link should always render the profile screen
+  // for unauthenticated visitors.
+  if (profileUid) {
+    return <ProfileView uid={profileUid} />;
   }
 
   if (!betaUnlocked) {
@@ -275,6 +317,11 @@ export default function App() {
       display: 'flex',
       flexDirection: 'column',
     }}>
+      {/* Pro upgrade in flight — banner stays up until the LS webhook lands
+          and usePro flips isPro to true (clears isUpgrading), or the 90s
+          failsafe expires. */}
+      <ProcessingBanner visible={isUpgrading} />
+
       {/* ── App header + tab bar ── */}
       <div style={{
         padding: '14px 16px 0',
@@ -548,6 +595,9 @@ export default function App() {
             spotify={isPro ? spotify : null}
             isPro={isPro}
             unlockPro={handleUnlockProGlobal}
+            customerPortalUrl={customerPortalUrl}
+            subscriptionStatus={subscriptionStatus}
+            subscriptionEndsAt={subscriptionEndsAt}
             user={user}
             signIn={signIn}
             signOut={signOut}
@@ -569,6 +619,7 @@ export default function App() {
             getCompositeScore={getCompositeScore}
             getAlbumScore={getAlbumScore}
             onShowWelcome={replayWelcome}
+            profile={profile}
           />
         )}
       </div>
