@@ -137,9 +137,8 @@ export default function SpotifyIntro({ spotify, onContinue }) {
           lineHeight: 1.6,
           marginBottom: 28,
         }}>
-          Connect Spotify and every album in the app —
-          including this welcome tour — shows the real cover.
-          A free Spotify account is enough for album art; Spotify Premium is only required if you also want songs to play in-app.
+          Connect Spotify and every album in the app will show the real album cover.
+          A free Spotify account is enough for album art; Spotify Premium is required if you also want songs to play in-app.
         </div>
 
         {/* Connect Spotify — Spotify branding (green on white) */}
