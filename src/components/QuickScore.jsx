@@ -236,10 +236,11 @@ function NightSky() {
 }
 
 // ── Taylor Swift (Debut) ambient scene ───────────────────────────────────────
-// Gentle, low-opacity decoration over the cream backdrop:
-//  • A faint stadium silhouette across the bottom (high-school football vibe)
+// Gentle, low-opacity decoration over the cream guitar-wood backdrop:
+//  • Faint stadium silhouette across the bottom (high-school football vibe)
 //  • A few drifting boots
-//  • One or two graffiti-style hearts with "T + T" cursive inside
+//  • Two carved-into-wood hearts: "Taylor + Travis" and "87 ♥ 89" — the
+//    second nods to Travis's jersey number and the 1989 album year
 //  • Tiny blue glitter dots that twinkle
 // All elements are CSS animation only — no React state, no per-frame re-renders.
 
@@ -249,9 +250,12 @@ const DEBUT_BOOTS = [
   { top: '60%', left: '6%',  delay: '0.9s' },
 ];
 
+// Hearts use one of two text styles: 'name' for "Taylor + Travis" and
+// 'numbers' for the jersey-style "87 ♥ 89". Each heart is sized to fit
+// its longer text so nothing gets clipped.
 const DEBUT_HEARTS = [
-  { top: '20%', left: '74%', delay: '0.4s', rotate: -8 },
-  { top: '54%', left: '12%', delay: '1.2s', rotate: 6  },
+  { top: '18%', left: '66%', delay: '0.4s', rotate: -7, kind: 'name'    },
+  { top: '54%', left: '8%',  delay: '1.2s', rotate: 5,  kind: 'numbers' },
 ];
 
 const DEBUT_GLITTER = [
@@ -337,47 +341,79 @@ function DebutScene() {
         </div>
       ))}
 
-      {/* Graffiti T + T hearts */}
-      {DEBUT_HEARTS.map((h, i) => (
-        <svg
-          key={i}
-          width="56"
-          height="50"
-          viewBox="0 0 100 90"
-          style={{
-            position: 'absolute',
-            top: h.top,
-            left: h.left,
-            opacity: 0.5,
-            // Pass per-instance rotation through a CSS variable so the drift
-            // keyframe can preserve it instead of zeroing it on each loop.
-            '--qs-rot': `${h.rotate}deg`,
-            animation: `qs-debut-drift 7s ${h.delay} ease-in-out infinite`,
-          }}
-        >
-          {/* Hand-drawn marker heart */}
-          <path
-            d="M50 78 C 18 56, 10 36, 18 22 C 26 8, 44 8, 50 26 C 56 8, 74 8, 82 22 C 90 36, 82 56, 50 78 Z"
-            fill="#dc2626"
-            stroke="#7f1d1d"
-            strokeWidth="2"
-            strokeLinejoin="round"
-          />
-          {/* "T + T" text */}
-          <text
-            x="50"
-            y="50"
-            textAnchor="middle"
-            fontFamily="'Brush Script MT', cursive"
-            fontSize="22"
-            fontWeight="700"
-            fill="#ffffff"
-            style={{ paintOrder: 'stroke', stroke: '#7f1d1d', strokeWidth: 1.5 }}
+      {/* Carved-in-wood hearts — styled like notches whittled into a
+          guitar's body. Warm wood tones rather than marker red, with a
+          highlight + shadow stroke pair to read as a chiseled groove. */}
+      {DEBUT_HEARTS.map((h, i) => {
+        const isName = h.kind === 'name';
+        const w = isName ? 124 : 96;
+        return (
+          <svg
+            key={i}
+            width={w}
+            height={Math.round(w * 0.78)}
+            viewBox="0 0 160 130"
+            style={{
+              position: 'absolute',
+              top: h.top,
+              left: h.left,
+              opacity: 0.7,
+              // Pass per-instance rotation through a CSS variable so the
+              // drift keyframe can preserve it instead of zeroing it.
+              '--qs-rot': `${h.rotate}deg`,
+              animation: `qs-debut-drift 7s ${h.delay} ease-in-out infinite`,
+            }}
           >
-            T + T
-          </text>
-        </svg>
-      ))}
+            {/* Carved heart — darker walnut interior, cream highlight on
+                the upper-left edge to suggest a chiseled bevel. */}
+            <path
+              d="M80 116 C 24 84, 12 54, 22 32 C 34 8, 64 8, 80 38 C 96 8, 126 8, 138 32 C 148 54, 136 84, 80 116 Z"
+              fill="#5a3413"
+              stroke="#3b1f08"
+              strokeWidth="2.5"
+              strokeLinejoin="round"
+            />
+            {/* Cream highlight stroke along the inside upper edge */}
+            <path
+              d="M30 36 C 38 18, 60 14, 76 36"
+              fill="none"
+              stroke="#fde68a"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              opacity="0.55"
+            />
+            {/* Inscribed text. For the numbers heart the small heart glyph
+                sits between the two jersey numbers. */}
+            {isName ? (
+              <text
+                x="80"
+                y="74"
+                textAnchor="middle"
+                fontFamily="'Brush Script MT', 'Snell Roundhand', cursive"
+                fontSize="26"
+                fontWeight="700"
+                fill="#fef3c7"
+                style={{ paintOrder: 'stroke', stroke: '#3b1f08', strokeWidth: 2 }}
+              >
+                Taylor + Travis
+              </text>
+            ) : (
+              <text
+                x="80"
+                y="74"
+                textAnchor="middle"
+                fontFamily="'Brush Script MT', 'Snell Roundhand', cursive"
+                fontSize="32"
+                fontWeight="700"
+                fill="#fef3c7"
+                style={{ paintOrder: 'stroke', stroke: '#3b1f08', strokeWidth: 2 }}
+              >
+                87 ♥ 89
+              </text>
+            )}
+          </svg>
+        );
+      })}
 
       {/* Tiny blue glitter dots */}
       {DEBUT_GLITTER.map((g, i) => (
@@ -1059,7 +1095,7 @@ function NoBridgeScreen({ songName, onContinue }) {
 // ── Shuffle screen — Play/Skip question with song lyrics floating in background ─
 // Lyrics fade in softly, then pulse up and out when the user picks an answer,
 // creating a bridge into the detailed rating questions.
-function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRating = 0, isNightTheme = false }) {
+function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRating = 0, isNightTheme = false, isDebutTheme = false }) {
   const [animating, setAnimating] = useState(false);
 
   // Show the previous pick (if any) by fading the unpicked side. Mirrors
@@ -1067,6 +1103,9 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
   const prevPlay = currentRating === 5;
   const prevSkip = currentRating === 1;
   const hasPrev = prevPlay || prevSkip;
+  // Both Midnights and Debut want their own backdrop to bleed through —
+  // any other album keeps the original soft white→lavender gradient.
+  const useThemeBackdrop = isNightTheme || isDebutTheme;
 
   function handlePick(val) {
     if (animating) return;
@@ -1097,10 +1136,10 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        // Night theme uses transparent so the parent NIGHT_BACKGROUND +
-        // NightSky decoration show through; otherwise the original
-        // soft white→lavender gradient.
-        background: isNightTheme
+        // Themed albums use transparent so the parent backdrop +
+        // ambient scene show through; otherwise the original soft
+        // white→lavender gradient still ships.
+        background: useThemeBackdrop
           ? 'transparent'
           : 'linear-gradient(180deg, #ffffff 0%, #fdf8ff 100%)',
         animation: animating ? 'shuffle-fade-out 0.72s ease forwards' : 'none',
@@ -1627,6 +1666,7 @@ export default function QuickScore({
           onPick={handleShufflePick}
           currentRating={currentRating}
           isNightTheme={isNightTheme}
+          isDebutTheme={isDebutTheme}
         />
       ) : (
         /* ── Fading wrapper — covers both NoBridgeScreen and star questions ── */
