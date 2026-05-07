@@ -395,6 +395,24 @@ Live under **Settings → Account → Delete my account**. Implemented entirely 
 - **Vercel build settings:** Framework = Vite, Build = `npm run build`, Output = `dist`, Root Directory = (blank/repo root)
 - **Vercel environment variables:** must mirror all `VITE_*` values from `.env` — including `VITE_BETA_EMAILS` and `VITE_BETA_PASSWORD`
 
+### Shipping flow — push, merge, deploy in one go
+The user wants every finished change pushed live without waiting for a
+"go ahead" on the merge. As soon as the work compiles cleanly and the
+spec is met, take it the rest of the way:
+
+1. Commit on the feature branch (`claude/<short-name>`).
+2. Push the feature branch (`git push -u origin <branch>`).
+3. From the parent repo (using `git -C C:/Users/clayt/dev/eras-ranker`
+   when working from a worktree, since `main` is checked out there):
+   `git pull origin main` → `git merge --no-ff <branch>` → resolve any
+   conflicts → `git push origin main`.
+4. Delete the remote feature branch (`git push origin --delete <branch>`).
+5. Vercel auto-deploys on the push to `main`.
+
+If a build fails or there's something genuinely uncertain about the
+change, stop and ask — but the default is "ship it." Don't pause to ask
+"do you want me to merge this?" — that question is already answered yes.
+
 ### Working on a second computer
 1. Install Git and Node.js
 2. `git clone https://github.com/claytillman767/eras-ranker`
