@@ -1590,7 +1590,7 @@ function NoBridgeScreen({ songName, onContinue }) {
 // ── Shuffle screen — Play/Skip question with song lyrics floating in background ─
 // Lyrics fade in softly, then pulse up and out when the user picks an answer,
 // creating a bridge into the detailed rating questions.
-function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRating = 0, isNightTheme = false, isDebutTheme = false, isSpeakNowTheme = false }) {
+function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRating = 0, isNightTheme = false, isDebutTheme = false, isSpeakNowTheme = false, isFearlessTheme = false }) {
   const [animating, setAnimating] = useState(false);
 
   // Show the previous pick (if any) by fading the unpicked side. Mirrors
@@ -1600,7 +1600,7 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
   const hasPrev = prevPlay || prevSkip;
   // Themed albums all want the parent backdrop to bleed through; only
   // the un-themed default keeps the original soft white→lavender gradient.
-  const useThemeBackdrop = isNightTheme || isDebutTheme || isSpeakNowTheme;
+  const useThemeBackdrop = isNightTheme || isDebutTheme || isSpeakNowTheme || isFearlessTheme;
 
   function handlePick(val) {
     if (animating) return;
@@ -2238,6 +2238,7 @@ export default function QuickScore({
           isNightTheme={isNightTheme}
           isDebutTheme={isDebutTheme}
           isSpeakNowTheme={isSpeakNowTheme}
+          isFearlessTheme={isFearlessTheme}
         />
       ) : (
         /* ── Fading wrapper — covers both NoBridgeScreen and star questions ── */
