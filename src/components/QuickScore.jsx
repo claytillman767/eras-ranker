@@ -497,8 +497,14 @@ function NoBridgeScreen({ songName, onContinue }) {
 // ── Shuffle screen — Play/Skip question with song lyrics floating in background ─
 // Lyrics fade in softly, then pulse up and out when the user picks an answer,
 // creating a bridge into the detailed rating questions.
-function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick }) {
+function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRating = 0 }) {
   const [animating, setAnimating] = useState(false);
+
+  // Show the previous pick (if any) by fading the unpicked side. Mirrors
+  // how YesNoPicker indicates a prior Yes/No choice.
+  const prevPlay = currentRating === 5;
+  const prevSkip = currentRating === 1;
+  const hasPrev = prevPlay || prevSkip;
 
   function handlePick(val) {
     if (animating) return;
@@ -562,7 +568,7 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick }) {
 
           {/* Buttons */}
           <div style={{ display: 'flex', gap: 20 }}>
-            {/* ▶ Play */}
+            {/* ▶ Play — dims when the user previously picked Skip */}
             <button
               onClick={() => handlePick(5)}
               disabled={animating}
@@ -580,7 +586,11 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick }) {
                 fontSize: 15,
                 fontWeight: 600,
                 minWidth: 114,
-                boxShadow: '0 4px 24px rgba(168,85,247,0.4)',
+                boxShadow: prevPlay
+                  ? '0 0 0 3px rgba(168,85,247,0.35), 0 4px 24px rgba(168,85,247,0.5)'
+                  : '0 4px 24px rgba(168,85,247,0.4)',
+                opacity: hasPrev && !prevPlay ? 0.45 : 1,
+                transition: 'opacity 0.15s ease, box-shadow 0.15s ease',
                 WebkitTapHighlightColor: 'transparent',
                 animation: animating ? 'shuffle-btn-pop 0.3s ease' : 'none',
               }}
@@ -592,7 +602,7 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick }) {
               Play
             </button>
 
-            {/* ⏭ Skip */}
+            {/* ⏭ Skip — dims when the user previously picked Play */}
             <button
               onClick={() => handlePick(1)}
               disabled={animating}
@@ -602,14 +612,17 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick }) {
                 alignItems: 'center',
                 gap: 10,
                 background: '#f9fafb',
-                border: '1.5px solid #e5e7eb',
+                border: prevSkip ? '1.5px solid #a855f7' : '1.5px solid #e5e7eb',
                 borderRadius: 22,
                 padding: '24px 30px',
                 cursor: animating ? 'default' : 'pointer',
-                color: '#6b7280',
+                color: prevSkip ? '#5b21b6' : '#6b7280',
                 fontSize: 15,
                 fontWeight: 600,
                 minWidth: 114,
+                opacity: hasPrev && !prevSkip ? 0.45 : 1,
+                boxShadow: prevSkip ? '0 0 0 3px rgba(168,85,247,0.18)' : 'none',
+                transition: 'opacity 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease',
                 WebkitTapHighlightColor: 'transparent',
                 animation: animating ? 'shuffle-btn-pop 0.3s ease' : 'none',
               }}
@@ -987,6 +1000,7 @@ export default function QuickScore({
           albumIcon={albumIcon}
           lyrics={snippetLyrics}
           onPick={handleShufflePick}
+          currentRating={currentRating}
         />
       ) : (
         /* ── Fading wrapper — covers both NoBridgeScreen and star questions ── */
