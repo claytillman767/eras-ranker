@@ -16,6 +16,18 @@ Newest entries go at the top.
 
 ---
 
+## 0.7.2 — 2026-05-07
+
+### Changed
+- **Cleaner copy on the post-login Spotify intro screen.** The pitch
+  now reads "Connect Spotify and every album in the app will show
+  the real album cover. A free Spotify account is enough for album
+  art; Spotify Premium is required if you also want songs to play
+  in-app." — drops the welcome-tour aside and the softer "only"
+  wording so the value prop lands more directly.
+
+---
+
 ## 0.7.1 — 2026-05-07
 
 ### Changed
