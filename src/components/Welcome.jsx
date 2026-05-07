@@ -307,6 +307,10 @@ function SlideWelcome({ spotifyAlbumArt }) {
   // back to the colored emoji tile.
   const artFor = id => spotifyAlbumArt?.[id] ?? null;
 
+  // True if any cover in the carousel is currently rendered as Spotify art.
+  // Only when this is true do we render the Spotify attribution caption.
+  const hasAnySpotifyArt = !!(artFor(prevAlbum.id) || artFor(currAlbum.id) || artFor(nextAlbum.id));
+
   return (
     <div style={{ textAlign: 'center', width: '100%' }}>
       <style>{`
@@ -335,6 +339,19 @@ function SlideWelcome({ spotifyAlbumArt }) {
         <CarouselCenter album={currAlbum} artUrl={artFor(currAlbum.id)} />
         <CarouselSide album={nextAlbum} side="right" artUrl={artFor(nextAlbum.id)} />
       </div>
+
+      {/* Spotify attribution — required wherever Spotify-sourced art appears.
+          Only shown when at least one carousel slot is using a real cover. */}
+      {hasAnySpotifyArt && (
+        <div style={{
+          fontSize: 10,
+          color: '#9ca3af',
+          letterSpacing: '0.02em',
+          marginBottom: 8,
+        }}>
+          Album art from <span style={{ fontWeight: 600, color: '#6b7280' }}>Spotify</span>
+        </div>
+      )}
 
       {/* Album name caption — fades + nudges up on each rotation so it's
           clearly tied to the icon above */}

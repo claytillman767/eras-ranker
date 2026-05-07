@@ -1,7 +1,7 @@
 // Single album card shown in the album grid.
 // Shows icon, name, and either album score (if songs rated), rated count, or year.
 
-export default function AlbumCard({ album, ratedCount, albumScore, isSelected, onClick, spotifyArtUrl }) {
+export default function AlbumCard({ album, ratedCount, albumScore, isSelected, onClick, spotifyArtUrl, spotifyAlbumId }) {
   let scoreLabel;
   if (albumScore !== null) {
     scoreLabel = `${albumScore} / 100`;
@@ -14,7 +14,11 @@ export default function AlbumCard({ album, ratedCount, albumScore, isSelected, o
   // ── Art card: clean image with name + score below (Spotify guidelines compliant)
   // No overlays, text, or controls on top of the artwork.
   // Corner radius 4px per Spotify small/medium device spec.
+  // Tapping the card always opens the album internally; a small "↗" badge on
+  // the cover art opens the album in Spotify (the link-back Spotify's design
+  // guidelines require for any surface that displays Spotify-sourced art).
   if (spotifyArtUrl) {
+    const spotifyHref = spotifyAlbumId ? `https://open.spotify.com/album/${spotifyAlbumId}` : null;
     return (
       <button
         onClick={onClick}
@@ -31,17 +35,47 @@ export default function AlbumCard({ album, ratedCount, albumScore, isSelected, o
           gap: 6,
         }}
       >
-        <img
-          src={spotifyArtUrl}
-          alt={album.name}
-          style={{
-            width: '100%',
-            aspectRatio: '1',
-            objectFit: 'cover',
-            borderRadius: 4,
-            display: 'block',
-          }}
-        />
+        <div style={{ position: 'relative', width: '100%' }}>
+          <img
+            src={spotifyArtUrl}
+            alt={album.name}
+            style={{
+              width: '100%',
+              aspectRatio: '1',
+              objectFit: 'cover',
+              borderRadius: 4,
+              display: 'block',
+            }}
+          />
+          {spotifyHref && (
+            <a
+              href={spotifyHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={e => e.stopPropagation()}
+              aria-label={`Open ${album.name} in Spotify`}
+              title="Open in Spotify"
+              style={{
+                position: 'absolute',
+                top: 4,
+                right: 4,
+                width: 22,
+                height: 22,
+                borderRadius: 11,
+                background: 'rgba(255,255,255,0.92)',
+                color: '#191414',
+                fontSize: 12,
+                fontWeight: 700,
+                lineHeight: '22px',
+                textAlign: 'center',
+                textDecoration: 'none',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.18)',
+              }}
+            >
+              ↗
+            </a>
+          )}
+        </div>
         <div style={{ paddingLeft: 2, paddingRight: 2 }}>
           <div style={{
             fontSize: 11,

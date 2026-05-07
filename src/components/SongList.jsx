@@ -42,6 +42,7 @@ export default function SongList({
   spotifyAutoplay,
   spotifyBridgeAutoplay,
   spotifyAlbumArt,
+  spotifyAlbumIds,
   onGoToSpotifySettings,
   // Rating behavior
   confirmExit,
@@ -323,6 +324,7 @@ export default function SongList({
         activeCategories={activeCategories}
         onBack={onBack}
         spotifyArtUrl={spotifyAlbumArt?.[albumId] ?? null}
+        spotifyAlbumId={spotifyAlbumIds?.[albumId] ?? null}
       />
 
       {/* ── Action buttons ── */}

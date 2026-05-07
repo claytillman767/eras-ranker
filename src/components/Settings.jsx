@@ -462,7 +462,7 @@ export default function Settings({
                   href="https://spotify.com/premium"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: '#1DB954', textDecoration: 'none', fontWeight: 500 }}
+                  style={{ color: '#374151', textDecoration: 'underline', fontWeight: 500 }}
                 >
                   Try Spotify Premium →
                 </a>
@@ -513,7 +513,7 @@ export default function Settings({
                   updateSetting('spotifyVolume', v);
                   spotify?.setVolume(v);
                 }}
-                style={{ width: '100%', accentColor: '#1DB954', cursor: isPro ? 'pointer' : 'not-allowed' }}
+                style={{ width: '100%', accentColor: '#a855f7', cursor: isPro ? 'pointer' : 'not-allowed' }}
               />
             </div>
               </>
@@ -594,7 +594,7 @@ export default function Settings({
           href="https://spotify.com/premium"
           target="_blank"
           rel="noopener noreferrer"
-          style={{ color: '#1DB954', textDecoration: 'none', fontWeight: 500 }}
+          style={{ color: '#374151', textDecoration: 'underline', fontWeight: 500 }}
         >
           Go to spotify.com/premium
         </a>{' '}
