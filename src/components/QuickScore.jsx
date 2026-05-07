@@ -115,13 +115,120 @@ const CAT_BACKGROUNDS = {
   storytelling:'linear-gradient(160deg, #fefce8 0%, #fef9c3 100%)', // yellow
 };
 
+// Deep-night gradient used as the QuickScore background while rating Midnights.
+const NIGHT_BACKGROUND =
+  'linear-gradient(180deg, #0b0b2e 0%, #1a1849 45%, #0d0d35 100%)';
+
+// ── Night sky decoration (Midnights album theme) ─────────────────────────────
+// Crescent moon in the upper-right corner + a sprinkle of twinkling stars.
+// CSS-only — animation runs through @keyframes injected near the moon SVG so
+// no React state churns during the rating flow.
+const NIGHT_STARS = [
+  { top: '8%',  left: '12%', size: 6, delay: '0s'    },
+  { top: '14%', left: '32%', size: 4, delay: '1.4s'  },
+  { top: '6%',  left: '60%', size: 5, delay: '0.6s'  },
+  { top: '22%', left: '74%', size: 3, delay: '1.9s'  },
+  { top: '18%', left: '46%', size: 5, delay: '0.9s'  },
+  { top: '28%', left: '18%', size: 4, delay: '0.3s'  },
+  { top: '34%', left: '38%', size: 3, delay: '1.6s'  },
+  { top: '40%', left: '8%',  size: 5, delay: '0.7s'  },
+  { top: '44%', left: '88%', size: 4, delay: '1.2s'  },
+  { top: '55%', left: '20%', size: 3, delay: '2.1s'  },
+  { top: '60%', left: '56%', size: 5, delay: '0.4s'  },
+  { top: '64%', left: '82%', size: 4, delay: '1.7s'  },
+  { top: '72%', left: '14%', size: 3, delay: '0.8s'  },
+  { top: '78%', left: '40%', size: 5, delay: '1.3s'  },
+  { top: '84%', left: '70%', size: 4, delay: '0.2s'  },
+  { top: '90%', left: '24%', size: 3, delay: '1.0s'  },
+  { top: '92%', left: '54%', size: 4, delay: '1.8s'  },
+  { top: '88%', left: '88%', size: 5, delay: '0.5s'  },
+];
+
+function NightSky() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}
+    >
+      <style>{`
+        @keyframes qs-night-twinkle {
+          0%, 100% { opacity: 0.25; transform: scale(0.8); }
+          50%      { opacity: 1;    transform: scale(1.1); }
+        }
+        @keyframes qs-night-moon-glow {
+          0%, 100% { filter: drop-shadow(0 0 6px rgba(252, 211, 77, 0.35)); }
+          50%      { filter: drop-shadow(0 0 14px rgba(252, 211, 77, 0.55)); }
+        }
+      `}</style>
+
+      {/* Crescent moon — upper right */}
+      <svg
+        width="64"
+        height="64"
+        viewBox="0 0 64 64"
+        style={{
+          position: 'absolute',
+          top: 36,
+          right: 28,
+          animation: 'qs-night-moon-glow 4s ease-in-out infinite',
+        }}
+      >
+        <defs>
+          <radialGradient id="qs-moon-grad" cx="0.4" cy="0.4" r="0.7">
+            <stop offset="0%" stopColor="#fde68a" />
+            <stop offset="60%" stopColor="#fcd34d" />
+            <stop offset="100%" stopColor="#f59e0b" />
+          </radialGradient>
+        </defs>
+        <path
+          d="M44 12 a 22 22 0 1 0 8 38 a 17 17 0 1 1 -8 -38 z"
+          fill="url(#qs-moon-grad)"
+        />
+      </svg>
+
+      {/* Twinkling stars */}
+      {NIGHT_STARS.map((s, i) => (
+        <svg
+          key={i}
+          width={s.size * 2}
+          height={s.size * 2}
+          viewBox="0 0 24 24"
+          style={{
+            position: 'absolute',
+            top: s.top,
+            left: s.left,
+            opacity: 0.3,
+            animation: `qs-night-twinkle 3s ${s.delay} ease-in-out infinite`,
+          }}
+        >
+          <path
+            fill="#ffffff"
+            d="M12 2l1.6 6L20 10l-6.4 1.6L12 18l-1.6-6.4L4 10l6.4-1.6z"
+          />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
 // ── Big interactive stars ─────────────────────────────────────────────────────
 // Gets a new `key` each question so hover state resets automatically.
-function StarPicker({ currentRating, onRate, labels, flashLevel = 0 }) {
+function StarPicker({ currentRating, onRate, labels, flashLevel = 0, isNightTheme = false }) {
   const [hovered, setHovered] = useState(0);
   const display = hovered || currentRating;
   const activeLevel = hovered || currentRating;
   const isFlashing = flashLevel > 0;
+  // Label colors split for the two themes — dark-grey + dark-purple read
+  // perfectly on the light category backgrounds; on the deep-night
+  // gradient those go invisible, so we swap to off-white + bright purple.
+  const labelDefaultColor = isNightTheme ? '#e5e7eb' : '#374151';
+  const labelActiveColor  = isNightTheme ? '#e9d5ff' : '#5b21b6';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
@@ -208,7 +315,7 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0 }) {
                 </span>
                 <span style={{
                   fontSize: 12,
-                  color: isActive ? '#5b21b6' : '#374151',
+                  color: isActive ? labelActiveColor : labelDefaultColor,
                   fontWeight: isActive ? 600 : 500,
                   transition: 'color 0.15s ease, font-weight 0.15s ease',
                 }}>
@@ -497,7 +604,7 @@ function NoBridgeScreen({ songName, onContinue }) {
 // ── Shuffle screen — Play/Skip question with song lyrics floating in background ─
 // Lyrics fade in softly, then pulse up and out when the user picks an answer,
 // creating a bridge into the detailed rating questions.
-function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRating = 0 }) {
+function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRating = 0, isNightTheme = false }) {
   const [animating, setAnimating] = useState(false);
 
   // Show the previous pick (if any) by fading the unpicked side. Mirrors
@@ -535,7 +642,12 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(180deg, #ffffff 0%, #fdf8ff 100%)',
+        // Night theme uses transparent so the parent NIGHT_BACKGROUND +
+        // NightSky decoration show through; otherwise the original
+        // soft white→lavender gradient.
+        background: isNightTheme
+          ? 'transparent'
+          : 'linear-gradient(180deg, #ffffff 0%, #fdf8ff 100%)',
         animation: animating ? 'shuffle-fade-out 0.72s ease forwards' : 'none',
       }}>
         {/* Floating lyrics in background */}
@@ -557,12 +669,20 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
           </div>
 
           {/* Song name */}
-          <div style={{ fontSize: 24, fontWeight: 700, color: '#111827', lineHeight: 1.3, marginBottom: 14, maxWidth: 300 }}>
+          <div style={{
+            fontSize: 24,
+            fontWeight: 700,
+            color: isNightTheme ? '#f3f4f6' : '#111827',
+            lineHeight: 1.3,
+            marginBottom: 14,
+            maxWidth: 300,
+            textShadow: isNightTheme ? '0 1px 8px rgba(0,0,0,0.4)' : 'none',
+          }}>
             {song.name}
           </div>
 
           {/* Question */}
-          <div style={{ fontSize: 15, color: '#9ca3af', marginBottom: 52 }}>
+          <div style={{ fontSize: 15, color: isNightTheme ? '#cbd5e1' : '#9ca3af', marginBottom: 52 }}>
             If this came on shuffle right now...
           </div>
 
@@ -908,12 +1028,20 @@ export default function QuickScore({
     advance();
   }
 
+  // Night theme — applied while rating Midnights ('ml'). Replaces all
+  // category backgrounds with a deep-night gradient and renders a moon +
+  // twinkling stars decoration layer; text colors are lightened where
+  // they'd otherwise be unreadable.
+  const isNightTheme = albumId === 'ml';
+
   const overlayStyle = {
     position: 'fixed',
     inset: 0,
-    background: (currentCat && currentCat.id !== 'replay')
-      ? (CAT_BACKGROUNDS[currentCat.id] ?? '#ffffff')
-      : '#ffffff',
+    background: isNightTheme
+      ? NIGHT_BACKGROUND
+      : (currentCat && currentCat.id !== 'replay'
+          ? (CAT_BACKGROUNDS[currentCat.id] ?? '#ffffff')
+          : '#ffffff'),
     zIndex: 1000,
     display: 'flex',
     flexDirection: 'column',
@@ -950,10 +1078,19 @@ export default function QuickScore({
         }
       `}</style>
 
+      {/* Night-sky decoration — Midnights theme only */}
+      {isNightTheme && <NightSky />}
+
       {showTrees && <FallingTrees onDone={() => setShowTrees(false)} />}
 
       {/* Progress bar */}
-      <div style={{ height: 4, background: '#f3e8ff', flexShrink: 0 }}>
+      <div style={{
+        height: 4,
+        background: isNightTheme ? 'rgba(168,85,247,0.18)' : '#f3e8ff',
+        flexShrink: 0,
+        position: 'relative',
+        zIndex: 1,
+      }}>
         <div
           style={{
             height: '100%',
@@ -972,9 +1109,11 @@ export default function QuickScore({
         justifyContent: 'space-between',
         padding: '12px 20px',
         flexShrink: 0,
+        position: 'relative',
+        zIndex: 1,
       }}>
         <div style={{ width: 60 }} />
-        <div style={{ fontSize: 12, color: '#9ca3af' }}>
+        <div style={{ fontSize: 12, color: isNightTheme ? '#cbd5e1' : '#9ca3af' }}>
           {isSingleSong ? '\u00a0' : `Song ${songPos + 1} of ${songs.length}`}
         </div>
         <button
@@ -986,13 +1125,13 @@ export default function QuickScore({
             }
           }}
           style={{
-            background: 'none',
-            border: '0.5px solid #e5e7eb',
+            background: isNightTheme ? 'rgba(255,255,255,0.08)' : 'none',
+            border: isNightTheme ? '0.5px solid rgba(255,255,255,0.18)' : '0.5px solid #e5e7eb',
             borderRadius: 8,
             padding: '5px 12px',
             cursor: 'pointer',
             fontSize: 13,
-            color: '#6b7280',
+            color: isNightTheme ? '#e5e7eb' : '#6b7280',
           }}
         >
           ✕ Exit
@@ -1008,6 +1147,7 @@ export default function QuickScore({
           lyrics={snippetLyrics}
           onPick={handleShufflePick}
           currentRating={currentRating}
+          isNightTheme={isNightTheme}
         />
       ) : (
         /* ── Fading wrapper — covers both NoBridgeScreen and star questions ── */
@@ -1020,6 +1160,8 @@ export default function QuickScore({
             opacity: isVisible ? 1 : 0,
             transition: 'opacity 0.15s ease',
             pointerEvents: isVisible ? 'auto' : 'none',
+            position: 'relative',
+            zIndex: 1,
           }}
         >
 
@@ -1070,7 +1212,15 @@ export default function QuickScore({
               style={{ margin: `0 0 ${currentCat?.id === 'lyrics' ? 16 : 32}px`, width: '100%', maxWidth: 300 }}
             />
           ) : (
-            <div style={{ fontSize: 22, fontWeight: 700, color: '#111827', lineHeight: 1.3, marginBottom: currentCat?.id === 'lyrics' ? 16 : 32, maxWidth: 320 }}>
+            <div style={{
+              fontSize: 22,
+              fontWeight: 700,
+              color: isNightTheme ? '#f3f4f6' : '#111827',
+              lineHeight: 1.3,
+              marginBottom: currentCat?.id === 'lyrics' ? 16 : 32,
+              maxWidth: 320,
+              textShadow: isNightTheme ? '0 1px 8px rgba(0,0,0,0.4)' : 'none',
+            }}>
               {currentSong?.name}
             </div>
           )}
@@ -1160,6 +1310,7 @@ export default function QuickScore({
               onRate={handleRate}
               labels={STAR_LABELS[currentCat?.id] ?? null}
               flashLevel={flashLevel}
+              isNightTheme={isNightTheme}
             />
           )}
 
