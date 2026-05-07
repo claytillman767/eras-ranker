@@ -10,6 +10,7 @@ import { useUserStats } from './hooks/useUserStats';
 import { useProfile } from './hooks/useProfile';
 import BetaGate from './components/BetaGate';
 import Welcome from './components/Welcome';
+import GoogleLoginPromo, { hasSeenGoogleLoginPromo } from './components/GoogleLoginPromo';
 import SpotifyIntro, { hasSeenSpotifyIntro } from './components/SpotifyIntro';
 import VibeCheckIntro, { hasSeenVibeCheckIntro } from './components/VibeCheckIntro';
 import Home from './components/Home';
@@ -77,9 +78,12 @@ export default function App() {
   // ── Welcome tour state ───────────────────────────────────────────────────────
   const [welcomeSeen, setWelcomeSeen] = useState(() => localStorage.getItem(WELCOME_KEY) === '1');
 
-  // ── Spotify intro state (one-time, after Google sign-in, before Welcome) ────
+  // ── Onboarding screen state (one-time per device) ───────────────────────────
+  // Order: Welcome tour → GoogleLoginPromo (only if not signed in) → SpotifyIntro
+  //        (only if signed in, since real album art needs Spotify connected).
   // Tracked via state so connecting/skipping advances to the next screen
   // without a full reload.
+  const [googleLoginPromoSeen, setGoogleLoginPromoSeen] = useState(hasSeenGoogleLoginPromo);
   const [spotifyIntroSeen, setSpotifyIntroSeen] = useState(hasSeenSpotifyIntro);
 
   // ── Data hooks — ALL hooks must be declared before any conditional return ────
@@ -228,19 +232,6 @@ export default function App() {
     );
   }
 
-  // ── Spotify intro — once per device, only for Google-signed-in users.
-  // Shown BEFORE the Welcome tour so the tour's album carousel can use real
-  // cover art if the user connected. Beta-bypass users (no Firebase user)
-  // skip this entirely. ────────────────────────────────────────────────────
-  if (user && !spotifyIntroSeen) {
-    return (
-      <SpotifyIntro
-        spotify={spotify}
-        onContinue={() => setSpotifyIntroSeen(true)}
-      />
-    );
-  }
-
   // ── Welcome tour — shown once per device after the beta gate is passed ──────
   function dismissWelcome() {
     localStorage.setItem(WELCOME_KEY, '1');
@@ -253,6 +244,34 @@ export default function App() {
 
   if (!welcomeSeen) {
     return <Welcome onClose={dismissWelcome} spotifyAlbumArt={spotify.albumArt} />;
+  }
+
+  // ── Google login promo — shown once per device after the Welcome tour, only
+  // when no account is connected yet. The user can either sign in (default
+  // path) or tap "Not now" to keep going as anonymous. The promo's own
+  // useEffect auto-skips when a user is already signed in (e.g. they signed
+  // in via the BetaGate or via the header avatar in a previous session). ────
+  if (!googleLoginPromoSeen && !user) {
+    return (
+      <GoogleLoginPromo
+        user={user}
+        signIn={signIn}
+        onContinue={() => setGoogleLoginPromoSeen(true)}
+      />
+    );
+  }
+
+  // ── Spotify intro — shown once per device after Google sign-in. Pitches
+  // free album art across the app. Skip-able. We only render this when a
+  // user is signed in because the real value (cross-device sync of the
+  // Spotify-connected state) only kicks in with an account. ────────────────
+  if (user && !spotifyIntroSeen) {
+    return (
+      <SpotifyIntro
+        spotify={spotify}
+        onContinue={() => setSpotifyIntroSeen(true)}
+      />
+    );
   }
   // ────────────────────────────────────────────────────────────────────────────
 
