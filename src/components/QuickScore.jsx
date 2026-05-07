@@ -129,6 +129,12 @@ const DEBUT_BACKGROUND =
   // Base cream gradient — the actual album color.
   'linear-gradient(180deg, #fdf6e3 0%, #faeeda 50%, #fff7e0 100%)';
 
+// Golden-hour gradient used as the QuickScore background while rating Fearless.
+// Soft cream at the top, mid-honey, and a softened amber at the bottom — keeps
+// dark text legible up top and matches the album's late-afternoon-warmth mood.
+const FEARLESS_BACKGROUND =
+  'linear-gradient(180deg, #fff8e1 0%, #fde68a 55%, #fcd34d 100%)';
+
 // ── Night sky decoration (Midnights album theme) ─────────────────────────────
 // Crescent moon in the upper-right corner + a sprinkle of twinkling stars.
 // CSS-only — animation runs through @keyframes injected near the moon SVG so
@@ -401,6 +407,252 @@ function DebutScene() {
   );
 }
 
+// ── Fearless ambient scene ────────────────────────────────────────────────────
+// Drifting golden-glitter motes that float slowly upward across the backdrop.
+// CSS-only — each mote has its own size, drift, and timing so the field reads
+// as ambient sparkle rather than a column of dots.
+const FEARLESS_GLITTER = [
+  { left: '4%',  size: 4, delay: '0s',   dur: 11, drift:  10 },
+  { left: '11%', size: 3, delay: '2.6s', dur: 13, drift:  -8 },
+  { left: '17%', size: 5, delay: '0.8s', dur: 10, drift:  14 },
+  { left: '24%', size: 3, delay: '4.1s', dur: 12, drift: -12 },
+  { left: '30%', size: 4, delay: '1.5s', dur: 11, drift:   8 },
+  { left: '36%', size: 3, delay: '3.2s', dur: 14, drift: -10 },
+  { left: '42%', size: 5, delay: '0.4s', dur: 10, drift:  12 },
+  { left: '49%', size: 4, delay: '2.0s', dur: 13, drift:  -6 },
+  { left: '55%', size: 3, delay: '4.7s', dur: 11, drift:  10 },
+  { left: '61%', size: 4, delay: '1.1s', dur: 12, drift: -14 },
+  { left: '67%', size: 5, delay: '3.6s', dur: 10, drift:   8 },
+  { left: '73%', size: 3, delay: '0.6s', dur: 14, drift:  -8 },
+  { left: '79%', size: 4, delay: '2.3s', dur: 11, drift:  12 },
+  { left: '85%', size: 3, delay: '4.0s', dur: 13, drift: -10 },
+  { left: '91%', size: 5, delay: '1.8s', dur: 10, drift:   6 },
+  { left: '8%',  size: 3, delay: '3.4s', dur: 12, drift:  -8 },
+  { left: '20%', size: 4, delay: '0.9s', dur: 11, drift:  10 },
+  { left: '33%', size: 3, delay: '4.5s', dur: 13, drift: -12 },
+  { left: '46%', size: 4, delay: '2.7s', dur: 10, drift:   6 },
+  { left: '58%', size: 3, delay: '5.2s', dur: 12, drift: -10 },
+  { left: '70%', size: 4, delay: '1.4s', dur: 11, drift:   8 },
+  { left: '82%', size: 3, delay: '3.8s', dur: 14, drift:  -6 },
+];
+
+function FearlessScene() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}
+    >
+      <style>{`
+        @keyframes qs-fearless-float {
+          0%   { transform: translateY(0)       translateX(0); opacity: 0; }
+          10%  { opacity: 0.95; }
+          88%  { opacity: 0.95; }
+          100% { transform: translateY(-115vh) translateX(var(--qs-drift, 0px)); opacity: 0; }
+        }
+        @keyframes qs-fearless-twinkle {
+          0%, 100% { filter: brightness(1); }
+          50%      { filter: brightness(1.55); }
+        }
+      `}</style>
+
+      {FEARLESS_GLITTER.map((g, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            bottom: -10,
+            left: g.left,
+            width: g.size,
+            height: g.size,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, #fffbeb 0%, #fde68a 45%, #d97706 100%)',
+            boxShadow: '0 0 6px rgba(251,191,36,0.85), 0 0 12px rgba(252,211,77,0.5)',
+            // Per-mote drift target read by qs-fearless-float so each particle
+            // arcs slightly differently as it rises.
+            '--qs-drift': `${g.drift}px`,
+            animation: `qs-fearless-float ${g.dur}s ${g.delay} linear infinite, qs-fearless-twinkle 1.6s ${g.delay} ease-in-out infinite`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Love Story horse ─────────────────────────────────────────────────────────
+// Triggered when the user finishes rating "Love Story". A small white horse
+// with a soft trail gallops across the bottom of the screen for ~2 s, then
+// the celebration timer in QuickScore unmounts it.
+function LoveStoryHorse() {
+  // Render the horse silhouette plus three ghost copies behind it. The whole
+  // wrapper translates from off-screen-left to off-screen-right; ghosts get
+  // decreasing opacity so the row reads as a fade trail behind the runner.
+  const horseSvg = (
+    <svg width="62" height="42" viewBox="0 0 70 48" style={{ display: 'block' }}>
+      {/* Body */}
+      <ellipse cx="32" cy="26" rx="22" ry="9" fill="#ffffff" />
+      {/* Neck */}
+      <path d="M 48 22 L 56 12 L 60 10 L 62 14 L 54 24 Z" fill="#ffffff" />
+      {/* Head */}
+      <ellipse cx="60" cy="11" rx="6" ry="4" fill="#ffffff" transform="rotate(-15 60 11)" />
+      {/* Ears */}
+      <path d="M 57 7 L 59 2 L 61 7 Z" fill="#ffffff" />
+      {/* Mane */}
+      <path d="M 48 18 Q 50 14, 53 12 L 55 16 Q 52 18, 50 20 Z" fill="#ffffff" />
+      {/* Front leg pair */}
+      <rect x="44" y="30" width="3" height="14" fill="#ffffff" />
+      <rect x="49" y="30" width="3" height="14" fill="#ffffff" transform="rotate(-18 50.5 37)" />
+      {/* Back leg pair */}
+      <rect x="14" y="30" width="3" height="14" fill="#ffffff" />
+      <rect x="19" y="30" width="3" height="14" fill="#ffffff" transform="rotate(18 20.5 37)" />
+      {/* Tail */}
+      <path d="M 10 24 Q 2 22, 0 30 Q 4 30, 10 28 Z" fill="#ffffff" />
+    </svg>
+  );
+
+  return (
+    <>
+      <style>{`
+        @keyframes qs-horse-gallop {
+          0%   { transform: translateX(-220px); }
+          100% { transform: translateX(calc(100vw + 120px)); }
+        }
+        @keyframes qs-horse-bob {
+          0%, 100% { transform: translateY(0); }
+          25%      { transform: translateY(-3px); }
+          50%      { transform: translateY(0); }
+          75%      { transform: translateY(-3px); }
+        }
+      `}</style>
+
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          left: 0,
+          bottom: '8vh',
+          pointerEvents: 'none',
+          zIndex: 5,
+          // 2s matches the celebration timer in detectCelebration so the
+          // wrapper unmounts just as the horse exits screen-right.
+          animation: 'qs-horse-gallop 2s ease-out forwards',
+          // Soft drop-shadow so the white horse reads against any pixel of
+          // the golden-hour backdrop, including the lightest cream up top.
+          filter: 'drop-shadow(0 4px 6px rgba(146, 64, 14, 0.35))',
+        }}
+      >
+        {/* Trail ghosts behind the horse — fade with distance */}
+        <div style={{ position: 'absolute', left: -120, top: 0, opacity: 0.12 }}>{horseSvg}</div>
+        <div style={{ position: 'absolute', left: -80,  top: 0, opacity: 0.22 }}>{horseSvg}</div>
+        <div style={{ position: 'absolute', left: -40,  top: 0, opacity: 0.42 }}>{horseSvg}</div>
+        {/* Lead horse — bobbing while the wrapper translates */}
+        <div style={{ position: 'relative', animation: 'qs-horse-bob 0.4s ease-in-out infinite' }}>
+          {horseSvg}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Fearless album-complete fireworks ─────────────────────────────────────────
+// Brief golden firework crackle rendered behind DoneFlash when finishing a
+// full Fearless QuickScore session. Five staggered bursts; total runtime fits
+// inside the 2-second DoneFlash auto-close window.
+const FIREWORK_BURSTS = [
+  { x: '22%', y: '22%', delay:    0 },
+  { x: '72%', y: '20%', delay:  220 },
+  { x: '46%', y: '38%', delay:  440 },
+  { x: '18%', y: '52%', delay:  660 },
+  { x: '80%', y: '50%', delay:  880 },
+];
+
+const FIREWORK_PARTICLE_ANGLES = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
+const FIREWORK_COLORS = ['#fef9c3', '#fde68a', '#fbbf24', '#f59e0b'];
+
+function FearlessFireworks() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}
+    >
+      <style>{`
+        @keyframes qs-firework-burst {
+          0%   { opacity: 0; transform: translate(0, 0) scale(0.4); }
+          18%  { opacity: 1; }
+          100% { opacity: 0; transform: var(--qs-fw-drift) scale(0.5); }
+        }
+        @keyframes qs-firework-flash {
+          0%   { opacity: 0;   transform: scale(0.3); }
+          25%  { opacity: 0.9; transform: scale(1.6); }
+          100% { opacity: 0;   transform: scale(2.2); }
+        }
+      `}</style>
+
+      {FIREWORK_BURSTS.map((burst, bi) => (
+        <div
+          key={bi}
+          style={{
+            position: 'absolute',
+            top: burst.y,
+            left: burst.x,
+            width: 0,
+            height: 0,
+          }}
+        >
+          {/* Center flash — bright halo at burst origin */}
+          <div
+            style={{
+              position: 'absolute',
+              top: -20,
+              left: -20,
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(254,243,199,0.95) 0%, rgba(252,211,77,0.45) 55%, transparent 80%)',
+              animation: `qs-firework-flash 0.7s ${burst.delay}ms ease-out forwards`,
+            }}
+          />
+          {/* Particles radiating outward in 12 directions */}
+          {FIREWORK_PARTICLE_ANGLES.map((angle, ai) => {
+            const distance = 58 + (ai % 3) * 14;
+            const dx = Math.cos((angle * Math.PI) / 180) * distance;
+            const dy = Math.sin((angle * Math.PI) / 180) * distance;
+            const color = FIREWORK_COLORS[ai % FIREWORK_COLORS.length];
+            return (
+              <div
+                key={ai}
+                style={{
+                  position: 'absolute',
+                  top: -2,
+                  left: -2,
+                  width: 4,
+                  height: 4,
+                  borderRadius: '50%',
+                  background: color,
+                  boxShadow: `0 0 4px ${color}`,
+                  '--qs-fw-drift': `translate(${dx}px, ${dy}px)`,
+                  animation: `qs-firework-burst 1s ${burst.delay}ms ease-out forwards`,
+                }}
+              />
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Album-signature celebrations ──────────────────────────────────────────────
 // Maps (albumId, songName) → a celebration that runs after the user finishes
 // rating that song's last category. Returns null when no celebration applies.
@@ -415,6 +667,9 @@ function detectCelebration(albumId, songName) {
   }
   if (albumId === 'tv' && songName === 'Picture to Burn') {
     return { type: 'polaroid-burn', durationMs: 3500 };
+  }
+  if (albumId === 'fe' && songName === 'Love Story') {
+    return { type: 'horse-gallop', durationMs: 2000 };
   }
   return null;
 }
@@ -1503,14 +1758,17 @@ export default function QuickScore({
 
   // Album themes — replace category backgrounds with an album-specific
   // backdrop and render an ambient decoration layer.
-  const isNightTheme = albumId === 'ml';   // Midnights — dark sky
-  const isDebutTheme = albumId === 'tv';   // Taylor Swift (Debut) — cream + memorabilia
+  const isNightTheme    = albumId === 'ml';   // Midnights — dark sky
+  const isDebutTheme    = albumId === 'tv';   // Taylor Swift (Debut) — cream + memorabilia
+  const isFearlessTheme = albumId === 'fe';   // Fearless — golden hour + glitter motes
 
   const albumBackground = isNightTheme
     ? NIGHT_BACKGROUND
     : isDebutTheme
       ? DEBUT_BACKGROUND
-      : null;
+      : isFearlessTheme
+        ? FEARLESS_BACKGROUND
+        : null;
 
   const overlayStyle = {
     position: 'fixed',
@@ -1530,6 +1788,9 @@ export default function QuickScore({
   if (done) {
     return (
       <div style={overlayStyle}>
+        {/* Brief golden firework crackle behind the completion card —
+            only on a full Fearless album session, not a single-song re-rate. */}
+        {isFearlessTheme && !isSingleSong && <FearlessFireworks />}
         <DoneFlash
           albumIcon={albumIcon}
           albumName={albumName}
@@ -1559,8 +1820,14 @@ export default function QuickScore({
       {/* Album-specific ambient scenes */}
       {isNightTheme && <NightSky />}
       {isDebutTheme && <DebutScene />}
+      {isFearlessTheme && <FearlessScene />}
 
       {showTrees && <FallingTrees onDone={() => setShowTrees(false)} />}
+
+      {/* Love Story horse — gallops across the bottom for ~2s after the
+          user finishes rating Love Story. Unmounts when QuickScore clears
+          the celebration after detectCelebration's durationMs. */}
+      {celebration?.type === 'horse-gallop' && <LoveStoryHorse />}
 
       {/* Progress bar */}
       <div style={{
@@ -1707,11 +1974,17 @@ export default function QuickScore({
           {/* Category label — colors per theme.
               Night (Midnights): brand purple washes out → lavender + light grey.
               Debut: cream backdrop wants a deeper, dusty rose-mauve so the
-              label reads warmly against the wood-grain warmth. */}
+              label reads warmly against the wood-grain warmth.
+              Fearless: warm amber (#b45309) reads richly against the
+              golden-hour gradient. */}
           <div style={{
             fontSize: 12,
             fontWeight: 700,
-            color: isNightTheme ? '#e9d5ff' : (isDebutTheme ? '#9d3c5b' : '#a855f7'),
+            color: isNightTheme
+              ? '#e9d5ff'
+              : (isDebutTheme
+                  ? '#9d3c5b'
+                  : (isFearlessTheme ? '#b45309' : '#a855f7')),
             textTransform: 'uppercase',
             letterSpacing: '0.12em',
             marginBottom: 4,
@@ -1721,7 +1994,11 @@ export default function QuickScore({
           </div>
           <div style={{
             fontSize: 12,
-            color: isNightTheme ? '#cbd5e1' : (isDebutTheme ? '#78716c' : '#c4b5fd'),
+            color: isNightTheme
+              ? '#cbd5e1'
+              : (isDebutTheme
+                  ? '#78716c'
+                  : (isFearlessTheme ? '#92400e' : '#c4b5fd')),
             marginBottom: currentCat?.id === 'lyrics' ? 14 : 32,
             textShadow: isNightTheme ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
           }}>

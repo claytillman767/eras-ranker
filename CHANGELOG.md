@@ -16,6 +16,23 @@ Newest entries go at the top.
 
 ---
 
+## 0.4.1 — 2026-05-06
+
+### Added
+- **Fearless album theme.** Rating songs on Fearless now switches the
+  whole screen to a soft golden-hour gradient with little gold glitter
+  motes drifting slowly upward. The category label uses a warm amber so
+  it reads richly against the honey-coloured backdrop.
+- **Love Story horse moment.** When you finish rating Love Story, a
+  small white horse gallops across the bottom of the screen leaving a
+  soft fade trail — about a two-second cameo, then it's back to the
+  normal flow.
+- **Album-complete fireworks.** Finishing a full Fearless rating
+  session pops a brief golden firework crackle behind the "All done!"
+  card before it fades.
+
+---
+
 ## 0.4.0 — 2026-05-06
 
 ### Added
