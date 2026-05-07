@@ -366,8 +366,8 @@ export default function Settings({
         </button>
       )}
 
-      {/* Dev-only UAT toggle — only the developer email sees this row */}
-      {isDevEmail(user?.email) && <UatToggle />}
+      {/* Dev-only UAT panel — only the developer email sees this row */}
+      {isDevEmail(user?.email) && <UatToggle user={user} isPro={isPro} />}
 
       {/* ── Public profile section ── */}
       {user && profile && (
@@ -1338,7 +1338,7 @@ function ManageSubscriptionRow({ portalUrl, status, endsAt }) {
 // onboarding flag and reloads so the next app boot looks like a brand-new
 // user. main.jsx also re-clears the flags on every subsequent boot until
 // this toggle is flipped off, so reloading mid-UAT keeps everything fresh.
-function UatToggle() {
+function UatToggle({ user, isPro }) {
   const [on, setOn] = useState(isUatMode);
 
   function handleToggle() {
@@ -1350,6 +1350,20 @@ function UatToggle() {
       // Reload so the user immediately sees the Welcome tour, etc.
       window.location.reload();
     }
+  }
+
+  // Revokes the dev's Pro entitlement so they can re-test the upgrade
+  // flow. Mirrors usePro's mock-grant path in reverse: clears local +
+  // cloud isPro. The onSnapshot listener in usePro picks it up and the
+  // UI flips back to non-Pro.
+  function handleRevokePro() {
+    if (!user || !db) return;
+    localStorage.removeItem('eras_is_pro');
+    setDoc(
+      doc(db, 'users', user.uid),
+      { isPro: false, proPlan: null, proRevokedAt: new Date() },
+      { merge: true }
+    ).catch(() => {});
   }
 
   return (
@@ -1399,6 +1413,45 @@ function UatToggle() {
             boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
           }} />
         </div>
+      </div>
+
+      {/* Pro test grant note + revoke button. Dev emails get a free
+          mock-grant when they tap Unlock Pro (see usePro.js), so this
+          panel just needs to flag that and offer a way to revoke. */}
+      <div style={{
+        borderTop: '0.5px solid #fde68a',
+        padding: '12px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+      }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>
+            Pro test grant
+          </div>
+          <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, lineHeight: 1.4 }}>
+            Tapping Unlock Pro on this account skips Lemon Squeezy and grants
+            Pro instantly. Use Revoke to drop back to non-Pro for re-testing.
+          </div>
+        </div>
+        <button
+          onClick={handleRevokePro}
+          disabled={!isPro}
+          style={{
+            padding: '8px 14px',
+            borderRadius: 8,
+            border: '0.5px solid #fde68a',
+            background: isPro ? '#ffffff' : '#fef3c7',
+            color: isPro ? '#92400e' : '#d97706',
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: isPro ? 'pointer' : 'default',
+            opacity: isPro ? 1 : 0.5,
+            flexShrink: 0,
+          }}
+        >
+          {isPro ? 'Revoke Pro' : 'Not Pro'}
+        </button>
       </div>
     </div>
   );
