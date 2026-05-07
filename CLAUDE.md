@@ -19,30 +19,13 @@ Every user-facing decision should be evaluated against these four conversion goa
 
 **Design as if the BetaGate doesn't exist.** The BetaGate is a short-term beta-access artifact and will be removed entirely before any real users are directed at the site. Treat the *first screen users actually see* as the Welcome tour, and the *first conversion ask* as the GoogleLoginPromo right after it. Do NOT factor BetaGate behaviour into funnel analysis, do NOT raise concerns about the password-bypass path, and do NOT redesign the BetaGate — it is locked because it's going away anyway. The canonical post-launch flow is: Welcome → GoogleLoginPromo → (if signed in) SpotifyIntro → Home.
 
-## When you change Pro benefits — audit protocol
+## When you change Pro benefits
 
-**Whenever a Pro benefit is added, removed, renamed, repriced, or has its scope changed, you MUST proactively audit every place that mentions Pro perks and update them consistently.** Inconsistent Pro copy across screens (e.g. one screen says "Connect Spotify with Pro" while another says "free for everyone") is a credibility hit on a paid product.
+Inconsistent Pro copy across screens is a credibility hit on a paid product, so any change that adds, removes, renames, reprices, or shifts the scope of a Pro perk needs a cross-surface audit before it ships.
 
-The current list of user-facing surfaces that list or reference Pro perks (find these whenever Pro changes):
+**After implementing a Pro change, invoke the `pro-funnel-auditor` subagent** to verify copy consistency across every Pro-mentioning surface. The subagent owns the canonical file list and the Pro/Spotify boundary rules — it will return a prioritized fix list, then the main agent makes the edits.
 
-- [src/components/PaywallCard.jsx](src/components/PaywallCard.jsx) — Categories tab paywall (feature list)
-- [src/components/Settings.jsx](src/components/Settings.jsx) — `ProModal` feature list, Spotify section copy, `ProGatedRow` usage
-- [src/components/VibeCheckIntro.jsx](src/components/VibeCheckIntro.jsx) — first-Vibe-Check Pro pitch + Spotify Premium footnote
-- [src/components/ConnectSpotifyPrompt.jsx](src/components/ConnectSpotifyPrompt.jsx) — post-upgrade copy
-- [src/components/AlbumModeModal.jsx](src/components/AlbumModeModal.jsx) — Pro-but-disconnected nudge
-- [src/components/AutoplayNudge.jsx](src/components/AutoplayNudge.jsx) — 30-song soft upsell copy
-- [src/components/GoogleLoginPromo.jsx](src/components/GoogleLoginPromo.jsx) — post-Welcome Google sign-in pitch
-- [src/components/SpotifyIntro.jsx](src/components/SpotifyIntro.jsx) — post-login Spotify ask
-- [src/components/Welcome.jsx](src/components/Welcome.jsx) — slide 2 ModeCard mentions Pro
-- [src/components/CategoriesEditor.jsx](src/components/CategoriesEditor.jsx) — locks on extra/custom categories
-- [src/components/SpotifyMiniPlayer.jsx](src/components/SpotifyMiniPlayer.jsx) — disconnect-state copy
-
-Use grep to catch surfaces added later:
-```
-grep -rni "Spotify\|Pro\b\|Premium\|autoplay\|cover art\|album art\|Connect Spotify" src/components/*.jsx
-```
-
-If you add a new Pro-mentioning surface, add it to the list above so future audits are complete.
+Same applies to Spotify-tier changes (free vs. Premium): playback-only Pro perks (autoplay, jump-to-bridge) MUST be hidden when `spotify?.isConnected && !spotify?.isPremium`, since Pro alone can't unlock playback for free Spotify accounts. The auditor enforces this rule.
 
 ## Acting as a user-flow consultant
 
@@ -50,7 +33,7 @@ When a change touches **any of the four conversion goals**, don't just implement
 
 - **Does this nudge the user toward the next conversion step, or away?** A change that helps Spotify connection but accidentally makes Pro upgrade harder is a net loss.
 - **Does the natural path still feel natural after this change?** Each step should be the obvious thing to do. The skip/decline option should feel like opting out, never the default.
-- **Are other surfaces in the app still consistent with this change?** Use the audit list above. If a paywall is loosened or tightened, every surface that references that boundary needs to align.
+- **Are other surfaces in the app still consistent with this change?** Run the `pro-funnel-auditor` subagent after implementation to catch drift. If a paywall is loosened or tightened, every surface that references that boundary needs to align.
 - **Is there a sharing moment we're underusing?** Album-complete cards, rankings cards, and the public profile are all viral surfaces. When someone hits a milestone (e.g. first fully-rated album), is the share path obvious?
 - **Does this respect the order of the funnel?** Don't ask a user to upgrade Pro before they've signed in; don't push Spotify before they've signed in; don't ask them to share before they have something worth sharing.
 
@@ -483,16 +466,13 @@ Live under **Settings → Account → Delete my account**. Implemented entirely 
 ### Shipping flow — push, merge, deploy in one go
 The user wants every finished change pushed live without waiting for a
 "go ahead" on the merge. As soon as the work compiles cleanly and the
-spec is met, take it the rest of the way:
+spec is met, take it the rest of the way.
 
-1. Commit on the feature branch (`claude/<short-name>`).
-2. Push the feature branch (`git push -u origin <branch>`).
-3. From the parent repo (using `git -C C:/Users/clayt/dev/eras-ranker`
-   when working from a worktree, since `main` is checked out there):
-   `git pull origin main` → `git merge --no-ff <branch>` → resolve any
-   conflicts → `git push origin main`.
-4. Delete the remote feature branch (`git push origin --delete <branch>`).
-5. Vercel auto-deploys on the push to `main`.
+**Use the `shipper` subagent.** It owns the bump-version → write-CHANGELOG
+→ commit → push → merge-to-main → push-main → delete-remote-branch flow,
+and Vercel auto-deploys on the push to `main`. Pass it the bump type
+(patch / minor / major, or "internal" to skip version bump) and a one-line
+description; it handles the rest.
 
 If a build fails or there's something genuinely uncertain about the
 change, stop and ask — but the default is "ship it." Don't pause to ask
