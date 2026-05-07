@@ -10,6 +10,7 @@ import { useUserStats } from './hooks/useUserStats';
 import { useProfile } from './hooks/useProfile';
 import BetaGate from './components/BetaGate';
 import Welcome from './components/Welcome';
+import SpotifyIntro, { hasSeenSpotifyIntro } from './components/SpotifyIntro';
 import VibeCheckIntro, { hasSeenVibeCheckIntro } from './components/VibeCheckIntro';
 import Home from './components/Home';
 import AlbumGrid from './components/AlbumGrid';
@@ -75,6 +76,11 @@ export default function App() {
 
   // ── Welcome tour state ───────────────────────────────────────────────────────
   const [welcomeSeen, setWelcomeSeen] = useState(() => localStorage.getItem(WELCOME_KEY) === '1');
+
+  // ── Spotify intro state (one-time, after Google sign-in, before Welcome) ────
+  // Tracked via state so connecting/skipping advances to the next screen
+  // without a full reload.
+  const [spotifyIntroSeen, setSpotifyIntroSeen] = useState(hasSeenSpotifyIntro);
 
   // ── Data hooks — ALL hooks must be declared before any conditional return ────
   const {
@@ -222,6 +228,19 @@ export default function App() {
     );
   }
 
+  // ── Spotify intro — once per device, only for Google-signed-in users.
+  // Shown BEFORE the Welcome tour so the tour's album carousel can use real
+  // cover art if the user connected. Beta-bypass users (no Firebase user)
+  // skip this entirely. ────────────────────────────────────────────────────
+  if (user && !spotifyIntroSeen) {
+    return (
+      <SpotifyIntro
+        spotify={spotify}
+        onContinue={() => setSpotifyIntroSeen(true)}
+      />
+    );
+  }
+
   // ── Welcome tour — shown once per device after the beta gate is passed ──────
   function dismissWelcome() {
     localStorage.setItem(WELCOME_KEY, '1');
@@ -233,7 +252,7 @@ export default function App() {
   }
 
   if (!welcomeSeen) {
-    return <Welcome onClose={dismissWelcome} />;
+    return <Welcome onClose={dismissWelcome} spotifyAlbumArt={spotify.albumArt} />;
   }
   // ────────────────────────────────────────────────────────────────────────────
 
@@ -522,7 +541,7 @@ export default function App() {
             onContinueRating={handleContinueRating}
             onSelectAlbum={handleSelectAlbum}
             onGoToAlbums={() => setActiveTab('albums')}
-            spotifyAlbumArt={isPro ? spotify.albumArt : null}
+            spotifyAlbumArt={spotify.albumArt}
           />
         )}
 
@@ -533,7 +552,7 @@ export default function App() {
             getAlbumScore={getAlbumScore}
             getRatedCount={getRatedCount}
             activeCategories={activeCategories}
-            albumArt={isPro ? spotify.albumArt : null}
+            albumArt={spotify.albumArt}
           />
         )}
 
@@ -559,10 +578,11 @@ export default function App() {
               onAutoStartConsumed={() => { setAutoStartScore(false); setAutoStartSongIndex(null); }}
               showCategoryBars={settings.showCategoryBars}
               albumMode={getAlbumMode(selectedAlbumId)}
-              spotify={isPro ? spotify : null}
+              spotify={spotify}
+              isPro={isPro}
               spotifyAutoplay={settings.spotifyAutoplay}
               spotifyBridgeAutoplay={settings.spotifyBridgeAutoplay}
-              spotifyAlbumArt={isPro ? spotify.albumArt : null}
+              spotifyAlbumArt={spotify.albumArt}
               onGoToSpotifySettings={() => setActiveTab('settings')}
               confirmExit={settings.confirmQuickScoreExit}
               updateSetting={updateSetting}
@@ -584,7 +604,7 @@ export default function App() {
             getAlbumScore={getAlbumScore}
             activeCategories={activeCategories}
             ratings={ratings}
-            spotifyAlbumArt={isPro ? spotify.albumArt : null}
+            spotifyAlbumArt={spotify.albumArt}
             onSelectAlbum={handleSelectAlbum}
           />
         )}
@@ -593,7 +613,7 @@ export default function App() {
           <Settings
             settings={settings}
             updateSetting={updateSetting}
-            spotify={isPro ? spotify : null}
+            spotify={spotify}
             isPro={isPro}
             unlockPro={handleUnlockProGlobal}
             customerPortalUrl={customerPortalUrl}

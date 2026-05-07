@@ -396,218 +396,165 @@ export default function Settings({
       </div>
 
       {/* ── Spotify section ── */}
+      {/* Connection itself is FREE for everyone (gives real album art across
+          the app). Playback features (autoplay, bridge autoplay, volume) stay
+          gated behind Pro — the toggles still render so users can see what
+          they're missing, but they're disabled and tagged with a PRO badge. */}
       <SectionHeader>Spotify</SectionHeader>
 
-      {!isPro ? (
-        /* Not Pro — show the feature, but clicking Connect opens the upgrade modal */
-        <div style={{
-          background: '#ffffff',
-          border: '0.5px solid #e5e7eb',
-          borderRadius: 12,
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            padding: '14px 16px',
-            borderBottom: '0.5px solid #f3f4f6',
-          }}>
-            <SpotifyBadge variant="green" />
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                <span style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>
-                  Hear it, then rate it
-                </span>
-                <span style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: '#a855f7',
-                  background: '#f3e8ff',
-                  padding: '2px 7px',
-                  borderRadius: 99,
-                  letterSpacing: '0.05em',
-                }}>
-                  PRO
+      <div style={{
+        background: '#ffffff',
+        border: '0.5px solid #e5e7eb',
+        borderRadius: 12,
+        overflow: 'hidden',
+      }}>
+        {spotify?.isConnected ? (
+          <>
+            {/* Connected state — same row for everyone */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '14px 16px',
+              borderBottom: '0.5px solid #f3f4f6',
+            }}>
+              <SpotifyBadge variant="green" />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>
+                  Spotify connected
+                </div>
+                <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
+                  {isPro
+                    ? (spotify.playerReady ? 'Player ready' : 'Player loading…')
+                    : 'Real album art is showing across the app.'}
+                </div>
+              </div>
+              <button
+                onClick={spotify.disconnect}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: 8,
+                  border: '0.5px solid #e5e7eb',
+                  background: '#ffffff',
+                  fontSize: 12,
+                  color: '#6b7280',
+                  cursor: 'pointer',
+                }}
+              >
+                Disconnect
+              </button>
+            </div>
+
+            {/* Playback controls — Pro only. Non-Pro sees them disabled with a PRO badge so they can preview the perk. */}
+            <ProGatedRow
+              isPro={isPro}
+              onUpsell={() => setShowProModal(true)}
+              label="Autoplay songs"
+              description="Start playing each song automatically when it appears in the rating screen."
+              value={settings.spotifyAutoplay}
+              onChange={v => updateSetting('spotifyAutoplay', v)}
+            />
+            <div style={{ height: '0.5px', background: '#f3f4f6', margin: '0 16px' }} />
+            <ProGatedRow
+              isPro={isPro}
+              onUpsell={() => setShowProModal(true)}
+              label="Auto-play bridge"
+              description="Seek to the bridge automatically when the Bridge category appears."
+              value={settings.spotifyBridgeAutoplay ?? false}
+              onChange={v => updateSetting('spotifyBridgeAutoplay', v)}
+            />
+            <div style={{ height: '0.5px', background: '#f3f4f6', margin: '0 16px' }} />
+            {/* Volume slider — Pro only */}
+            <div style={{ padding: '14px 16px', opacity: isPro ? 1 : 0.5 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>Volume</div>
+                    {!isPro && <ProBadge />}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>In-app Spotify playback volume</div>
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#a855f7', minWidth: 36, textAlign: 'right' }}>
+                  {Math.round((settings.spotifyVolume ?? 0.8) * 100)}%
                 </span>
               </div>
-              <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
-                Play each song on Spotify while you rate it
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={settings.spotifyVolume ?? 0.8}
+                disabled={!isPro}
+                onChange={e => {
+                  const v = Number(e.target.value);
+                  updateSetting('spotifyVolume', v);
+                  spotify?.setVolume(v);
+                }}
+                style={{ width: '100%', accentColor: '#1DB954', cursor: isPro ? 'pointer' : 'not-allowed' }}
+              />
+            </div>
+          </>
+        ) : (
+          /* Not connected — anyone can connect */
+          <div style={{ padding: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <SpotifyBadge variant="green" />
+              <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>
+                Connect Spotify
               </div>
             </div>
-          </div>
+            <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.5, marginBottom: 14 }}>
+              Connect to see real album art everywhere in the app.
+              {!isPro && ' Pro unlocks autoplay so each song plays while you rate.'}
+            </div>
 
-          <div style={{ padding: '14px 16px' }}>
+            {spotify?.error && (
+              <div style={{
+                fontSize: 12,
+                color: '#dc2626',
+                background: '#fef2f2',
+                border: '0.5px solid #fecaca',
+                borderRadius: 8,
+                padding: '8px 12px',
+                marginBottom: 12,
+              }}>
+                {spotify.error}
+              </div>
+            )}
+
             <button
-              onClick={() => setShowProModal(true)}
+              onClick={spotify?.connect}
+              disabled={spotify?.isLoading}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 8,
                 width: '100%',
-                padding: '11px',
+                padding: '12px',
                 borderRadius: 10,
                 border: 'none',
-                background: '#1DB954',
+                background: spotify?.isLoading ? '#1aa84a' : '#1DB954',
                 color: '#ffffff',
                 fontSize: 14,
                 fontWeight: 600,
-                cursor: 'pointer',
+                cursor: spotify?.isLoading ? 'default' : 'pointer',
               }}
             >
-              <SpotifyBadge variant="white" />
-              Connect Spotify
-            </button>
-          </div>
-        </div>
-      ) : (
-        /* Pro — show connect / connected UI */
-        <div style={{
-          background: '#ffffff',
-          border: '0.5px solid #e5e7eb',
-          borderRadius: 12,
-          overflow: 'hidden',
-        }}>
-          {spotify?.isConnected ? (
-            <>
-              {/* Connected state */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '14px 16px',
-                borderBottom: '0.5px solid #f3f4f6',
-              }}>
-                <SpotifyBadge variant="green" />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>
-                    Spotify connected
-                  </div>
-                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
-                    {spotify.playerReady ? 'Player ready' : 'Player loading…'}
-                  </div>
-                </div>
-                <button
-                  onClick={spotify.disconnect}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: 8,
-                    border: '0.5px solid #e5e7eb',
-                    background: '#ffffff',
-                    fontSize: 12,
-                    color: '#6b7280',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Disconnect
-                </button>
-              </div>
-
-              {/* Autoplay toggle */}
-              <SettingRow
-                label="Autoplay songs"
-                description="Start playing each song automatically when it appears in the rating screen."
-                value={settings.spotifyAutoplay}
-                onChange={v => updateSetting('spotifyAutoplay', v)}
-              />
-              <div style={{ height: '0.5px', background: '#f3f4f6', margin: '0 16px' }} />
-              <SettingRow
-                label="Auto-play bridge"
-                description="Seek to the bridge automatically when the Bridge category appears."
-                value={settings.spotifyBridgeAutoplay ?? false}
-                onChange={v => updateSetting('spotifyBridgeAutoplay', v)}
-              />
-              <div style={{ height: '0.5px', background: '#f3f4f6', margin: '0 16px' }} />
-              {/* Volume slider */}
-              <div style={{ padding: '14px 16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>Volume</div>
-                    <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>In-app Spotify playback volume</div>
-                  </div>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#a855f7', minWidth: 36, textAlign: 'right' }}>
-                    {Math.round((settings.spotifyVolume ?? 0.8) * 100)}%
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  value={settings.spotifyVolume ?? 0.8}
-                  onChange={e => {
-                    const v = Number(e.target.value);
-                    updateSetting('spotifyVolume', v);
-                    spotify?.setVolume(v);
-                  }}
-                  style={{ width: '100%', accentColor: '#1DB954', cursor: 'pointer' }}
-                />
-              </div>
-
-            </>
-          ) : (
-            /* Pro but not yet connected */
-            <div style={{ padding: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                <SpotifyBadge variant="green" />
-                <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>
-                  Connect Spotify
-                </div>
-              </div>
-              <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.5, marginBottom: 14 }}>
-                Link your Spotify Premium account to hear each song play automatically
-                while you rate it.
-              </div>
-
-              {spotify?.error && (
-                <div style={{
-                  fontSize: 12,
-                  color: '#dc2626',
-                  background: '#fef2f2',
-                  border: '0.5px solid #fecaca',
-                  borderRadius: 8,
-                  padding: '8px 12px',
-                  marginBottom: 12,
-                }}>
-                  {spotify.error}
-                </div>
+              {spotify?.isLoading ? (
+                <Spinner size={18} />
+              ) : (
+                <SpotifyBadge variant="white" />
               )}
+              {spotify?.isLoading ? 'Connecting to Spotify…' : 'Connect Spotify'}
+            </button>
 
-              <button
-                onClick={spotify?.connect}
-                disabled={spotify?.isLoading}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: 10,
-                  border: 'none',
-                  background: spotify?.isLoading ? '#1aa84a' : '#1DB954',
-                  color: '#ffffff',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: spotify?.isLoading ? 'default' : 'pointer',
-                }}
-              >
-                {spotify?.isLoading ? (
-                  <Spinner size={18} />
-                ) : (
-                  <SpotifyBadge variant="white" />
-                )}
-                {spotify?.isLoading ? 'Connecting to Spotify…' : 'Connect Spotify'}
-              </button>
-
-              <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 10, textAlign: 'center' }}>
-                Requires Spotify Premium · Your Eras Ranker login stays separate
-              </div>
+            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 10, textAlign: 'center' }}>
+              Free to connect · Spotify Premium required for in-app playback
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
 
       {/* ── Spotify Premium note ── */}
       <div style={{
@@ -800,8 +747,13 @@ export default function Settings({
 function ProModal({ onUnlock, onClose, user, signIn }) {
   const [step, setStep] = useState('features');
   const [plan, setPlan] = useState('monthly'); // monthly is the lower-commitment default
+  // Pro perks list. Note: connecting Spotify itself is FREE — Pro adds the
+  // in-app playback (autoplay + Play Bridge). Keep wording about "the
+  // playback" rather than "Spotify" to avoid confusion with the free
+  // album-art connection.
   const features = [
-    { kind: 'spotify', label: 'Connect Spotify',     desc: 'Hear each song play while you rate it' },
+    { kind: 'spotify', label: 'Songs autoplay while you rate', desc: 'Each song plays automatically through Spotify (Premium required)' },
+    { kind: 'emoji',   icon: '🌉', label: 'Jump to the bridge', desc: 'One-tap seek to any song’s bridge' },
     { kind: 'emoji',   icon: '📊', label: '8 extra categories', desc: 'Hook, Vocals, Cry Factor, and more' },
     { kind: 'emoji',   icon: '✏️', label: 'Custom categories',  desc: 'Add your own scoring dimensions' },
   ];
@@ -1452,6 +1404,86 @@ function UatToggle({ user, isPro }) {
         >
           {isPro ? 'Revoke Pro' : 'Not Pro'}
         </button>
+      </div>
+    </div>
+  );
+}
+
+// Small purple "PRO" pill — used inline next to setting labels that are
+// gated behind Pro. Tells the free user "this is a paid feature" without
+// hiding the row entirely.
+function ProBadge() {
+  return (
+    <span style={{
+      fontSize: 9,
+      fontWeight: 700,
+      color: '#a855f7',
+      background: '#f3e8ff',
+      padding: '2px 7px',
+      borderRadius: 99,
+      letterSpacing: '0.05em',
+    }}>
+      PRO
+    </span>
+  );
+}
+
+// SettingRow variant that renders the toggle disabled when isPro is false,
+// and instead routes taps on the row to the upgrade modal. Pro users see
+// the regular toggle behaviour.
+function ProGatedRow({ isPro, onUpsell, label, description, value, onChange }) {
+  if (isPro) {
+    return (
+      <SettingRow
+        label={label}
+        description={description}
+        value={value}
+        onChange={onChange}
+      />
+    );
+  }
+
+  return (
+    <div
+      onClick={onUpsell}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 14,
+        padding: '14px 16px',
+        cursor: 'pointer',
+        opacity: 0.65,
+      }}
+    >
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <span style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>{label}</span>
+          <ProBadge />
+        </div>
+        {description && (
+          <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, lineHeight: 1.4 }}>
+            {description}
+          </div>
+        )}
+      </div>
+      <div style={{
+        width: 44,
+        height: 26,
+        borderRadius: 13,
+        background: '#d1d5db',
+        position: 'relative',
+        flexShrink: 0,
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: 3,
+          left: 3,
+          width: 20,
+          height: 20,
+          borderRadius: '50%',
+          background: '#ffffff',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+        }} />
       </div>
     </div>
   );

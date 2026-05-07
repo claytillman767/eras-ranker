@@ -2,8 +2,14 @@ import { useEffect, useState } from 'react';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
 import { drawAlbumSpotlightCard } from './RankingCard';
 
-// Full-screen overlay shown when a user finishes ranking every song in an album.
-// Renders the Album Spotlight share card (Card C from design) and lets them download/share it.
+// Full-screen overlay shown when a user finishes ranking every song in an album,
+// OR when they tap "Share rankings" on the album screen with ≥ 2 songs rated.
+// Renders the Album Spotlight share card and lets them download/share it.
+//
+// mode = 'complete' (default) — the celebration moment, "fully ranked ✦" label
+// mode = 'partial'            — manual share trigger, "X of Y songs rated" label
+//                               (still uses the same card art so the SHARING
+//                                FUNNEL doesn't have to wait for full completion)
 export default function AlbumCompleteCard({
   albumId,
   albumName,
@@ -11,12 +17,18 @@ export default function AlbumCompleteCard({
   getCompositeScore,
   activeCategories,
   onClose,
+  mode = 'complete',
 }) {
   const [cardDataUrl, setCardDataUrl] = useState(null);
 
+  // Count of songs rated in this album (used for the partial-mode label).
+  const songList = SONGS[albumId] || [];
+  const ratedCount = songList.filter((_, i) =>
+    getCompositeScore(albumId, i, activeCategories) !== null
+  ).length;
+
   useEffect(() => {
     const album = ALL_ALBUMS.find(a => a.id === albumId);
-    const songList = SONGS[albumId] || [];
 
     // Top songs for this specific album, sorted by score
     const topSongs = songList
@@ -111,7 +123,9 @@ export default function AlbumCompleteCard({
             {albumName}
           </div>
           <div style={{ fontSize: 14, color: '#a855f7', marginTop: 4, letterSpacing: '0.04em' }}>
-            fully ranked ✦
+            {mode === 'complete'
+              ? 'fully ranked ✦'
+              : `${ratedCount} of ${songList.length} songs rated`}
           </div>
         </div>
 

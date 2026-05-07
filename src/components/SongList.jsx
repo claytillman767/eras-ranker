@@ -38,6 +38,7 @@ export default function SongList({
   albumMode,
   // Spotify playback (optional — omit to hide the feature entirely)
   spotify,
+  isPro,
   spotifyAutoplay,
   spotifyBridgeAutoplay,
   spotifyAlbumArt,
@@ -55,6 +56,10 @@ export default function SongList({
   const [completionShown, setCompletionShown] = useState(false);
   // Midnights Easter egg — shown before the completion card for album 'ml'
   const [showMidnightsEgg, setShowMidnightsEgg] = useState(false);
+  // Manual "Share rankings" overlay — opened from the album-screen button
+  // once the user has at least 2 songs rated, so they can share progress
+  // without waiting for full completion.
+  const [showShareCard, setShowShareCard] = useState(false);
 
   // One-time drag hint shown when the user lands in Sort It Yourself mode
   // for the first time. The drag handle (⠿) is small and not labelled and
@@ -150,6 +155,12 @@ export default function SongList({
 
   // Show "Rank by score" when at least one song has been scored
   const hasAnyScore = sortedSongs.some(s => s.score !== null);
+
+  // Counts used by the in-album "Share rankings" button — visible once the
+  // user has rated at least 2 songs, so the SHARING FUNNEL is reachable
+  // long before the album is fully ranked.
+  const ratedSongCount = sortedSongs.filter(s => s.score !== null).length;
+  const totalSongCount = sortedSongs.length;
 
   // Detect whether the current manual order already matches score order
   const isRankedByScore = hasAnyScore &&
@@ -252,7 +263,8 @@ export default function SongList({
         />
       )}
 
-      {/* Album completion card */}
+      {/* Album completion card — celebration moment when an album just became
+          fully ranked. */}
       {showCompletionCard && (
         <AlbumCompleteCard
           albumId={albumId}
@@ -261,6 +273,22 @@ export default function SongList({
           getCompositeScore={getCompositeScore}
           activeCategories={activeCategories}
           onClose={() => setShowCompletionCard(false)}
+          mode="complete"
+        />
+      )}
+
+      {/* Manual share card — opened from the in-album "Share rankings" button.
+          Shows even when the album isn't fully ranked, with a "X of Y" label
+          instead of the celebration framing. */}
+      {showShareCard && (
+        <AlbumCompleteCard
+          albumId={albumId}
+          albumName={album.name}
+          albumIcon={album.icon}
+          getCompositeScore={getCompositeScore}
+          activeCategories={activeCategories}
+          onClose={() => setShowShareCard(false)}
+          mode="partial"
         />
       )}
 
@@ -277,6 +305,7 @@ export default function SongList({
           onRate={(songIndex, catId, val) => setStarRating(albumId, songIndex, catId, val)}
           onClose={() => setQuickScoreSongs(null)}
           spotify={spotify}
+          isPro={isPro}
           spotifyAutoplay={spotifyAutoplay}
           spotifyBridgeAutoplay={spotifyBridgeAutoplay}
           confirmExit={confirmExit}
@@ -341,6 +370,38 @@ export default function SongList({
             }}
           >
             {isRankedByScore ? '✓ Ranked by score' : 'Rank by score ↕'}
+          </button>
+        )}
+
+        {/* Share rankings — appears as soon as the user has ≥ 2 rated songs
+            so the SHARING FUNNEL doesn't have to wait for full album completion.
+            Sits below "Rank by score" with the same secondary-button styling. */}
+        {ratedSongCount >= 2 && (
+          <button
+            onClick={() => setShowShareCard(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              width: '100%',
+              marginTop: 6,
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: '0.5px solid #d8b4fe',
+              background: '#faf5ff',
+              color: '#7c3aed',
+              fontSize: 12,
+              fontWeight: 500,
+              cursor: 'pointer',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+            Share rankings ({ratedSongCount} of {totalSongCount})
           </button>
         )}
       </div>

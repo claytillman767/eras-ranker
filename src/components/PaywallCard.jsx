@@ -39,13 +39,15 @@ export default function PaywallCard({ onUnlock, user, signIn }) {
 
           {/* Description */}
           <p style={{ fontSize: 13, color: '#4b5563', margin: '0 0 12px', lineHeight: 1.5 }}>
-            Unlock extra categories, build your own custom scoring system, and play songs while you rate.
+            Unlock extra categories, build your own custom scoring system, and have every song play while you rate.
           </p>
 
-          {/* Feature list */}
+          {/* Feature list — Spotify *connection* is free for everyone (album art).
+              The Pro perk is the in-app playback that connection unlocks. */}
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
             {[
-              'Connect Spotify to play songs while you rate',
+              'Songs autoplay through Spotify while you rate',
+              'Jump straight to any song’s bridge',
               '8 new categories to score',
               'Add your own custom categories',
               'Export your full rankings list',

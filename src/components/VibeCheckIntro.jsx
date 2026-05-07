@@ -215,14 +215,8 @@ export default function VibeCheckIntro({
             {
               spotify: true,
               icon: '🎵',
-              title: 'Songs play while you rate',
-              desc: 'Each song auto-plays from a hand-picked moment as the screen opens.',
-            },
-            {
-              spotify: true,
-              icon: '💿',
-              title: 'Real album cover art',
-              desc: 'Real Spotify covers replace the emoji tiles across the whole app.',
+              title: 'Songs autoplay while you rate',
+              desc: 'Each song starts automatically from a hand-picked moment as the screen opens.',
             },
             {
               spotify: true,
@@ -264,7 +258,9 @@ export default function VibeCheckIntro({
             </div>
           ))}
 
-          {/* Spotify Premium footnote */}
+          {/* Spotify connection note — connecting itself is free for everyone
+              (gives real album art across the app); Premium is only required
+              for the in-app playback features above. */}
           <div style={{
             marginTop: 14,
             paddingTop: 12,
@@ -278,7 +274,7 @@ export default function VibeCheckIntro({
           }}>
             <SpotifyBadge size={14} />
             <span>
-              Spotify features require a <b style={{ color: '#111827' }}>Spotify Premium</b> account connected to Eras Ranker.
+              Connect Spotify free for real album art everywhere. In-app playback needs a <b style={{ color: '#111827' }}>Spotify Premium</b> account.
             </span>
           </div>
         </div>

@@ -1,7 +1,9 @@
 import SpotifyBadge from './SpotifyBadge';
 
 // localStorage keys for the "Connect Spotify?" nudge that appears on this
-// modal when a Pro user hasn't yet connected Spotify.
+// modal when a Pro user hasn't yet connected Spotify. Free users see the
+// post-login SpotifyIntro instead, so this in-modal nudge is Pro-only —
+// reminding them to finish the second half of the flow they paid for.
 //
 //   eras_spotify_connect_nudge_until  — millisecond timestamp; nudge stays
 //                                       hidden until this time has passed.
@@ -126,8 +128,8 @@ export default function AlbumModeModal({
               </div>
             </div>
             <div style={{ fontSize: 12, color: '#4b5563', lineHeight: 1.45, marginBottom: 12 }}>
-              Vibe Check is way better when you can hear each song while you rate.
-              Pro is unlocked — just one more step.
+              You're Pro — connect Spotify so each song plays automatically while you rate.
+              One more step.
             </div>
             <button
               onClick={handleConnect}
