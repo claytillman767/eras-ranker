@@ -110,20 +110,29 @@ export default function VibeCheckIntro({
         </div>
       ) : (
       <>
-      {/* Body — scrolls when the perks list overflows on small screens */}
+      {/* Body — outer scroll container; inner uses margin:auto for vertical
+          centering when there's room and natural top-aligned scrolling when
+          the content is taller than the viewport. justify-content: center
+          with overflow on the same element clips content above the scroll
+          origin, which was hiding the hero icons on small phones. */}
       <div style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
+        overflowY: 'auto',
+      }}>
+      <div style={{
+        margin: 'auto 0',
+        display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: '0 24px',
+        padding: '20px 24px',
         maxWidth: 480,
-        margin: '0 auto',
+        marginLeft: 'auto',
+        marginRight: 'auto',
         width: '100%',
         boxSizing: 'border-box',
         textAlign: 'center',
-        overflowY: 'auto',
       }}>
         {/* Hero — headphones + Spotify */}
         <div style={{
@@ -273,6 +282,7 @@ export default function VibeCheckIntro({
             </span>
           </div>
         </div>
+      </div>
       </div>
 
       {/* CTAs */}
