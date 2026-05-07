@@ -16,6 +16,46 @@ Newest entries go at the top.
 
 ---
 
+## 0.7.1 — 2026-05-07
+
+### Changed
+- **Spotify integration tightened up to match Spotify's published rules.**
+  A handful of small but real compliance issues were fixed so the app is
+  ready to be pointed at real users without breaking Spotify's terms:
+  - **"Album art from Spotify" + an "Open in Spotify" link now appear
+    everywhere album covers do.** Previously this was only on the mini
+    player and a couple of leaderboards. Now the album grid, the album
+    detail header, and the welcome tour all show the attribution, and
+    each cover in the grid (and detail page) has a small ↗ link that
+    opens the album directly in Spotify.
+  - **Album art + track URIs now refresh every 24 hours.** Spotify
+    requires that cached metadata be refreshed at least once a day.
+    Old entries are dropped quietly on app load and re-fetched the
+    next time you open the relevant screen — no visible difference
+    unless you'd been offline for a long stretch.
+  - **Spotify green is now reserved for the Spotify logo itself.**
+    The "Try it on the next song" button in the autoplay nudge and
+    the in-app volume slider both used Spotify green, which Spotify
+    reserves for their own branding. Both now use the app's purple
+    instead. The actual "Connect Spotify" buttons remain green —
+    that's the one branded button pattern Spotify allows.
+  - **The two "Spotify Premium →" links in Settings are no longer
+    Spotify-green.** Same reason — green is for the logo, not for
+    arbitrary text links. They're now a neutral underlined grey.
+  - **Spotify logo bumped to 24px everywhere.** The autoplay nudge
+    button had a 20px logo, smaller than both Spotify's recommended
+    floor and the project's own minimum. Default size lifted from 22
+    to 24 across the app.
+
+### Fixed
+- **Spotify rate-limit handling.** API calls now respect the
+  `Retry-After` header returned during rate-limited periods, retrying
+  once after the suggested wait. The album-art prefetch on connect
+  also paces itself between requests so it stops hammering Spotify
+  with 13 simultaneous searches.
+
+---
+
 ## 0.7.0 — 2026-05-07
 
 ### Added

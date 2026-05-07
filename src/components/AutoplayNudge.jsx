@@ -92,7 +92,10 @@ export default function AutoplayNudge({ onTryIt, onLater }) {
           just listen and rate. Try it on the next song to hear what it's like.
         </div>
 
-        {/* Try it — Spotify branding (green on white). Activates demo mode in QuickScore. */}
+        {/* Try it — this activates a Pro autoplay preview, so the button uses
+            the app's purple Pro gradient. Spotify's brand-button green is
+            reserved for "Connect with Spotify" CTAs (per Spotify design
+            guidelines), and this isn't one — it's selling the app's Pro tier. */}
         <button
           onClick={onTryIt}
           style={{
@@ -104,16 +107,18 @@ export default function AutoplayNudge({ onTryIt, onLater }) {
             padding: '14px',
             borderRadius: 12,
             border: 'none',
-            background: '#1DB954',
+            background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
             color: '#ffffff',
             fontSize: 15,
             fontWeight: 700,
             cursor: 'pointer',
-            boxShadow: '0 4px 14px rgba(29,185,84,0.28)',
+            boxShadow: '0 4px 14px rgba(168,85,247,0.32)',
             marginBottom: 10,
           }}
         >
-          <SpotifyBadge variant="white" size={20} />
+          {/* Logo bumped to 24px — the project minimum, and Spotify's recommended
+              icon-only floor for non-cramped contexts. */}
+          <SpotifyBadge variant="white" size={24} />
           Try it on the next song
         </button>
 

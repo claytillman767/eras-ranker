@@ -32,8 +32,14 @@ const TOKEN_KEY   = 'spotify_access_token';
 const REFRESH_KEY = 'spotify_refresh_token';
 const EXPIRY_KEY  = 'spotify_token_expiry';
 const CACHE_KEY   = 'eras_spotify_tracks';     // song-URI lookup cache
-const ART_KEY     = 'eras_spotify_album_art';  // albumId → image URL cache
+const ART_KEY     = 'eras_spotify_album_art';  // albumId → { url, spotifyAlbumId } cache
 const PRODUCT_KEY = 'eras_spotify_product';    // 'premium' | 'free' | 'open' (cached /me result)
+
+// Spotify's developer terms cap caching of catalog content (track URIs, album
+// art URLs, etc.) at 24 hours unless explicitly allowed otherwise — entries
+// older than this are dropped on load and refetched lazily so we always show
+// fresh metadata.
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 // ── PKCE helpers ──────────────────────────────────────────────────────────────
 
@@ -74,10 +80,24 @@ function clearTokens() {
 }
 
 // ── Track URI cache ───────────────────────────────────────────────────────────
+// Schema (current): { [`${albumId}_${songIndex}`]: { uri, fetchedAt } }
+// Stale entries (older than CACHE_TTL_MS) are dropped on load. Old entries
+// stored as plain strings (legacy) are also dropped — they'll be re-resolved
+// the next time playTrack runs, costing one extra Search call per song.
 
 function loadCache() {
-  try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); }
-  catch { return {}; }
+  try {
+    const raw = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+    const now = Date.now();
+    const fresh = {};
+    for (const [k, v] of Object.entries(raw)) {
+      if (v && typeof v === 'object' && v.uri && typeof v.fetchedAt === 'number') {
+        if (now - v.fetchedAt < CACHE_TTL_MS) fresh[k] = v;
+      }
+      // legacy string entries are intentionally dropped — they had no timestamp
+    }
+    return fresh;
+  } catch { return {}; }
 }
 
 function saveCache(cache) {
@@ -86,10 +106,23 @@ function saveCache(cache) {
 }
 
 // ── Album art cache ───────────────────────────────────────────────────────────
+// Schema (current): { [albumId]: { url, spotifyAlbumId, fetchedAt } }
+// `spotifyAlbumId` powers the "Open in Spotify" link-back required by
+// Spotify's design guidelines wherever album art is shown.
 
 function loadArtCache() {
-  try { return JSON.parse(localStorage.getItem(ART_KEY) || '{}'); }
-  catch { return {}; }
+  try {
+    const raw = JSON.parse(localStorage.getItem(ART_KEY) || '{}');
+    const now = Date.now();
+    const fresh = {};
+    for (const [k, v] of Object.entries(raw)) {
+      if (v && typeof v === 'object' && v.url && typeof v.fetchedAt === 'number') {
+        if (now - v.fetchedAt < CACHE_TTL_MS) fresh[k] = v;
+      }
+      // legacy plain-URL entries are dropped — they had no timestamp or albumId
+    }
+    return fresh;
+  } catch { return {}; }
 }
 
 function saveArtCache(cache) {
@@ -97,7 +130,42 @@ function saveArtCache(cache) {
   catch { /* storage full — ignore */ }
 }
 
+// Flatten the internal art cache (object values) to the {albumId: url} shape
+// the rest of the app consumes. Components don't care about the underlying
+// timestamp / spotify album id — they just want the image src.
+function artUrlMap(cache) {
+  const out = {};
+  for (const [k, v] of Object.entries(cache)) out[k] = v.url;
+  return out;
+}
+
+// Same idea for {albumId: spotifyAlbumId} so components that need link-back
+// URLs ("Open in Spotify") can read the Spotify album id directly.
+function artSpotifyIdMap(cache) {
+  const out = {};
+  for (const [k, v] of Object.entries(cache)) {
+    if (v.spotifyAlbumId) out[k] = v.spotifyAlbumId;
+  }
+  return out;
+}
+
 // ── Spotify API helpers ───────────────────────────────────────────────────────
+
+// Thin fetch wrapper that respects Spotify's rate-limit headers. On a 429
+// response we wait the server-suggested duration (capped at 30s so a runaway
+// Retry-After can't hang the UI indefinitely) and retry once. Any other
+// status — including success — is returned unchanged.
+async function spotifyApiFetch(url, init, retries = 1) {
+  const res = await fetch(url, init);
+  if (res.status === 429 && retries > 0) {
+    const headerVal = Number(res.headers.get('Retry-After'));
+    const seconds = Number.isFinite(headerVal) && headerVal > 0 ? headerVal : 1;
+    const waitMs = Math.min(seconds, 30) * 1000;
+    await new Promise(r => setTimeout(r, waitMs));
+    return spotifyApiFetch(url, init, retries - 1);
+  }
+  return res;
+}
 
 async function exchangeCode(code, verifier) {
   const res = await fetch('https://accounts.spotify.com/api/token', {
@@ -154,7 +222,7 @@ async function getFreshToken() {
 // — callers should treat null as "unknown, don't sell Premium-dependent perks."
 async function fetchProduct(token) {
   try {
-    const res = await fetch('https://api.spotify.com/v1/me', {
+    const res = await spotifyApiFetch('https://api.spotify.com/v1/me', {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return null;
@@ -175,12 +243,14 @@ function cleanName(name) {
     .trim();
 }
 
-// Searches Spotify for a track and returns its URI, or null if not found.
+// Searches Spotify for a track and returns its URI, the cover image URL, and
+// the Spotify album id (used to build "Open in Spotify" link-back URLs).
+// Returns null if not found.
 async function searchTrackUri(songName, albumName, token) {
   const clean = cleanName(songName);
   const q = encodeURIComponent(`track:${clean} artist:taylor swift`);
   try {
-    const res = await fetch(
+    const res = await spotifyApiFetch(
       `https://api.spotify.com/v1/search?q=${q}&type=track&limit=5&market=US`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -200,7 +270,11 @@ async function searchTrackUri(songName, albumName, token) {
     const images = best.album.images;
     // Prefer medium size (index 1 ~300px); fall back to largest if only one size
     const imageUrl = (images[1] ?? images[0])?.url ?? null;
-    return { uri: best.uri, imageUrl };
+    return {
+      uri: best.uri,
+      imageUrl,
+      spotifyAlbumId: best.album.id ?? null,
+    };
   } catch {
     return null;
   }
@@ -223,7 +297,13 @@ export function useSpotify(user) {
   const [isPlaying, setIsPlaying]         = useState(false);
   const [currentSongName, setCurrentSongName] = useState(null);
   const [error, setError]                 = useState(null);
-  const [albumArt, setAlbumArt]           = useState(loadArtCache);
+  // The art cache is stored as { albumId: { url, spotifyAlbumId, fetchedAt } }
+  // internally, but we expose two flat maps to consumers:
+  //   - albumArt:        { albumId: url }              — for <img src>
+  //   - albumSpotifyIds: { albumId: spotifyAlbumId }   — for "Open in Spotify"
+  const [artCacheState, setArtCacheState] = useState(loadArtCache);
+  const albumArt        = artUrlMap(artCacheState);
+  const albumSpotifyIds = artSpotifyIdMap(artCacheState);
   // 'premium' | 'free' | 'open' | null (null = unknown — treat as non-Premium
   // for funnel purposes so we don't sell perks the user can't use). Cached in
   // localStorage so we don't re-fetch on every load.
@@ -395,15 +475,23 @@ export function useSpotify(user) {
         if (!songName) continue;
         const result = await searchTrackUri(songName, album.name, token);
         if (result?.imageUrl) {
-          updated[album.id] = result.imageUrl;
+          updated[album.id] = {
+            url: result.imageUrl,
+            spotifyAlbumId: result.spotifyAlbumId ?? null,
+            fetchedAt: Date.now(),
+          };
           changed = true;
         }
+        // Light pacing between requests so we don't paint a target on
+        // ourselves with Spotify's per-app rate limiter when 13 albums
+        // queue up at once. spotifyApiFetch handles 429 if it does fire.
+        await new Promise(r => setTimeout(r, 60));
       }
 
       if (changed) {
         artCache.current = updated;
         saveArtCache(updated);
-        setAlbumArt({ ...updated });
+        setArtCacheState({ ...updated });
       }
     }
 
@@ -445,7 +533,7 @@ export function useSpotify(user) {
     localStorage.removeItem(PRODUCT_KEY);
     artCache.current   = {};
     trackCache.current = {};
-    setAlbumArt({});
+    setArtCacheState({});
     setIsConnected(false);
     setPlayerReady(false);
     setIsPlaying(false);
@@ -462,19 +550,24 @@ export function useSpotify(user) {
     if (!token || !deviceIdRef.current) return;
 
     const cacheKey = `${albumId}_${songIndex}`;
-    let uri = trackCache.current[cacheKey];
+    let uri = trackCache.current[cacheKey]?.uri;
 
     if (!uri) {
       const result = await searchTrackUri(songName, albumName, token);
       if (result?.uri) {
         uri = result.uri;
-        trackCache.current[cacheKey] = uri;
+        trackCache.current[cacheKey] = { uri, fetchedAt: Date.now() };
         saveCache(trackCache.current);
         // Cache art as a bonus if we don't have it yet for this album
         if (result.imageUrl && !artCache.current[albumId]) {
-          artCache.current[albumId] = result.imageUrl;
+          const entry = {
+            url: result.imageUrl,
+            spotifyAlbumId: result.spotifyAlbumId ?? null,
+            fetchedAt: Date.now(),
+          };
+          artCache.current[albumId] = entry;
           saveArtCache(artCache.current);
-          setAlbumArt(prev => ({ ...prev, [albumId]: result.imageUrl }));
+          setArtCacheState(prev => ({ ...prev, [albumId]: entry }));
         }
       }
     }
@@ -486,7 +579,7 @@ export function useSpotify(user) {
       : (SPOTIFY_START_TIMES[cacheKey] ?? 0);
 
     try {
-      await fetch(
+      await spotifyApiFetch(
         `https://api.spotify.com/v1/me/player/play?device_id=${deviceIdRef.current}`,
         {
           method: 'PUT',
@@ -517,6 +610,10 @@ export function useSpotify(user) {
     isPlaying,
     currentSongName,
     albumArt,
+    // { albumId: spotifyAlbumId } — used by surfaces that show album art
+    // to build the "Open in Spotify" link-back required by Spotify's
+    // design guidelines (e.g. AlbumCard, AlbumHero).
+    albumSpotifyIds,
     error,
     // Spotify product tier of the connected account: 'premium' | 'free' |
     // 'open' | null. `isPremium` is the derived boolean the rest of the app

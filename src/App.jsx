@@ -572,6 +572,7 @@ export default function App() {
             getRatedCount={getRatedCount}
             activeCategories={activeCategories}
             albumArt={spotify.albumArt}
+            albumSpotifyIds={spotify.albumSpotifyIds}
           />
         )}
 
@@ -602,6 +603,7 @@ export default function App() {
               spotifyAutoplay={settings.spotifyAutoplay}
               spotifyBridgeAutoplay={settings.spotifyBridgeAutoplay}
               spotifyAlbumArt={spotify.albumArt}
+              spotifyAlbumIds={spotify.albumSpotifyIds}
               onGoToSpotifySettings={() => setActiveTab('settings')}
               confirmExit={settings.confirmQuickScoreExit}
               updateSetting={updateSetting}

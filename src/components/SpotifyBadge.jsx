@@ -3,10 +3,10 @@
 //   'black' — on light/colored backgrounds
 //   'white' — on dark or Spotify-green backgrounds
 //
-// CLAUDE.md states a 24px minimum for the logo; default size is 22 only because
-// existing inline call sites in Settings predate the rule. New code should pass
-// size={24} or larger.
-export default function SpotifyBadge({ variant = 'green', size = 22 }) {
+// CLAUDE.md and Spotify's design guidelines both call for a 24px minimum for
+// the logomark in non-cramped contexts. This default keeps every call site
+// compliant unless a tighter size is explicitly requested.
+export default function SpotifyBadge({ variant = 'green', size = 24 }) {
   const circleFill = variant === 'green' ? '#1DB954'
     : variant === 'black' ? '#191414'
     : 'rgba(255,255,255,0.3)';
