@@ -146,22 +146,50 @@ export default function AlbumCompleteCard({
           animation: 'acc-slide-up 0.4s ease 0.25s both',
           opacity: 0,
         }}>
+          {/* Share — only on platforms with the native share sheet
+              (mobile, mostly). When share isn't available, the Save
+              button below covers downloading on its own. */}
+          {canNativeShare && (
+            <button
+              onClick={handleShare}
+              disabled={!cardDataUrl}
+              style={{
+                padding: '13px',
+                borderRadius: 12,
+                border: 'none',
+                background: cardDataUrl ? '#a855f7' : '#2d1b4e',
+                color: '#ffffff',
+                fontSize: 15,
+                fontWeight: 600,
+                cursor: cardDataUrl ? 'pointer' : 'default',
+                letterSpacing: '0.01em',
+              }}
+            >
+              Share Card
+            </button>
+          )}
+
+          {/* Save — always available; primary style on desktop where it's
+              the only action, secondary outline style on mobile where it
+              sits next to Share. */}
           <button
-            onClick={canNativeShare ? handleShare : handleDownload}
+            onClick={handleDownload}
             disabled={!cardDataUrl}
             style={{
               padding: '13px',
               borderRadius: 12,
-              border: 'none',
-              background: cardDataUrl ? '#a855f7' : '#2d1b4e',
-              color: '#ffffff',
+              border: canNativeShare ? '1px solid rgba(168,85,247,0.5)' : 'none',
+              background: canNativeShare
+                ? 'transparent'
+                : (cardDataUrl ? '#a855f7' : '#2d1b4e'),
+              color: canNativeShare ? '#a855f7' : '#ffffff',
               fontSize: 15,
               fontWeight: 600,
               cursor: cardDataUrl ? 'pointer' : 'default',
               letterSpacing: '0.01em',
             }}
           >
-            {canNativeShare ? 'Share Card' : 'Download Card'}
+            Save Card
           </button>
 
           <button
