@@ -16,6 +16,48 @@ Newest entries go at the top.
 
 ---
 
+## 0.7.0 — 2026-05-07
+
+### Added
+- **Spotify Premium detection.** When you connect your Spotify
+  account, the app now asks Spotify whether your account is Premium
+  or free. The rest of the app adapts: free Spotify users get album
+  art across the app and aren't pitched in-app autoplay (since Pro
+  alone can't unlock it for them), while Premium users see the full
+  Pro funnel that includes autoplay and "jump to the bridge."
+
+### Changed
+- **Pro pitch is honest about what each user actually gets.**
+  - The first-Vibe-Check Pro screen, the Categories paywall, and the
+    Settings Pro modal all hide the autoplay / jump-to-bridge perks
+    when we know your Spotify account is free, so we never sell a
+    feature you can't use.
+  - The Settings → Spotify connected row now reads "Album art only —
+    Spotify Premium is needed for in-app playback" for free Spotify
+    accounts, with a link out to spotify.com/premium. The autoplay,
+    bridge autoplay, and volume controls are hidden for those users
+    (they don't do anything without Premium).
+  - The post-login Spotify intro screen now spells it out: "A free
+    Spotify account is enough for album art; Spotify Premium is only
+    required if you also want songs to play in-app."
+
+### Fixed
+- **Free Spotify accounts no longer get force-disconnected.** The
+  Web Playback SDK only works for Spotify Premium accounts, but the
+  old code was kicking in the SDK for everyone, hitting an auth error
+  on free accounts, and then disconnecting them entirely — so they
+  lost their album art mid-fetch and saw an alarming error message.
+  Now we detect Premium upfront and skip the doomed SDK init for
+  free accounts; they stay connected for album art and the rest of
+  the app adjusts gracefully.
+- **30-song autoplay nudge no longer pops for free Spotify users.**
+  The pop-up that says "want to try Pro autoplay on the next song?"
+  was triggering for connected free-Spotify users — but Pro alone
+  can't grant them autoplay, so the demo wouldn't actually do
+  anything. The nudge now only fires for Premium accounts.
+
+---
+
 ## 0.6.0 — 2026-05-07
 
 ### Changed

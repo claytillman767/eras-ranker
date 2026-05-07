@@ -146,6 +146,7 @@ export default function Settings({
           onClose={() => setShowProModal(false)}
           user={user}
           signIn={signIn}
+          spotify={spotify}
         />
       )}
 
@@ -410,7 +411,9 @@ export default function Settings({
       }}>
         {spotify?.isConnected ? (
           <>
-            {/* Connected state — same row for everyone */}
+            {/* Connected state — status text adapts to whether the connected
+                Spotify account is Premium (playback works) or free (album art
+                only). */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -424,9 +427,11 @@ export default function Settings({
                   Spotify connected
                 </div>
                 <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
-                  {isPro
-                    ? (spotify.playerReady ? 'Player ready' : 'Player loading…')
-                    : 'Real album art is showing across the app.'}
+                  {!spotify.isPremium
+                    ? 'Album art only — Spotify Premium is needed for in-app playback.'
+                    : (isPro
+                      ? (spotify.playerReady ? 'Player ready' : 'Player loading…')
+                      : 'Real album art is showing across the app.')}
                 </div>
               </div>
               <button
@@ -445,7 +450,25 @@ export default function Settings({
               </button>
             </div>
 
-            {/* Playback controls — Pro only. Non-Pro sees them disabled with a PRO badge so they can preview the perk. */}
+            {/* Playback controls — only shown when the connected Spotify is
+                Premium (otherwise the toggles do nothing because Premium is
+                required for the Web Playback SDK). For non-Premium accounts
+                we surface a short note instead so the user knows why the
+                rows are gone. */}
+            {!spotify.isPremium ? (
+              <div style={{ padding: '14px 16px', fontSize: 12, color: '#6b7280', lineHeight: 1.5 }}>
+                Autoplay, bridge autoplay, and volume controls require a Spotify Premium account.{' '}
+                <a
+                  href="https://spotify.com/premium"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: '#1DB954', textDecoration: 'none', fontWeight: 500 }}
+                >
+                  Try Spotify Premium →
+                </a>
+              </div>
+            ) : (
+              <>
             <ProGatedRow
               isPro={isPro}
               onUpsell={() => setShowProModal(true)}
@@ -493,6 +516,8 @@ export default function Settings({
                 style={{ width: '100%', accentColor: '#1DB954', cursor: isPro ? 'pointer' : 'not-allowed' }}
               />
             </div>
+              </>
+            )}
           </>
         ) : (
           /* Not connected — anyone can connect */
@@ -629,6 +654,7 @@ export default function Settings({
           getAlbumScore={getAlbumScore}
           user={user}
           signIn={signIn}
+          spotify={spotify}
         />
       )}
 
@@ -744,19 +770,20 @@ export default function Settings({
 //   step 'signin'   → "Sign in required" panel, shown after the user taps
 //                     Unlock Pro without being signed in (lets them make the
 //                     decision first, then explains the login requirement)
-function ProModal({ onUnlock, onClose, user, signIn }) {
+function ProModal({ onUnlock, onClose, user, signIn, spotify }) {
   const [step, setStep] = useState('features');
   const [plan, setPlan] = useState('monthly'); // monthly is the lower-commitment default
   // Pro perks list. Note: connecting Spotify itself is FREE — Pro adds the
-  // in-app playback (autoplay + Play Bridge). Keep wording about "the
-  // playback" rather than "Spotify" to avoid confusion with the free
-  // album-art connection.
+  // in-app playback (autoplay + Play Bridge). Playback perks are hidden
+  // when we already know the user's Spotify is non-Premium, since Pro alone
+  // cannot unlock playback for them — they'd need to upgrade Spotify too.
+  const knownNonPremium = spotify?.isConnected && !spotify?.isPremium;
   const features = [
-    { kind: 'spotify', label: 'Songs autoplay while you rate', desc: 'Each song plays automatically through Spotify (Premium required)' },
-    { kind: 'emoji',   icon: '🌉', label: 'Jump to the bridge', desc: 'One-tap seek to any song’s bridge' },
-    { kind: 'emoji',   icon: '📊', label: '8 extra categories', desc: 'Hook, Vocals, Cry Factor, and more' },
-    { kind: 'emoji',   icon: '✏️', label: 'Custom categories',  desc: 'Add your own scoring dimensions' },
-  ];
+    { kind: 'spotify',  playback: true,  label: 'Songs autoplay while you rate', desc: 'Each song plays automatically through Spotify (Premium required)' },
+    { kind: 'emoji',    playback: true,  icon: '🌉', label: 'Jump to the bridge', desc: 'One-tap seek to any song’s bridge' },
+    { kind: 'emoji',    playback: false, icon: '📊', label: '8 extra categories', desc: 'Hook, Vocals, Cry Factor, and more' },
+    { kind: 'emoji',    playback: false, icon: '✏️', label: 'Custom categories',  desc: 'Add your own scoring dimensions' },
+  ].filter(f => !(f.playback && knownNonPremium));
 
   function handleUnlock() {
     if (!user) {

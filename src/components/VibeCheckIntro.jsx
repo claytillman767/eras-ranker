@@ -199,6 +199,12 @@ export default function VibeCheckIntro({
             EVERYTHING PRO UNLOCKS
           </div>
 
+          {/* Pro perk list. Playback-dependent perks (Spotify-flagged below)
+              are hidden when the user is connected to Spotify with a free
+              account, since Pro alone can't unlock playback for them — only
+              a Spotify Premium upgrade can. We show them by default for
+              users who haven't connected yet (still possible they have
+              Premium) and for connected Premium users (perks are real). */}
           {[
             {
               spotify: false,
@@ -224,7 +230,10 @@ export default function VibeCheckIntro({
               title: 'Jump straight to the bridge',
               desc: "On the Bridge category, tap one button to skip right to the song's bridge.",
             },
-          ].map((item, i, arr) => (
+          ].filter(item => {
+            const knownNonPremium = spotify?.isConnected && !spotify?.isPremium;
+            return !(item.spotify && knownNonPremium);
+          }).map((item, i, arr) => (
             <div
               key={item.title}
               style={{
@@ -258,9 +267,8 @@ export default function VibeCheckIntro({
             </div>
           ))}
 
-          {/* Spotify connection note — connecting itself is free for everyone
-              (gives real album art across the app); Premium is only required
-              for the in-app playback features above. */}
+          {/* Spotify connection note — adapts to what we know about the user's
+              Spotify account so the pitch never lies. */}
           <div style={{
             marginTop: 14,
             paddingTop: 12,
@@ -274,7 +282,10 @@ export default function VibeCheckIntro({
           }}>
             <SpotifyBadge size={14} />
             <span>
-              Connect Spotify free for real album art everywhere. In-app playback needs a <b style={{ color: '#111827' }}>Spotify Premium</b> account.
+              {spotify?.isConnected && !spotify?.isPremium
+                ? <>Your Spotify is free, so you'll see real album art everywhere. <b style={{ color: '#111827' }}>Spotify Premium</b> is needed for in-app playback (separate from Eras Ranker Pro).</>
+                : <>Connect Spotify free for real album art everywhere. In-app playback needs a <b style={{ color: '#111827' }}>Spotify Premium</b> account.</>
+              }
             </span>
           </div>
         </div>

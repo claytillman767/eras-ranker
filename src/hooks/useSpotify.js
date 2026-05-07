@@ -33,6 +33,7 @@ const REFRESH_KEY = 'spotify_refresh_token';
 const EXPIRY_KEY  = 'spotify_token_expiry';
 const CACHE_KEY   = 'eras_spotify_tracks';     // song-URI lookup cache
 const ART_KEY     = 'eras_spotify_album_art';  // albumId → image URL cache
+const PRODUCT_KEY = 'eras_spotify_product';    // 'premium' | 'free' | 'open' (cached /me result)
 
 // ── PKCE helpers ──────────────────────────────────────────────────────────────
 
@@ -146,6 +147,24 @@ async function getFreshToken() {
   }
 }
 
+// Fetches the connected Spotify user's product tier ('premium' | 'free' | 'open').
+// Premium is required for the Web Playback SDK; free/open accounts can still
+// authenticate and use the public Web API (Search), so we keep them connected
+// for album art but skip SDK init entirely. Returns null on network failure
+// — callers should treat null as "unknown, don't sell Premium-dependent perks."
+async function fetchProduct(token) {
+  try {
+    const res = await fetch('https://api.spotify.com/v1/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.product ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // Strips parenthetical suffixes that break Spotify search
 // e.g. "(From The Vault)", "(feat. Post Malone)", "(Taylor's Version)"
 function cleanName(name) {
@@ -205,6 +224,11 @@ export function useSpotify(user) {
   const [currentSongName, setCurrentSongName] = useState(null);
   const [error, setError]                 = useState(null);
   const [albumArt, setAlbumArt]           = useState(loadArtCache);
+  // 'premium' | 'free' | 'open' | null (null = unknown — treat as non-Premium
+  // for funnel purposes so we don't sell perks the user can't use). Cached in
+  // localStorage so we don't re-fetch on every load.
+  const [spotifyProduct, setSpotifyProduct] = useState(() => localStorage.getItem(PRODUCT_KEY));
+  const isPremium = spotifyProduct === 'premium';
 
   const playerRef    = useRef(null);
   const deviceIdRef  = useRef(null);
@@ -229,8 +253,16 @@ export function useSpotify(user) {
 
     setIsLoading(true);
     exchangeCode(code, verifier)
-      .then(({ access_token, refresh_token, expires_in }) => {
+      .then(async ({ access_token, refresh_token, expires_in }) => {
         saveTokens(access_token, refresh_token, expires_in);
+        // Detect Premium status immediately so we know whether to init the
+        // Web Playback SDK and whether to sell playback-dependent Pro perks
+        // to this user. Cached so subsequent loads don't re-fetch.
+        const product = await fetchProduct(access_token);
+        if (product) {
+          localStorage.setItem(PRODUCT_KEY, product);
+          setSpotifyProduct(product);
+        }
         setIsConnected(true);
         setError(null);
       })
@@ -238,9 +270,32 @@ export function useSpotify(user) {
       .finally(() => setIsLoading(false));
   }, []);
 
-  // ── Load SDK + init player whenever we have a valid token ────────────────
+  // ── On app load with a cached connection, refresh the product tier in case
+  // the user's Spotify subscription changed (downgraded from Premium, or
+  // upgraded to Premium) since their last visit. Best-effort — failures
+  // leave the cached value alone. ─────────────────────────────────────────
   useEffect(() => {
     if (!isConnected) return;
+    let cancelled = false;
+    (async () => {
+      const token = await getFreshToken();
+      if (!token || cancelled) return;
+      const product = await fetchProduct(token);
+      if (cancelled || !product) return;
+      localStorage.setItem(PRODUCT_KEY, product);
+      setSpotifyProduct(product);
+    })();
+    return () => { cancelled = true; };
+  }, [isConnected]);
+
+  // ── Load SDK + init player whenever we have a valid token ────────────────
+  // Only runs for Premium accounts — the Web Playback SDK requires Premium
+  // and would just fire authentication_error for free/open accounts. Skipping
+  // it entirely for non-Premium keeps them connected for album art (via the
+  // Search API, which works for any account) without the doomed init.
+  useEffect(() => {
+    if (!isConnected) return;
+    if (!isPremium) return;
 
     function init() {
       if (playerRef.current) return; // already initialized
@@ -274,19 +329,25 @@ export function useSpotify(user) {
       });
 
       player.addListener('authentication_error', ({ message }) => {
-        // Usually means the user isn't Premium or the token expired
-        setError(
-          message?.toLowerCase().includes('premium')
-            ? 'Spotify Premium is required for in-app playback.'
-            : 'Spotify authentication failed. Please reconnect.'
-        );
-        clearTokens();
-        setIsConnected(false);
-        setPlayerReady(false);
+        // Defensive: this should rarely fire now that we gate init on
+        // isPremium. If it does (e.g. a Premium user who just downgraded),
+        // mark them as non-Premium so the rest of the UI catches up — but
+        // keep them connected so album art still works.
+        if (message?.toLowerCase().includes('premium')) {
+          localStorage.setItem(PRODUCT_KEY, 'free');
+          setSpotifyProduct('free');
+          setPlayerReady(false);
+          setError(null);
+        } else {
+          setError('Spotify authentication failed. Please reconnect.');
+          clearTokens();
+          setIsConnected(false);
+          setPlayerReady(false);
+        }
       });
 
       player.addListener('initialization_error', () => {
-        setError('Spotify player could not load. Make sure you have a Premium account.');
+        setError('Spotify player could not load. Try reconnecting from Settings.');
       });
 
       player.connect();
@@ -304,7 +365,7 @@ export function useSpotify(user) {
         document.head.appendChild(script);
       }
     }
-  }, [isConnected]);
+  }, [isConnected, isPremium]);
 
   // ── Sync connection state to Firestore so we can see who has linked Spotify ─
   // Writes { spotifyConnected, spotifyLastConnectedAt } onto users/{uid}.
@@ -378,9 +439,10 @@ export function useSpotify(user) {
     playerRef.current   = null;
     deviceIdRef.current = null;
     clearTokens();
-    // Clear art + track caches so reconnecting always re-fetches with fresh data
+    // Clear art + track + product caches so reconnecting always re-fetches with fresh data
     localStorage.removeItem(ART_KEY);
     localStorage.removeItem(CACHE_KEY);
+    localStorage.removeItem(PRODUCT_KEY);
     artCache.current   = {};
     trackCache.current = {};
     setAlbumArt({});
@@ -388,6 +450,7 @@ export function useSpotify(user) {
     setPlayerReady(false);
     setIsPlaying(false);
     setCurrentSongName(null);
+    setSpotifyProduct(null);
     setError(null);
   }, []);
 
@@ -455,6 +518,12 @@ export function useSpotify(user) {
     currentSongName,
     albumArt,
     error,
+    // Spotify product tier of the connected account: 'premium' | 'free' |
+    // 'open' | null. `isPremium` is the derived boolean the rest of the app
+    // should use — falls back to false when unknown so we err on the side
+    // of NOT selling Premium-dependent perks.
+    spotifyProduct,
+    isPremium,
     connect,
     disconnect,
     playTrack,

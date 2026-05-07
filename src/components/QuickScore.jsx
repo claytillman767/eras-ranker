@@ -2037,8 +2037,10 @@ export default function QuickScore({
     }
 
     // Soft Pro upsell: only fires between songs (not between categories,
-    // not on the very last song), only for Spotify-connected free users
-    // who haven't seen the prompt yet, once they've crossed the threshold.
+    // not on the very last song), only for Spotify-connected Premium-but-
+    // not-Pro users who haven't seen the prompt yet, once they've crossed
+    // the threshold. Non-Premium Spotify users are excluded — Pro alone
+    // can't unlock autoplay for them, so the upsell would be misleading.
     // Counting Object.keys(ratings).length matches how useUserStats tracks
     // unique songs rated.
     if (
@@ -2046,6 +2048,7 @@ export default function QuickScore({
       !isPro &&
       !demoAutoplay &&
       spotify?.isConnected &&
+      spotify?.isPremium &&
       !hasSeenAutoplayNudge() &&
       Object.keys(ratings).length >= AUTOPLAY_NUDGE_THRESHOLD
     ) {

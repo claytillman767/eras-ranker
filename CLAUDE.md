@@ -293,8 +293,26 @@ src/
   no user, tapping it routes through a shared "Sign in to continue" step (Back arrow → returns).
 - Extra category weights rescaled so all active categories always sum to 100
 - Weight overrides stored per-category in `eras_category_weights`; reset clears that key
-- Pro gates: extra categories, custom categories, Categories tab paywall UI, **Spotify integration**
-- **Free for everyone:** all 5 default categories, default-category weight sliders, on/off toggles, weight reset banner
+- Pro gates: extra categories, custom categories, Categories tab paywall UI, **in-app Spotify playback (autoplay + Play Bridge)**
+- **Free for everyone:** all 5 default categories, default-category weight sliders, on/off toggles, weight reset banner, **Spotify connection (album art across the app)**
+
+### Spotify Premium awareness
+- `useSpotify` calls Spotify's `/me` endpoint after OAuth and on app load,
+  caching the result in `localStorage['eras_spotify_product']` and exposing
+  `spotifyProduct` (`'premium' | 'free' | 'open' | null`) and a derived
+  `isPremium` boolean on the spotify object.
+- The Web Playback SDK is **only** initialized for Premium accounts —
+  free accounts would otherwise hit an `authentication_error` and end
+  up disconnected, breaking album art for them. Album art works via
+  Spotify's Search API for any account.
+- Pro pitch surfaces (PaywallCard, VibeCheckIntro, Settings ProModal,
+  AutoplayNudge) MUST hide playback-only perks when
+  `spotify?.isConnected && !spotify?.isPremium` — otherwise we're
+  selling a feature Pro alone can't unlock for that user. The same
+  rule applies to any new Pro perk that depends on Spotify playback.
+- Settings → Spotify shows "Album art only" status for non-Premium
+  accounts and hides the autoplay/bridge/volume controls (they
+  don't work without Premium).
 
 ## Beta gate
 - Controlled by two env vars (set in `.env` locally and in Vercel environment settings):
