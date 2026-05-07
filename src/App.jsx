@@ -585,6 +585,7 @@ export default function App() {
             activeCategories={activeCategories}
             ratings={ratings}
             spotifyAlbumArt={isPro ? spotify.albumArt : null}
+            onSelectAlbum={handleSelectAlbum}
           />
         )}
 

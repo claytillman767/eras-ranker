@@ -388,13 +388,6 @@ export default function Settings({
         marginBottom: 28,
       }}>
         <SettingRow
-          label="Category breakdown"
-          description="Show score bars under each song in the album view."
-          value={settings.showCategoryBars}
-          onChange={v => updateSetting('showCategoryBars', v)}
-        />
-        <div style={{ height: '0.5px', background: '#f3f4f6', margin: '0 16px' }} />
-        <SettingRow
           label="Confirm before exiting QuickScore"
           description="Ask for confirmation before closing the rating screen mid-session."
           value={settings.confirmQuickScoreExit ?? true}
