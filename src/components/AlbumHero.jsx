@@ -11,6 +11,7 @@ export default function AlbumHero({
   onBack,
   spotifyArtUrl,
   spotifyAlbumId,
+  isLover,
 }) {
   const album = ALL_ALBUMS.find(a => a.id === albumId);
   if (!album) return null;
@@ -27,6 +28,13 @@ export default function AlbumHero({
     .filter(s => s.score !== null)
     .sort((a, b) => b.score - a.score)[0] || null;
 
+  // Rose-pink palette for Lover; default purple for everything else.
+  const accentText        = isLover ? '#be185d' : '#7e22ce';
+  const accentChipBg      = isLover ? 'rgba(252, 231, 243, 0.85)' : '#f3e8ff';
+  const accentChipLabel   = isLover ? '#be185d' : '#7e22ce';
+  const accentBarGradient = isLover ? 'linear-gradient(90deg, #f9a8d4, #ec4899)' : 'linear-gradient(90deg, #a855f7, #7e22ce)';
+  const accentBackBorder  = isLover ? '0.5px solid #fbcfe8' : '0.5px solid #e5e7eb';
+
   return (
     <div style={{ padding: '16px' }}>
       {/* Back button */}
@@ -34,8 +42,8 @@ export default function AlbumHero({
         <button
           onClick={onBack}
           style={{
-            background: 'none',
-            border: '0.5px solid #e5e7eb',
+            background: isLover ? 'rgba(255,255,255,0.7)' : 'none',
+            border: accentBackBorder,
             borderRadius: 8,
             padding: '5px 10px',
             fontSize: 12,
@@ -88,7 +96,7 @@ export default function AlbumHero({
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 8 }}>
             {albumScore !== null ? (
               <>
-                <span style={{ fontSize: 28, fontWeight: 300, color: '#7e22ce', lineHeight: 1, letterSpacing: '-0.02em' }}>
+                <span style={{ fontSize: 28, fontWeight: 300, color: accentText, lineHeight: 1, letterSpacing: '-0.02em' }}>
                   {albumScore}
                 </span>
                 <span style={{ fontSize: 12, color: '#6b7280' }}>/100</span>
@@ -144,11 +152,11 @@ export default function AlbumHero({
           <span>{rated} of {total} rated</span>
           <span>{pct}%</span>
         </div>
-        <div style={{ height: 6, background: '#f3f4f6', borderRadius: 3, overflow: 'hidden' }}>
+        <div style={{ height: 6, background: isLover ? 'rgba(255,255,255,0.6)' : '#f3f4f6', borderRadius: 3, overflow: 'hidden' }}>
           <div style={{
             height: '100%',
             width: `${Math.max(pct, pct > 0 ? 2 : 0)}%`,
-            background: 'linear-gradient(90deg, #a855f7, #7e22ce)',
+            background: accentBarGradient,
             borderRadius: 3,
             transition: 'width 0.4s',
           }} />
@@ -160,7 +168,7 @@ export default function AlbumHero({
         <div style={{
           marginTop: 10,
           padding: '8px 12px',
-          background: '#f3e8ff',
+          background: accentChipBg,
           borderRadius: 10,
           display: 'flex',
           alignItems: 'center',
@@ -170,7 +178,7 @@ export default function AlbumHero({
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
               fontSize: 10,
-              color: '#7e22ce',
+              color: accentChipLabel,
               textTransform: 'uppercase',
               letterSpacing: '0.08em',
               fontWeight: 600,
@@ -188,7 +196,7 @@ export default function AlbumHero({
               {topSong.name}
             </div>
           </div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: '#7e22ce', flexShrink: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: accentChipLabel, flexShrink: 0 }}>
             {topSong.score}
           </div>
         </div>

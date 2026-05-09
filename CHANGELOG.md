@@ -16,6 +16,20 @@ Newest entries go at the top.
 
 ---
 
+## 0.8.1 — 2026-05-09
+
+### Added
+- **Custom Lover album landing screen.** Tapping Lover from the album
+  grid now opens a fully themed page: cotton-candy gradient backdrop
+  (pink → peach → lavender → powder blue), drifting pink/blue/lavender
+  butterflies, soft heart confetti rising from the bottom, and a faint
+  pastel rainbow arc across the top. The album hero, score number,
+  progress bar, top-song chip, and the Vibe Check / Rank by score /
+  Share rankings buttons all swap from the standard purple palette to
+  Lover's rose-pink. Other albums are unchanged.
+
+---
+
 ## 0.8.0 — 2026-05-07
 
 ### Added

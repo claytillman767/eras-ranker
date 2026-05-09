@@ -5,6 +5,7 @@ import QuickScore from './QuickScore';
 import AlbumCompleteCard from './AlbumCompleteCard';
 import MidnightsEasterEgg from './MidnightsEasterEgg';
 import ConfirmModal from './ConfirmModal';
+import LoverAlbumScene from './LoverAlbumScene';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
 
 const DRAG_HINT_KEY = 'eras_sort_it_yourself_hint_seen';
@@ -229,12 +230,18 @@ export default function SongList({
     }
   }
 
+  // Lover gets a romantic rose palette in place of the standard purple.
+  const isLover = albumId === 'lv';
+  const accent = isLover
+    ? { primary: '#ec4899', primaryShadow: 'rgba(236,72,153,0.30)', soft: '#fdf2f8', softBorder: '#fbcfe8', text: '#be185d' }
+    : { primary: '#a855f7', primaryShadow: 'rgba(168,85,247,0.25)', soft: '#faf5ff', softBorder: '#d8b4fe', text: '#7c3aed' };
+
   // Shared style for the selected-row action bar buttons
   const actionBtnStyle = (primary) => ({
     padding: '5px 10px',
     borderRadius: 6,
     border: primary ? 'none' : '0.5px solid #e5e7eb',
-    background: primary ? '#a855f7' : '#ffffff',
+    background: primary ? accent.primary : '#ffffff',
     color: primary ? '#ffffff' : '#6b7280',
     fontSize: 12,
     fontWeight: primary ? 500 : 400,
@@ -315,17 +322,33 @@ export default function SongList({
         />
       )}
 
-      {/* ── Album hero (replaces the old small header) ── */}
-      <AlbumHero
-        albumId={albumId}
-        getCompositeScore={getCompositeScore}
-        getAlbumScore={getAlbumScore}
-        getRatedCount={getRatedCount}
-        activeCategories={activeCategories}
-        onBack={onBack}
-        spotifyArtUrl={spotifyAlbumArt?.[albumId] ?? null}
-        spotifyAlbumId={spotifyAlbumIds?.[albumId] ?? null}
-      />
+      {/* ── Lover-themed landing wrapper ─────────────────────────────────────
+          For album 'lv' only: cotton-candy gradient + butterflies + heart
+          confetti drift behind the existing hero, buttons, and song rows.
+          Other albums render with no wrapper, exactly as before. */}
+      <div
+        style={isLover ? {
+          position: 'relative',
+          minHeight: '100vh',
+          background: 'linear-gradient(180deg, #fde7f0 0%, #fce7e0 22%, #f1e3fb 55%, #e0f0fb 100%)',
+          overflow: 'hidden',
+        } : undefined}
+      >
+        {isLover && <LoverAlbumScene />}
+
+        <div style={isLover ? { position: 'relative', zIndex: 1 } : undefined}>
+          {/* ── Album hero (replaces the old small header) ── */}
+          <AlbumHero
+            albumId={albumId}
+            getCompositeScore={getCompositeScore}
+            getAlbumScore={getAlbumScore}
+            getRatedCount={getRatedCount}
+            activeCategories={activeCategories}
+            onBack={onBack}
+            spotifyArtUrl={spotifyAlbumArt?.[albumId] ?? null}
+            spotifyAlbumId={spotifyAlbumIds?.[albumId] ?? null}
+            isLover={isLover}
+          />
 
       {/* ── Action buttons ── */}
       <div style={{ padding: '0 16px 14px' }}>
@@ -344,12 +367,12 @@ export default function SongList({
             padding: '12px',
             borderRadius: 10,
             border: 'none',
-            background: '#a855f7',
+            background: accent.primary,
             color: '#ffffff',
             fontSize: 14,
             fontWeight: 600,
             cursor: 'pointer',
-            boxShadow: '0 1px 2px rgba(168,85,247,0.25)',
+            boxShadow: `0 1px 2px ${accent.primaryShadow}`,
           }}
         >
           ★ Vibe Check
@@ -363,9 +386,9 @@ export default function SongList({
               width: '100%',
               padding: '8px 12px',
               borderRadius: 8,
-              border: '0.5px solid #d8b4fe',
-              background: '#faf5ff',
-              color: '#7c3aed',
+              border: `0.5px solid ${accent.softBorder}`,
+              background: accent.soft,
+              color: accent.text,
               fontSize: 12,
               fontWeight: 500,
               cursor: 'pointer',
@@ -390,9 +413,9 @@ export default function SongList({
               marginTop: 6,
               padding: '8px 12px',
               borderRadius: 8,
-              border: '0.5px solid #d8b4fe',
-              background: '#faf5ff',
-              color: '#7c3aed',
+              border: `0.5px solid ${accent.softBorder}`,
+              background: accent.soft,
+              color: accent.text,
               fontSize: 12,
               fontWeight: 500,
               cursor: 'pointer',
@@ -515,6 +538,9 @@ export default function SongList({
           })}
         </div>
       </div>
+        </div>
+      </div>
+      {/* ── end Lover-themed landing wrapper ─────────────────────────────── */}
 
       {confirmState && (
         <ConfirmModal
