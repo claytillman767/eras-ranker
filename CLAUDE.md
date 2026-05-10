@@ -192,6 +192,15 @@ src/
                              Shows spinner while authLoading or while a signed-in user is being verified
                              If email is not on the allowlist: shows rejection message + signs user out
                              Empty BETA_EMAILS array = any Google account allowed through
+    FeedbackButton.jsx     — floating "send feedback" button visible across the main app for any
+                             signed-in user. Bottom-right corner, opens a textarea modal.
+                             Submissions land in Firestore `feedback` collection (write-only from
+                             the client; developer reads via Firebase console). Captures: message,
+                             screen label (passed in by App.jsx based on activeTab/selectedAlbumId),
+                             uid, email, displayName, app version, user agent, current URL, timestamp.
+                             Tied to identity (signed-in only) so we can follow up if needed.
+                             Goes away naturally when the beta gate is removed at launch (or can be
+                             gated behind a different flag at that point).
     AlbumGrid / AlbumCard  — album picker with score badges; AlbumCard accepts spotifyArtUrl — shows real
                              cover art image when provided, falls back to emoji/color otherwise
     AlbumModeModal.jsx     — bottom-sheet shown on first album visit; "Vibe Check" (auto-starts QuickScore)
@@ -375,7 +384,7 @@ All user data lives in a single Firestore document: `users/{uid}`
 - On sign-out: app continues using whatever is in localStorage
 
 ### Firestore security rules
-Set in Firebase console → Firestore → Rules. Users can only read/write their own document. The `launchWaitlist` collection is write-only from the client (BetaGate creates one doc when a rejected user opts in to be notified at launch); reads happen only via the Firebase console. The `profiles` collection is the public-share mirror — readable by anyone when the user has flipped their profile on, writable only by the owner.
+Set in Firebase console → Firestore → Rules. Users can only read/write their own document. The `launchWaitlist` collection is write-only from the client (BetaGate creates one doc when a rejected user opts in to be notified at launch); reads happen only via the Firebase console. The `profiles` collection is the public-share mirror — readable by anyone when the user has flipped their profile on, writable only by the owner. The `feedback` collection is write-only from any signed-in user (FeedbackButton); reads only via the Firebase console.
 ```
 rules_version = '2';
 service cloud.firestore {
@@ -401,6 +410,18 @@ service cloud.firestore {
                             && request.auth.uid == userId
                             && request.resource.data.ownerUid == userId;
       allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    match /feedback/{id} {
+      // Any signed-in user can submit feedback. The uid field MUST match
+      // the writer so submissions can't be spoofed under another user's
+      // identity. Message length capped at 1500 chars to defend against
+      // accidentally huge payloads.
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.message is string
+                    && request.resource.data.message.size() > 0
+                    && request.resource.data.message.size() <= 1500;
+      allow read, update, delete: if false; // owner reads via Firebase console
     }
   }
 }

@@ -16,6 +16,16 @@ Newest entries go at the top.
 
 ---
 
+## 0.9.0 — 2026-05-10
+
+### Added
+- A small floating feedback button now appears in the bottom-right corner of
+  every screen for signed-in users. Tap it to send a short note about a bug or
+  idea — the app records which screen you were on and saves it to a private
+  feedback collection that only the developer can read.
+
+---
+
 ## 0.8.3 — 2026-05-10
 
 ### Changed
