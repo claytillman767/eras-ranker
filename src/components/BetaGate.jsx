@@ -3,8 +3,8 @@ import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 
 // Full-screen beta access gate.
-// Two paths: Google sign-in (checked against VITE_BETA_EMAILS allowlist)
-// or a dev bypass password (VITE_BETA_PASSWORD).
+// Two paths: Google sign-in (checked against the BETA_EMAILS allowlist in
+// src/data/betaEmails.js) or a dev bypass password (VITE_BETA_PASSWORD).
 //
 // When a Google sign-in succeeds but the email is NOT on the allowlist, we
 // keep the user signed in briefly so we can offer them a "notify me at launch"
