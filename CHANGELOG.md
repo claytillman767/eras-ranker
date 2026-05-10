@@ -18,6 +18,11 @@ Newest entries go at the top.
 
 ## 0.10.0 — 2026-05-10
 
+### Added
+- Red album: rating screen now plays inside an autumn ambient scene — burgundy backdrop, drifting maple leaves, faint typewriter-character flickers, and a knit-scarf silhouette. Stars turn gold-on-burgundy. Finishing All Too Well triggers a 6-second dark wash with snowflakes falling.
+- 1989 album: rating screen now plays inside a NYC ambient scene — pale-sky-to-pink backdrop, Manhattan skyline silhouette across the bottom, eight floating polaroids (taxi, bridge, statue, skyline, subway, Empire State, coffee, manhole steam), drifting seagulls, and pink/cyan glitter. Stars turn sky-blue. Finishing Welcome to New York triggers a 3-second magenta+cyan neon bloom with a "WELCOME TO NEW YORK" wordmark burst.
+- New "Your top 3 from {albumName}" album-complete card for Red and 1989. Shows album emoji, top-3 rank/title/score, and a "See full album scores ↗" pill. For Red, leaves blow through in front of the card; for 1989, polaroids deal in behind it.
+
 ### Changed
 - The shuffle screen (Play/Skip question) now shows "Category 1 of N" so it's
   obvious you're partway through a multi-question rating, not a one-tap choice.
@@ -28,6 +33,7 @@ Newest entries go at the top.
 - On Pro extra and custom categories, the secondary "Skip →" pill has been
   renamed to "No opinion" so it can't be confused with the Play/Skip answer
   on the shuffle screen.
+- All ambient and signature animations in the new themes respect the OS "reduce motion" preference (animations only run under `prefers-reduced-motion: no-preference`).
 
 ---
 
