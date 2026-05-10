@@ -16,6 +16,17 @@ Newest entries go at the top.
 
 ---
 
+## 0.8.3 — 2026-05-10
+
+### Changed
+- Beta testers now have Pro unlocked automatically — anyone on the
+  `BETA_EMAILS` allowlist gets all Pro features (autoplay, Play Bridge, extra
+  categories, custom categories, CSV export) without paying. The override
+  applies only while the beta is closed and goes away when the beta gate is
+  removed at launch.
+
+---
+
 ## 0.8.2 — 2026-05-10
 
 ### Changed

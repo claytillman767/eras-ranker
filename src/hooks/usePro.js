@@ -3,6 +3,7 @@ import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from 'firebase/fires
 import { db } from '../firebase';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
 import { isDevEmail } from '../uat';
+import { isBetaEmail } from '../data/betaEmails';
 
 // Lemon Squeezy storefront slug — the prefix on the checkout URL.
 // Hardcoded because it rarely changes and avoids a new env var per store.
@@ -122,7 +123,13 @@ export function usePro(user) {
       (snap) => {
         const data = snap.exists() ? snap.data() : null;
         const cloudIsPro = data?.isPro === true;
-        if (cloudIsPro) {
+        // Beta override: anyone on the BETA_EMAILS allowlist gets Pro for
+        // free during the beta. Layered on top of cloud truth so removing
+        // someone from the list immediately revokes Pro on next render —
+        // we deliberately don't write the override to Firestore.
+        // Goes away when the beta gate is removed at launch.
+        const effectiveIsPro = cloudIsPro || isBetaEmail(user.email);
+        if (effectiveIsPro) {
           setIsPro(true);
           localStorage.setItem(KEY_IS_PRO, 'true');
         } else {
@@ -166,14 +173,17 @@ export function usePro(user) {
   const unlockPro = useCallback((plan = 'monthly') => {
     if (!user || !db) return false;
 
-    // Mock-grant path. Used in two cases:
+    // Mock-grant path. Used in three cases:
     //   1. Local dev / pre-LS environments where the variant-ID env vars
     //      aren't set, so other Pro features can be tested without LS.
     //   2. Developer accounts (isDevEmail) so we can test upgrade-gated UI
     //      end-to-end without running real cards through Lemon Squeezy.
-    // Both paths write isPro=true to Firestore + localStorage and skip the
-    // LS checkout entirely.
-    if (!LS_WIRED || isDevEmail(user.email)) {
+    //   3. Beta testers (isBetaEmail) — they already have Pro via the
+    //      override in the onSnapshot effect above; this just makes sure
+    //      a stray tap on an upgrade button never opens a real checkout.
+    // All three paths write isPro=true to Firestore + localStorage and skip
+    // the LS checkout entirely.
+    if (!LS_WIRED || isDevEmail(user.email) || isBetaEmail(user.email)) {
       localStorage.setItem(KEY_IS_PRO, 'true');
       setIsPro(true);
       setDoc(
