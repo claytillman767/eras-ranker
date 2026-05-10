@@ -16,6 +16,15 @@ Newest entries go at the top.
 
 ---
 
+## 0.8.4 — 2026-05-10
+
+### Changed
+- When you tap a star rating, the stars above your pick now fade out at the
+  same time as the picked stars flash purple — for example, picking 3 stars
+  makes 4 and 5 fade while 1, 2, and 3 flash dark purple.
+
+---
+
 ## 0.8.3 — 2026-05-10
 
 ### Changed

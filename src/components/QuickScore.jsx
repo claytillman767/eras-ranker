@@ -2148,6 +2148,10 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
           // Pulse stars 1..flashLevel during the post-pick hold. Stagger by
           // 60 ms each so the animation reads as a left-to-right sweep.
           const flashing = isFlashing && star <= flashLevel;
+          // Stars above the picked rating fade to a faint outline during
+          // the same hold — emphasises what the user picked by softening
+          // what they didn't.
+          const fadingOut = isFlashing && star > flashLevel;
           // Album celebrations apply to the rated stars (1..celLevel)
           const gem      = isBejeweled && star <= celLevel;
           const polaroid = isPolaroid  && star <= celLevel;
@@ -2197,7 +2201,9 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
                               ? `qs-manuscript-fade 2.5s ${star * 100}ms ease-out forwards`
                               : flashing
                                 ? `qs-star-pulse 700ms ${star * 60}ms ease-out both`
-                                : undefined,
+                                : fadingOut
+                                  ? `qs-star-fade-out 500ms ${star * 60}ms ease-out forwards`
+                                  : undefined,
                 position: 'relative',
                 zIndex: 1,
               }}
@@ -3286,6 +3292,10 @@ export default function QuickScore({
           0%   { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(168,85,247,0)); }
           30%  { transform: scale(1.18); filter: drop-shadow(0 0 8px rgba(168,85,247,0.65)); }
           100% { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(168,85,247,0)); }
+        }
+        @keyframes qs-star-fade-out {
+          0%   { opacity: 1; }
+          100% { opacity: 0.15; }
         }
       `}</style>
 
