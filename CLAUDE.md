@@ -269,6 +269,11 @@ src/
   (`localStorage.setItem('eras_is_pro','true')`) — the next sign-in will reset it. Unlike other
   hooks, usePro does NOT migrate localStorage up to Firestore: a local-only Pro flag is treated as
   stale or tampered, never as truth.
+- **Beta override.** During the beta, anyone whose email is in `BETA_EMAILS` (`src/data/betaEmails.js`)
+  gets Pro for free. Implemented as a render-only override in usePro's Firestore snapshot callback
+  (cloud value OR'd with `isBetaEmail(user.email)`) — never written to Firestore, so removing
+  someone from the list revokes their Pro immediately. Goes away when the beta gate is removed at
+  launch.
 - **Sign-out revokes Pro locally.** On a real sign-out transition (had a user, now don't), usePro
   clears `eras_is_pro` and resets `isPro` state. Firestore still has the user's record, so signing
   back in instantly restores Pro via the hydration branch. Detection uses a `prevUserRef` so the
@@ -306,6 +311,7 @@ src/
 - Gate state stored in localStorage key `'eras_beta_unlocked'`; once set, user never sees gate again on that device
 - Gate is a full-screen overlay — app content is never visible behind it
 - Google sign-in through the gate also logs the user into the app (same Firebase auth action)
+- **Beta testers get Pro for free.** Anyone whose email is on `BETA_EMAILS` gets `isPro: true` automatically — applied as an override in `usePro.js`'s Firestore snapshot callback (cloud value OR'd with `isBetaEmail(user.email)`). The override is render-only — it does NOT write to Firestore — so removing someone from the list immediately revokes their Pro on the next render. `unlockPro()` also short-circuits to the mock-grant path for beta emails so a stray tap never opens a real Lemon Squeezy checkout. Goes away naturally when the beta gate is removed at launch.
 - **Important:** all data hooks in App.jsx must remain declared BEFORE the `if (!betaUnlocked)` return
 
 ## QuickScore flow
