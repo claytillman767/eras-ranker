@@ -186,11 +186,12 @@ src/
     ErrorBoundary.jsx      — top-level React error boundary; catches any unhandled crash and shows a
                              friendly "Something went wrong — Reload" screen instead of blank white page
     BetaGate.jsx           — full-screen access gate rendered by App when beta is not unlocked
-                             Two paths: Google sign-in (checked against VITE_BETA_EMAILS allowlist) or
-                             dev bypass password (VITE_BETA_PASSWORD); on pass, sets localStorage 'eras_beta_unlocked'
+                             Two paths: Google sign-in (checked against BETA_EMAILS allowlist in
+                             src/data/betaEmails.js) or dev bypass password (VITE_BETA_PASSWORD);
+                             on pass, sets localStorage 'eras_beta_unlocked'
                              Shows spinner while authLoading or while a signed-in user is being verified
                              If email is not on the allowlist: shows rejection message + signs user out
-                             VITE_BETA_EMAILS empty = any Google account allowed through
+                             Empty BETA_EMAILS array = any Google account allowed through
     AlbumGrid / AlbumCard  — album picker with score badges; AlbumCard accepts spotifyArtUrl — shows real
                              cover art image when provided, falls back to emoji/color otherwise
     AlbumModeModal.jsx     — bottom-sheet shown on first album visit; "Vibe Check" (auto-starts QuickScore)
@@ -298,9 +299,10 @@ src/
   don't work without Premium).
 
 ## Beta gate
-- Controlled by two env vars (set in `.env` locally and in Vercel environment settings):
-  - `VITE_BETA_EMAILS` — comma-separated list of allowed Google emails; empty = any signed-in Google account
-  - `VITE_BETA_PASSWORD` — dev bypass password; if unset, the password field is hidden
+- Allowlist lives in **`src/data/betaEmails.js`** as the `BETA_EMAILS` array.
+  Empty array = any signed-in Google account allowed through. Edit the file and ship to update.
+- Dev bypass password is set via env var `VITE_BETA_PASSWORD` (set in `.env` locally
+  and in Vercel environment settings). If unset, the password field is hidden.
 - Gate state stored in localStorage key `'eras_beta_unlocked'`; once set, user never sees gate again on that device
 - Gate is a full-screen overlay — app content is never visible behind it
 - Google sign-in through the gate also logs the user into the app (same Firebase auth action)
@@ -410,7 +412,7 @@ A signed-in user can flip on a public profile under **Settings → Public profil
 - **Vanity handles:** Not built. URLs are uid-based for v1. A `/u/{handle}` upgrade is plotted in the original scope but parked.
 
 ### Beta gate rejection → launch waitlist
-When a Google sign-in succeeds but the email isn't on `VITE_BETA_EMAILS`, BetaGate (instead of immediately signing the user out) shows a "we'll email you at launch" opt-in. Clicking it writes `{ email, name, photoURL, requestedAt }` to `launchWaitlist/{email}` in Firestore, then signs the user out. Owner views the list at Firebase console → Firestore → `launchWaitlist` collection.
+When a Google sign-in succeeds but the email isn't on the `BETA_EMAILS` allowlist (in `src/data/betaEmails.js`), BetaGate (instead of immediately signing the user out) shows a "we'll email you at launch" opt-in. Clicking it writes `{ email, name, photoURL, requestedAt }` to `launchWaitlist/{email}` in Firestore, then signs the user out. Owner views the list at Firebase console → Firestore → `launchWaitlist` collection.
 
 ### Delete account flow
 Live under **Settings → Account → Delete my account**. Implemented entirely client-side in [src/components/DeleteAccountModal.jsx](src/components/DeleteAccountModal.jsx) — no Vercel function or Firebase Admin SDK required.
@@ -457,11 +459,11 @@ Live under **Settings → Account → Delete my account**. Implemented entirely 
   - `GENIUS_API_TOKEN` — Python lyrics scripts only, not needed at runtime
   - `VITE_FIREBASE_*` — Firebase config keys
   - `VITE_SPOTIFY_CLIENT_ID` — Spotify OAuth client ID
-  - `VITE_BETA_EMAILS` — comma-separated allowed emails for beta gate (empty = any Google account)
   - `VITE_BETA_PASSWORD` — dev bypass password for beta gate
+- **Beta email allowlist** lives in `src/data/betaEmails.js` (committed to the repo, NOT an env var)
 - **`.claude/settings.local.json`** is gitignored — do not commit it
 - **Vercel build settings:** Framework = Vite, Build = `npm run build`, Output = `dist`, Root Directory = (blank/repo root)
-- **Vercel environment variables:** must mirror all `VITE_*` values from `.env` — including `VITE_BETA_EMAILS` and `VITE_BETA_PASSWORD`
+- **Vercel environment variables:** must mirror all `VITE_*` values from `.env` — including `VITE_BETA_PASSWORD`
 
 ### Shipping flow — push, merge, deploy in one go
 The user wants every finished change pushed live without waiting for a
@@ -482,7 +484,7 @@ change, stop and ask — but the default is "ship it." Don't pause to ask
 1. Install Git and Node.js
 2. `git clone https://github.com/claytillman767/eras-ranker`
 3. `cd eras-ranker && npm install`
-4. Create `.env` manually — paste in the Genius API token AND all `VITE_FIREBASE_*` keys (find them in Firebase console → Project settings → Your apps), plus `VITE_SPOTIFY_CLIENT_ID`, `VITE_BETA_EMAILS`, `VITE_BETA_PASSWORD`
+4. Create `.env` manually — paste in the Genius API token AND all `VITE_FIREBASE_*` keys (find them in Firebase console → Project settings → Your apps), plus `VITE_SPOTIFY_CLIENT_ID` and `VITE_BETA_PASSWORD`
 5. `npm run dev` to start
 
 ---
