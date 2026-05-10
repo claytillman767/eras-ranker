@@ -25,6 +25,7 @@ import ConnectSpotifyPrompt from './components/ConnectSpotifyPrompt';
 import ProcessingBanner from './components/ProcessingBanner';
 import ProfileView from './components/ProfileView';
 import { ALL_ALBUMS } from './data/albums';
+import { BETA_EMAILS } from './data/betaEmails';
 
 // Hand-rolled URL routing for the public-profile feature. The app is
 // otherwise tab-driven, so adding react-router for one extra route would
@@ -189,8 +190,7 @@ export default function App() {
   // out itself once they decide.
   useEffect(() => {
     if (betaUnlocked || authLoading || !user || betaRejected) return;
-    const allowedRaw = import.meta.env.VITE_BETA_EMAILS ?? '';
-    const allowed = allowedRaw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+    const allowed = BETA_EMAILS.map(e => e.trim().toLowerCase()).filter(Boolean);
     // Empty list = allow any signed-in Google account
     if (allowed.length === 0 || allowed.includes(user.email?.toLowerCase())) {
       localStorage.setItem(BETA_KEY, 'true');
