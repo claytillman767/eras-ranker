@@ -1,7 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { getBridgeLyrics, getSnippetLyrics, hasBridge } from '../data/lyricsAccess';
+import { DEFAULT_CATEGORIES } from '../data/categories';
 import SpotifyMiniPlayer from './SpotifyMiniPlayer';
 import AutoplayNudge, { hasSeenAutoplayNudge, markAutoplayNudgeSeen } from './AutoplayNudge';
+
+// IDs of the 5 default categories. Used to enforce "every song is rated on
+// the same baseline" — Skip is hidden on these so the score is comparable.
+const DEFAULT_CAT_IDS = new Set(DEFAULT_CATEGORIES.map(c => c.id));
 
 // Threshold for the soft autoplay Pro upsell. Anchored at 30 — the trigger
 // fires the next time we transition between songs once totalRatings ≥ this,
@@ -2685,7 +2690,7 @@ function NoBridgeScreen({ songName, onContinue }) {
 // ── Shuffle screen — Play/Skip question with song lyrics floating in background ─
 // Lyrics fade in softly, then pulse up and out when the user picks an answer,
 // creating a bridge into the detailed rating questions.
-function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRating = 0, isNightTheme = false, isDebutTheme = false, isSpeakNowTheme = false, isFearlessTheme = false }) {
+function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRating = 0, categoryNumber = 1, totalCategories = 1, isNightTheme = false, isDebutTheme = false, isSpeakNowTheme = false, isFearlessTheme = false }) {
   const [animating, setAnimating] = useState(false);
 
   // Show the previous pick (if any) by fading the unpicked side. Mirrors
@@ -2763,6 +2768,17 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
             textShadow: isNightTheme ? '0 1px 8px rgba(0,0,0,0.4)' : 'none',
           }}>
             {song.name}
+          </div>
+
+          {/* Category counter — mirrors the label on the star screens so the
+              user sees this is question 1 of N, not a standalone choice. */}
+          <div style={{
+            fontSize: 12,
+            color: isNightTheme ? '#cbd5e1' : '#c4b5fd',
+            marginBottom: 18,
+            textShadow: isNightTheme ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
+          }}>
+            Category {categoryNumber} of {totalCategories}
           </div>
 
           {/* Question */}
@@ -3376,6 +3392,8 @@ export default function QuickScore({
           lyrics={snippetLyrics}
           onPick={handleShufflePick}
           currentRating={currentRating}
+          categoryNumber={catPos + 1}
+          totalCategories={currentSong?.cats.length ?? 1}
           isNightTheme={isNightTheme}
           isDebutTheme={isDebutTheme}
           isSpeakNowTheme={isSpeakNowTheme}
@@ -3647,7 +3665,10 @@ export default function QuickScore({
             )}
           </div>
 
-          {/* Back + Skip buttons */}
+          {/* Back + (No opinion) buttons.
+              "No opinion" is hidden on the 5 default categories so every song
+              is rated on the same baseline; it's available on Pro extras and
+              custom categories where the user opted in to depth. */}
           <div style={{ display: 'flex', gap: 10, marginTop: 28 }}>
             <button
               onClick={goBack}
@@ -3666,21 +3687,23 @@ export default function QuickScore({
             >
               ← Back
             </button>
-            <button
-              onClick={advance}
-              style={{
-                padding: '9px 22px',
-                borderRadius: 22,
-                border: '1px solid #e5e7eb',
-                background: '#ffffff',
-                fontSize: 13,
-                fontWeight: 500,
-                color: '#6b7280',
-                cursor: 'pointer',
-              }}
-            >
-              Skip →
-            </button>
+            {!DEFAULT_CAT_IDS.has(currentCat?.id) && (
+              <button
+                onClick={advance}
+                style={{
+                  padding: '9px 22px',
+                  borderRadius: 22,
+                  border: '1px solid #e5e7eb',
+                  background: '#ffffff',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: '#6b7280',
+                  cursor: 'pointer',
+                }}
+              >
+                No opinion
+              </button>
+            )}
           </div>
 
           </div>
