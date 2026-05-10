@@ -471,14 +471,27 @@ The user wants every finished change pushed live without waiting for a
 spec is met, take it the rest of the way.
 
 **Use the `shipper` subagent.** It owns the bump-version → write-CHANGELOG
-→ commit → push → merge-to-main → push-main → delete-remote-branch flow,
-and Vercel auto-deploys on the push to `main`. Pass it the bump type
-(patch / minor / major, or "internal" to skip version bump) and a one-line
-description; it handles the rest.
+→ commit → push flow. Pass it the bump type (patch / minor / major, or
+"internal" to skip version bump) and a one-line description; it handles
+the rest.
+
+The shipper runs in two modes depending on the environment, and detects
+which automatically:
+
+- **Local mode** (Windows desktop, working from a `.claude/worktrees/`
+  worktree): full bump → commit → push → merge-to-main → push-main →
+  delete-remote-branch flow. Vercel auto-deploys on the push to `main`.
+- **Sandbox/web mode** (Claude Code on the web/mobile): the proxy blocks
+  direct pushes to `main`, so the shipper stops after pushing the
+  feature branch. The main agent then uses
+  `mcp__github__create_pull_request` to open a PR; the user merges it
+  on GitHub and Vercel deploys after the merge.
 
 If a build fails or there's something genuinely uncertain about the
 change, stop and ask — but the default is "ship it." Don't pause to ask
 "do you want me to merge this?" — that question is already answered yes.
+On web/mobile, "ship it" means "push the branch and open the PR" — the
+PR merge is a one-tap action for the user on GitHub.
 
 ### Working on a second computer
 1. Install Git and Node.js
