@@ -16,6 +16,17 @@ Newest entries go at the top.
 
 ---
 
+## 0.8.2 — 2026-05-10
+
+### Changed
+- **Beta access allowlist moved to code.** The beta tester email list now
+  lives in `src/data/betaEmails.js` instead of the `VITE_BETA_EMAILS`
+  environment variable. Adding or removing testers is now a code change
+  and deploy instead of a Vercel dashboard trip. Password bypass
+  (`VITE_BETA_PASSWORD`) unchanged.
+
+---
+
 ## 0.8.1 — 2026-05-09
 
 ### Added
