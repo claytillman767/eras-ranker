@@ -24,6 +24,7 @@ import Brackets from './components/brackets/Brackets';
 import ConnectSpotifyPrompt from './components/ConnectSpotifyPrompt';
 import ProcessingBanner from './components/ProcessingBanner';
 import ProfileView from './components/ProfileView';
+import FeedbackButton from './components/FeedbackButton';
 import { ALL_ALBUMS } from './data/albums';
 import { BETA_EMAILS } from './data/betaEmails';
 
@@ -345,6 +346,22 @@ export default function App() {
   const userInitial = user?.displayName?.charAt(0)?.toUpperCase() ?? '?';
   const userFirstName = user?.displayName?.split(' ')[0] ?? 'there';
 
+  // Plain-English label of where the user is right now — attached to any
+  // feedback they submit so we know which screen the comment is about.
+  const selectedAlbumName = selectedAlbumId
+    ? ALL_ALBUMS.find(a => a.id === selectedAlbumId)?.name ?? selectedAlbumId
+    : null;
+  const currentScreen =
+    pendingVibeCheckAlbumId !== null ? 'Vibe Check Intro' :
+    pendingAlbumId         !== null ? 'Album mode picker' :
+    activeTab === 'home'              ? 'Home' :
+    activeTab === 'albums'            ? 'Albums grid' :
+    activeTab === 'rate'              ? `Album: ${selectedAlbumName ?? 'unknown'}` :
+    activeTab === 'brackets'          ? 'Brackets' :
+    activeTab === 'rankings'          ? 'Rankings' :
+    activeTab === 'settings'          ? 'Settings' :
+    activeTab;
+
   return (
     <div style={{
       maxWidth: 700,
@@ -665,6 +682,10 @@ export default function App() {
           />
         )}
       </div>
+
+      {/* Floating "send feedback" button — visible across the main app for
+          any signed-in user. Submissions land in Firestore `feedback`. */}
+      <FeedbackButton user={user} screen={currentScreen} />
     </div>
   );
 }
