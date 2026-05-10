@@ -15,6 +15,8 @@ You ship finished work for The Eras Ranker. This is a mechanical workflow — fo
 
 If the bump type is unclear, ask the main agent before proceeding.
 
+**Contract:** the main agent must have committed the actual code changes before invoking the shipper. The shipper's only edits are `package.json` and `CHANGELOG.md`. If you find uncommitted code edits in the worktree, abort and tell the main agent to commit first — never silently bundle them in, never silently leave them out.
+
 ## Environment detection (RUN FIRST)
 
 The user works from two environments and they need different shipping flows.
@@ -37,14 +39,15 @@ Verify with `git rev-parse --show-toplevel` and `git branch --show-current` if u
 
 ### Always (both modes)
 
-1. **Verify the build is green.** Run `npm run build` from the feature worktree. If it fails, abort and report the error — do NOT try to fix the build, that's the main agent's job. Skip this if `npm run build` cannot run in the current environment (e.g. Vite not installed in sandbox); note this in the final report so the main agent knows.
-2. **Read current version** in `package.json`. Compute the new version per the bump type. Update `package.json` (skip if internal-only).
-3. **Read current `CHANGELOG.md`.** Insert a new section directly under the `Newest entries go at the top.` line:
+1. **Pre-flight: working tree must be clean.** Run `git status --porcelain`. If the output is non-empty (any modified, staged, or deleted files), ABORT and report the full list to the main agent. The shipper's contract is that the code is already committed — the shipper only adds the version bump and changelog on top. Untracked files are OK to ignore *only* if they're clearly outside the source tree (e.g. `.env`, scratch files); a modified file under `src/` is a hard stop. Do NOT try to "be helpful" by staging unknown files — that's how the wrong thing ships.
+2. **Verify the build is green.** Run `npm run build` from the feature worktree. If it fails, abort and report the error — do NOT try to fix the build, that's the main agent's job. Skip this if `npm run build` cannot run in the current environment (e.g. Vite not installed in sandbox); note this in the final report so the main agent knows.
+3. **Read current version** in `package.json`. Compute the new version per the bump type. Update `package.json` (skip if internal-only).
+4. **Read current `CHANGELOG.md`.** Insert a new section directly under the `Newest entries go at the top.` line:
    - Header: `## <new-version> — YYYY-MM-DD` (today's date — get with `date +%Y-%m-%d`)
    - Group changes under `### Added`, `### Changed`, `### Fixed`, or `### Removed`
    - Plain-English, user-facing tone. Skip purely internal refactors per CLAUDE.md
    - Skip the version bump section entirely if internal-only — instead leave a brief note in commit message and SKIP CHANGELOG editing
-4. **Stage files and commit on the feature branch** with a HEREDOC commit message:
+5. **Stage files and commit on the feature branch** with a HEREDOC commit message:
 
 ```
 git commit -m "$(cat <<'EOF'
@@ -55,32 +58,33 @@ EOF
 )"
 ```
 
-Stage by name (`package.json CHANGELOG.md src/...`), not `git add -A`, to avoid sweeping in `.env` or stray files.
+Stage by name (`package.json CHANGELOG.md`), not `git add -A`, to avoid sweeping in `.env` or stray files. Per the contract above, source files should already be committed by the main agent — if you find yourself wanting to stage anything under `src/`, you missed step 1; abort.
 
-5. **Push the feature branch:** `git push -u origin <branch>`.
+6. **Push the feature branch:** `git push -u origin <branch>`.
 
 ### Local mode only — continue with the merge
 
-6. **From the parent worktree, pull main:**
+7. **From the parent worktree, pull main:**
    `git -C C:/Users/clayt/dev/eras-ranker pull origin main`
    If pull surfaces an in-progress merge or unrelated conflicts, STOP and report — do not try to clean up someone else's mid-merge state.
-7. **Merge into main from the parent worktree:**
+8. **Merge into main from the parent worktree:**
    `git -C C:/Users/clayt/dev/eras-ranker merge --no-ff <branch> -m "Merge: <subject> (v<version>)"`
    Resolve trivial conflicts (version bumps, changelog entries) by combining cleanly. Escalate logic conflicts to the main agent.
-8. **Push main:** `git -C C:/Users/clayt/dev/eras-ranker push origin main`.
-9. **Delete the remote feature branch:** `git push origin --delete <branch>`.
+9. **Push main:** `git -C C:/Users/clayt/dev/eras-ranker push origin main`.
+10. **Delete the remote feature branch:** `git push origin --delete <branch>`.
 
 ### Sandbox/web mode — STOP after the push
 
-After step 5, do NOT attempt to merge or push to `main` — the proxy will reject it and leave a stranded local merge commit. Output the handoff report (see below) and exit. The main agent will use the GitHub MCP tools to open a PR for the user to merge manually.
+After step 6, do NOT attempt to merge or push to `main` — the proxy will reject it and leave a stranded local merge commit. Output the handoff report (see below) and exit. The main agent will use the GitHub MCP tools to open a PR for the user to merge manually.
 
 ## Safety rails
 
 - **NEVER** `git reset --hard`, `git push --force`, or skip hooks (`--no-verify`) without explicit user permission.
 - **NEVER** `git add -A` or `git add .` — always stage by name.
 - **NEVER** commit `.env`, credentials, files containing API keys, or anything starting with `eras_` (those are localStorage keys, not source files).
-- **NEVER** attempt to push to `main` in sandbox/web mode — even if step 8 looks tempting, the proxy will fail it and you'll leave a stranded merge commit that the main agent has to clean up with `git reset --hard`.
-- If the build fails at step 1, abort. The main agent has the context to fix.
+- **NEVER** attempt to push to `main` in sandbox/web mode — even if step 9 looks tempting, the proxy will fail it and you'll leave a stranded merge commit that the main agent has to clean up with `git reset --hard`.
+- If the working tree is dirty at step 1, abort. The main agent must commit code edits before invoking the shipper — never silently include or exclude them.
+- If the build fails at step 2, abort. The main agent has the context to fix.
 - If a merge conflict touches application logic (anything beyond `package.json` version and `CHANGELOG.md` ordering), abort and let the main agent resolve.
 - Do NOT amend commits. If a step fails after committing, fix forward with a new commit.
 
