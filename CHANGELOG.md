@@ -16,6 +16,21 @@ Newest entries go at the top.
 
 ---
 
+## 0.10.0 — 2026-05-10
+
+### Changed
+- The shuffle screen (Play/Skip question) now shows "Category 1 of N" so it's
+  obvious you're partway through a multi-question rating, not a one-tap choice.
+- The 5 default rating categories no longer have a "Skip" button — every song
+  now gets rated on the same baseline so leaderboards and album scores are
+  honest comparisons. (The Bridge category still auto-skips for songs that
+  don't have a bridge.)
+- On Pro extra and custom categories, the secondary "Skip →" pill has been
+  renamed to "No opinion" so it can't be confused with the Play/Skip answer
+  on the shuffle screen.
+
+---
+
 ## 0.9.0 — 2026-05-10
 
 ### Added
