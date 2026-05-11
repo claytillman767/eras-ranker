@@ -3,6 +3,7 @@ import { getBridgeLyrics, getSnippetLyrics, hasBridge } from '../data/lyricsAcce
 import { DEFAULT_CATEGORIES } from '../data/categories';
 import SpotifyMiniPlayer from './SpotifyMiniPlayer';
 import AutoplayNudge, { hasSeenAutoplayNudge, markAutoplayNudgeSeen } from './AutoplayNudge';
+import { getAlbumTheme } from '../themes/albumThemes';
 
 // IDs of the 5 default categories. Used to enforce "every song is rated on
 // the same baseline" — Skip is hidden on these so the score is comparable.
@@ -1897,6 +1898,14 @@ function detectCelebration(albumId, songName) {
   if (albumId === 'tp' && /tortured poets department/i.test(songName ?? '')) {
     return { type: 'manuscript-fade', durationMs: 3000 };
   }
+  // Red — All Too Well: dark wash + snowfall (matches the song's wintry tone).
+  if (albumId === 'rd' && songName === 'All Too Well') {
+    return { type: 'red-leaf-fall', durationMs: 6000 };
+  }
+  // 1989 — Welcome to New York: neon bloom + wordmark burst.
+  if (albumId === '89' && songName === 'Welcome to New York') {
+    return { type: '89-neon-bloom', durationMs: 3000 };
+  }
   return null;
 }
 
@@ -1947,7 +1956,7 @@ const WALTZ_PARCHMENTS = [
 
 // ── Big interactive stars ─────────────────────────────────────────────────────
 // Gets a new `key` each question so hover state resets automatically.
-function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration = null, isNightTheme = false, isDarkTheme = false }) {
+function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration = null, isNightTheme = false, isDarkTheme = false, textTuning = null }) {
   const [hovered, setHovered] = useState(0);
   const isFlashing = flashLevel > 0;
   // While the post-pick flash is running, the new pick (flashLevel) wins
@@ -1972,12 +1981,22 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
   const isSunFlare       = celType === 'sun-flare';
   const isCandleHalo     = celType === 'candle-halo';
   const isManuscriptFade = celType === 'manuscript-fade';
+  // Album-theme celebrations — Red All Too Well frosts cool-blue, 1989
+  // Welcome to New York duotone-warms pink/blue. CSS filter applied to
+  // each picked star's <svg> while the celebration runs.
+  const isRedLeafFall    = celType === 'red-leaf-fall';
+  const isNeonBloom      = celType === '89-neon-bloom';
   // True when any dark-bg theme is active — Midnights, Reputation, Evermore,
   // Showgirl. These all need the lighter label palette so the under-star
   // calibration text remains readable.
   const useDarkLabels = isNightTheme || isDarkTheme;
-  const labelDefaultColor = useDarkLabels ? '#e5e7eb' : '#374151';
-  const labelActiveColor  = useDarkLabels ? '#e9d5ff' : '#5b21b6';
+  // textTuning (when provided by a registry-driven album theme) overrides
+  // the default light/dark label palette so per-album backdrops can dial
+  // in calibration colors that read on top of the gradient.
+  const labelDefaultColor = textTuning?.calibration
+    || (useDarkLabels ? '#e5e7eb' : '#374151');
+  const labelActiveColor  = textTuning?.calibrationActive
+    || (useDarkLabels ? '#e9d5ff' : '#5b21b6');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
@@ -2117,6 +2136,24 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
         `}</style>
       )}
 
+      {/* Album-theme celebration keyframes — Red All Too Well frosts cool-blue,
+          1989 Welcome to New York duotone-warms pink/blue. Filter applied to
+          the picked stars only. Reduced-motion users get a static fallback. */}
+      {(isRedLeafFall || isNeonBloom) && (
+        <style>{`
+          @media (prefers-reduced-motion: no-preference) {
+            @keyframes qs-red-leaf-star-frost {
+              0%, 100% { filter: none; }
+              50%      { filter: brightness(0.6) hue-rotate(200deg) saturate(0.8); }
+            }
+            @keyframes qs-89-neon-star-warm {
+              0%, 100% { filter: none; }
+              50%      { filter: hue-rotate(40deg) saturate(1.6) brightness(1.05); }
+            }
+          }
+        `}</style>
+      )}
+
       <div style={{ display: 'flex', gap: 4, position: 'relative' }}>
         {/* Parchment-page wisps — drift up behind the picked stars during
             the Enchanted waltz, evoking the album's handwritten lyric pages. */}
@@ -2163,12 +2200,15 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
           const sun        = isSunFlare       && star <= celLevel;
           const candle     = isCandleHalo     && star <= celLevel;
           const manuscript = isManuscriptFade && star <= celLevel;
+          const redLeaf    = isRedLeafFall    && star <= celLevel;
+          const neon       = isNeonBloom      && star <= celLevel;
           // Tilt each polaroid like a stuck-on-the-fridge photo
           const tilt = POLAROID_TILTS[star - 1];
           // Disabled while any celebration is running
           const celebrating =
             isFlashing || isBejeweled || isPolaroid || isWaltz ||
-            isBrokenNeon || isHeatShimmer || isSunFlare || isCandleHalo || isManuscriptFade;
+            isBrokenNeon || isHeatShimmer || isSunFlare || isCandleHalo || isManuscriptFade ||
+            isRedLeafFall || isNeonBloom;
           return (
             <button
               key={star}
@@ -2200,9 +2240,13 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
                             ? `qs-candle-glow 2.5s ${star * 180}ms ease-in-out forwards`
                             : manuscript
                               ? `qs-manuscript-fade 2.5s ${star * 100}ms ease-out forwards`
-                              : flashing
-                                ? `qs-star-pulse 700ms ${star * 60}ms ease-out both`
-                                : undefined,
+                              : redLeaf
+                                ? `qs-red-leaf-star-frost 6s ${star * 60}ms ease-in-out forwards`
+                                : neon
+                                  ? `qs-89-neon-star-warm 3s ${star * 60}ms ease-in-out forwards`
+                                  : flashing
+                                    ? `qs-star-pulse 700ms ${star * 60}ms ease-out both`
+                                    : undefined,
                 position: 'relative',
                 zIndex: 1,
               }}
@@ -2245,7 +2289,13 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
                   width={52}
                   height={52}
                   viewBox="0 0 20 20"
-                  fill={active ? (hovered > 0 ? '#f59e0b' : '#a855f7') : '#a78bfa'}
+                  fill={active
+                    ? (hovered > 0
+                        ? '#f59e0b'
+                        : (textTuning?.starFilled ?? '#a855f7'))
+                    : (textTuning?.starFilled
+                        ? 'transparent'
+                        : '#a78bfa')}
                   style={{
                     display: 'block',
                     transition: 'fill 0.08s ease',
@@ -2261,11 +2311,16 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
                 >
                   {/* Empty stars get a thin deeper-purple outline so they
                       read as clearly tappable on any backdrop — without it,
-                      pale-purple cream / lavender backgrounds wash them out. */}
+                      pale-purple cream / lavender backgrounds wash them out.
+                      Registry themes (Red, 1989) supply their own stroke. */}
                   <path
                     d="M10 1l2.39 4.84 5.34.78-3.86 3.76.91 5.32L10 13.27l-4.78 2.51.91-5.32L2.27 6.62l5.34-.78L10 1z"
-                    stroke={active ? 'none' : '#7c3aed'}
-                    strokeWidth={active ? 0 : 0.5}
+                    stroke={active
+                      ? (textTuning?.starFilledStroke ?? 'none')
+                      : (textTuning?.starEmptyStroke ?? '#7c3aed')}
+                    strokeWidth={active
+                      ? (textTuning?.starFilledStroke ? 1.4 : 0)
+                      : (textTuning?.starEmptyStroke ? 1.4 : 0.5)}
                     strokeLinejoin="round"
                   />
                 </svg>
@@ -2417,6 +2472,109 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
 }
 
 // ── Completion flash — animates in, holds briefly, fades out, then auto-closes ─
+// ── Themed All-done card — used by Red/1989 album-themes ─────────────────────
+// White card with the "Your top 3 from {albumName}" heading + 3 hairline-
+// divided rows + a CTA pill. zIndex 20 so it sits above ambient/Layer 5b but
+// below Red's leaf-blow Layer 5a (zIndex 30). Tappable anywhere to close.
+function ThemedAllDoneCard({ albumIcon, albumName, topSongs, accent, onClose }) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 20,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 20,
+        cursor: 'pointer',
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: '#ffffff',
+          borderRadius: 18,
+          padding: '24px 22px 22px',
+          textAlign: 'center',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.4)',
+          width: 300,
+          maxWidth: '100%',
+          cursor: 'default',
+        }}
+      >
+        <div style={{ fontSize: 28, marginBottom: 10 }}>{albumIcon}</div>
+        <div style={{
+          fontSize: 22,
+          fontWeight: 800,
+          color: '#0f172a',
+          lineHeight: 1.2,
+          marginBottom: 18,
+          textWrap: 'balance',
+        }}>
+          Your top 3 from {albumName}
+        </div>
+
+        {/* Top 3 — hairline-separated rows. If fewer than 3 songs are rated,
+            show only what's available rather than padding placeholders. */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          marginBottom: 18,
+          borderTop: topSongs.length > 0 ? '1px solid #e2e8f0' : 'none',
+        }}>
+          {topSongs.map((s, i) => (
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                padding: '12px 4px',
+                borderBottom: '1px solid #e2e8f0',
+                textAlign: 'left',
+              }}
+            >
+              <div style={{
+                fontSize: 16, fontWeight: 700,
+                color: accent,
+                width: 14, flex: '0 0 auto',
+              }}>{i + 1}</div>
+              <div style={{
+                flex: 1, minWidth: 0,
+                fontSize: 15, fontWeight: 700, color: '#0f172a',
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              }}>{s.name}</div>
+              <div style={{ flex: '0 0 auto', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 15, fontWeight: 700, color: accent }}>{s.score}</span>
+                <span style={{ fontSize: 11, color: '#94a3b8', marginLeft: 1 }}>/100</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={onClose}
+          style={{
+            padding: '11px 18px',
+            background: '#7c3aed',
+            color: '#fff',
+            borderRadius: 999,
+            fontSize: 13,
+            fontWeight: 700,
+            border: 'none',
+            cursor: 'pointer',
+            display: 'inline-block',
+          }}
+        >
+          See full album scores ↗
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function DoneFlash({ albumIcon, albumName, songName, isSingleSong, onClose }) {
   useEffect(() => {
     const t = setTimeout(onClose, 2000);
@@ -2945,6 +3103,10 @@ export default function QuickScore({
   confirmExit = true,
   onGoToSpotifySettings,
   updateSetting,
+  // Optional — used by the registry-driven All-done card to compute live
+  // top-3 from the latest ratings. Falls back to whatever score is on
+  // songs[i] when not provided.
+  getCompositeScore,
 }) {
   // Set true for the rest of the session when the user taps "Try it" on the
   // 30-song Pro upsell. Acts as a one-session bypass on the isPro gate so
@@ -3221,31 +3383,42 @@ export default function QuickScore({
   const isTPDTheme        = albumId === 'tp';   // Tortured Poets — parchment + ink
   const isShowgirlTheme   = albumId === 'ls';   // Life of a Showgirl — cabaret + spotlight
 
+  // Per-album theme bundle (Red, 1989) — pulled from the registry so the
+  // 5-layer system (backdrop, ambient, signature, complete, text tuning)
+  // is reused without per-theme branching here. New themes plug in by
+  // registering in src/themes/albumThemes/.
+  const albumTheme = getAlbumTheme(albumId);
+  const isRedTheme  = albumId === 'rd';
+  const is1989Theme = albumId === '89';
+  const isRegistryTheme = !!albumTheme;
+
   // True for any theme whose backdrop runs dark (light text required). Used
   // to swap progress-bar bg, exit-button styling, and song-title colors.
-  const isDarkTheme = isNightTheme || isReputationTheme || isEvermoreTheme || isShowgirlTheme;
+  const isDarkTheme = isNightTheme || isReputationTheme || isEvermoreTheme || isShowgirlTheme || isRedTheme;
 
-  const albumBackground = isNightTheme
-    ? NIGHT_BACKGROUND
-    : isDebutTheme
-      ? DEBUT_BACKGROUND
-      : isSpeakNowTheme
-        ? SPEAKNOW_BACKGROUND
-        : isFearlessTheme
-          ? FEARLESS_BACKGROUND
-          : isReputationTheme
-            ? REPUTATION_BACKGROUND
-            : isLoverTheme
-              ? LOVER_BACKGROUND
-              : isFolkloreTheme
-                ? FOLKLORE_BACKGROUND
-                : isEvermoreTheme
-                  ? EVERMORE_BACKGROUND
-                  : isTPDTheme
-                    ? TPD_BACKGROUND
-                    : isShowgirlTheme
-                      ? SHOWGIRL_BACKGROUND
-                      : null;
+  const albumBackground = albumTheme
+    ? albumTheme.background
+    : isNightTheme
+      ? NIGHT_BACKGROUND
+      : isDebutTheme
+        ? DEBUT_BACKGROUND
+        : isSpeakNowTheme
+          ? SPEAKNOW_BACKGROUND
+          : isFearlessTheme
+            ? FEARLESS_BACKGROUND
+            : isReputationTheme
+              ? REPUTATION_BACKGROUND
+              : isLoverTheme
+                ? LOVER_BACKGROUND
+                : isFolkloreTheme
+                  ? FOLKLORE_BACKGROUND
+                  : isEvermoreTheme
+                    ? EVERMORE_BACKGROUND
+                    : isTPDTheme
+                      ? TPD_BACKGROUND
+                      : isShowgirlTheme
+                        ? SHOWGIRL_BACKGROUND
+                        : null;
 
   const overlayStyle = {
     position: 'fixed',
@@ -3263,6 +3436,46 @@ export default function QuickScore({
   };
 
   if (done) {
+    // Registry-driven themes (Red, 1989) get the new top-3 All-done card
+    // instead of the legacy DoneFlash. Single-song re-rates skip the
+    // album-complete card entirely (still shows DoneFlash) since "your top 3"
+    // doesn't make sense for a one-song session.
+    if (isRegistryTheme && !isSingleSong) {
+      const ThemeScene = albumTheme.Scene;
+      const ThemeComplete = albumTheme.CompleteMoment;
+      // Compute top 3 from the latest live ratings — passing through
+      // getCompositeScore so a song the user just rated lands in the list.
+      const scored = songs
+        .map(s => ({
+          name: s.name,
+          score: getCompositeScore
+            ? getCompositeScore(albumId, s.index, activeCategories)
+            : s.score,
+        }))
+        .filter(s => s.score !== null && s.score !== undefined)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+
+      return (
+        <div style={overlayStyle}>
+          {/* Layer 2 — keep the world alive on the complete screen */}
+          {ThemeScene && <ThemeScene />}
+          {/* Layer 5 — complete decoration. zIndex set inside the component
+              (Red sits at 30 in front of the card; 1989 at 5 behind it). */}
+          {ThemeComplete && <ThemeComplete />}
+          {/* All-done card — z-index 20 — sits above ambient + 1989 polaroids
+              but below Red leaves blowing through. */}
+          <ThemedAllDoneCard
+            albumIcon={albumIcon}
+            albumName={albumName}
+            topSongs={scored}
+            accent={albumTheme.textTuning?.accent ?? '#7c3aed'}
+            onClose={onClose}
+          />
+        </div>
+      );
+    }
+
     return (
       <div style={overlayStyle}>
         {/* Album-complete decorations — only on full album sessions, not
@@ -3317,6 +3530,16 @@ export default function QuickScore({
       {isTPDTheme && <TPDScene />}
       {isShowgirlTheme && <ShowgirlScene />}
 
+      {/* Layer 2 — registry-driven ambient scene (Red, 1989). zIndex 1
+          inside the component, pointer-events: none. */}
+      {isRegistryTheme && albumTheme.Scene && <albumTheme.Scene />}
+
+      {/* Layer 4 — registry-driven signature moment. Fires when the
+          celebration type matches the theme's signatureKey. */}
+      {isRegistryTheme &&
+        albumTheme.SignatureMoment &&
+        celebration?.type === albumTheme.signatureKey && <albumTheme.SignatureMoment />}
+
       {showTrees && <FallingTrees onDone={() => setShowTrees(false)} />}
 
       {/* Song-signature celebration moments — render once per song's last
@@ -3334,7 +3557,7 @@ export default function QuickScore({
         background: isDarkTheme ? 'rgba(168,85,247,0.18)' : '#f3e8ff',
         flexShrink: 0,
         position: 'relative',
-        zIndex: 1,
+        zIndex: 10,
       }}>
         <div
           style={{
@@ -3355,7 +3578,7 @@ export default function QuickScore({
         padding: '12px 20px',
         flexShrink: 0,
         position: 'relative',
-        zIndex: 1,
+        zIndex: 10,
       }}>
         <div style={{ width: 60 }} />
         <div style={{ fontSize: 12, color: isDarkTheme ? '#cbd5e1' : '#9ca3af' }}>
@@ -3411,7 +3634,7 @@ export default function QuickScore({
             transition: 'opacity 0.15s ease',
             pointerEvents: isVisible ? 'auto' : 'none',
             position: 'relative',
-            zIndex: 1,
+            zIndex: 10,
           }}
         >
 
@@ -3447,7 +3670,8 @@ export default function QuickScore({
           {/* Album context */}
           <div style={{
             fontSize: 12,
-            color: isDarkTheme ? '#fde68a' : '#c4b5fd',
+            color: albumTheme?.textTuning?.subCounter
+              || (isDarkTheme ? '#fde68a' : '#c4b5fd'),
             marginBottom: 20,
             letterSpacing: '0.02em',
             textShadow: isDarkTheme ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
@@ -3474,15 +3698,16 @@ export default function QuickScore({
             <div style={{
               fontSize: 22,
               fontWeight: isTPDTheme ? 800 : 700,
-              color: isReputationTheme
-                ? '#ffffff'
-                : isEvermoreTheme
-                  ? '#fef3c7'
-                  : isShowgirlTheme
-                    ? '#fffbeb'
-                    : isDarkTheme
-                      ? '#f3f4f6'
-                      : '#111827',
+              color: albumTheme?.textTuning?.songTitle
+                || (isReputationTheme
+                  ? '#ffffff'
+                  : isEvermoreTheme
+                    ? '#fef3c7'
+                    : isShowgirlTheme
+                      ? '#fffbeb'
+                      : isDarkTheme
+                        ? '#f3f4f6'
+                        : '#111827'),
               lineHeight: 1.3,
               marginBottom: currentCat?.id === 'lyrics' ? 16 : 32,
               maxWidth: 320,
@@ -3506,27 +3731,28 @@ export default function QuickScore({
           <div style={{
             fontSize: isSpeakNowTheme ? 13 : 12,
             fontWeight: isLoverTheme || isTPDTheme ? 800 : 700,
-            color: isNightTheme
-              ? '#e9d5ff'
-              : isDebutTheme
-                ? '#9d3c5b'
-                : isSpeakNowTheme
-                  ? '#5b21b6'
-                  : isFearlessTheme
-                    ? '#b45309'
-                    : isReputationTheme
-                      ? '#67e8f9'   // neon cyan on matte black
-                      : isLoverTheme
-                        ? '#7c3aed' // bold purple on cotton candy
-                        : isFolkloreTheme
-                          ? '#1e293b' // deep slate on misty grey-green
-                          : isEvermoreTheme
-                            ? '#fbbf24' // warm gold on burgundy
-                            : isTPDTheme
-                              ? '#1c1917' // bold black on parchment
-                              : isShowgirlTheme
-                                ? '#fbbf24' // bright gold on magenta
-                                : '#a855f7',
+            color: albumTheme?.textTuning?.categoryLabel
+              || (isNightTheme
+                ? '#e9d5ff'
+                : isDebutTheme
+                  ? '#9d3c5b'
+                  : isSpeakNowTheme
+                    ? '#5b21b6'
+                    : isFearlessTheme
+                      ? '#b45309'
+                      : isReputationTheme
+                        ? '#67e8f9'   // neon cyan on matte black
+                        : isLoverTheme
+                          ? '#7c3aed' // bold purple on cotton candy
+                          : isFolkloreTheme
+                            ? '#1e293b' // deep slate on misty grey-green
+                            : isEvermoreTheme
+                              ? '#fbbf24' // warm gold on burgundy
+                              : isTPDTheme
+                                ? '#1c1917' // bold black on parchment
+                                : isShowgirlTheme
+                                  ? '#fbbf24' // bright gold on magenta
+                                  : '#a855f7'),
             textTransform: 'uppercase',
             letterSpacing: '0.12em',
             marginBottom: 4,
@@ -3542,27 +3768,28 @@ export default function QuickScore({
           </div>
           <div style={{
             fontSize: 12,
-            color: isNightTheme
-              ? '#cbd5e1'
-              : isDebutTheme
-                ? '#78716c'
-                : isSpeakNowTheme
-                  ? '#7c3aed'
-                  : isFearlessTheme
-                    ? '#92400e'
-                    : isReputationTheme
-                      ? '#9ca3af'
-                      : isLoverTheme
-                        ? '#6d28d9'
-                        : isFolkloreTheme
-                          ? '#475569'
-                          : isEvermoreTheme
-                            ? '#fde68a'
-                            : isTPDTheme
-                              ? '#44403c'
-                              : isShowgirlTheme
-                                ? '#fde68a'
-                                : '#c4b5fd',
+            color: albumTheme?.textTuning?.subCounter
+              || (isNightTheme
+                ? '#cbd5e1'
+                : isDebutTheme
+                  ? '#78716c'
+                  : isSpeakNowTheme
+                    ? '#7c3aed'
+                    : isFearlessTheme
+                      ? '#92400e'
+                      : isReputationTheme
+                        ? '#9ca3af'
+                        : isLoverTheme
+                          ? '#6d28d9'
+                          : isFolkloreTheme
+                            ? '#475569'
+                            : isEvermoreTheme
+                              ? '#fde68a'
+                              : isTPDTheme
+                                ? '#44403c'
+                                : isShowgirlTheme
+                                  ? '#fde68a'
+                                  : '#c4b5fd'),
             marginBottom: currentCat?.id === 'lyrics' ? 14 : 32,
             textShadow: isDarkTheme ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
             fontFamily: isSpeakNowTheme || isTPDTheme
@@ -3661,6 +3888,7 @@ export default function QuickScore({
                 celebration={celebration}
                 isNightTheme={isNightTheme}
                 isDarkTheme={isDarkTheme}
+                textTuning={albumTheme?.textTuning}
               />
             )}
           </div>
@@ -3713,7 +3941,7 @@ export default function QuickScore({
       )}
 
       {/* Bottom progress bar + label */}
-      <div style={{ padding: '0 20px 20px', flexShrink: 0 }}>
+      <div style={{ padding: '0 20px 20px', flexShrink: 0, position: 'relative', zIndex: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
           <span style={{ fontSize: 12, fontWeight: 600, color: '#7c3aed' }}>{Math.round(progress)}% complete</span>
           <span style={{ fontSize: 12, color: '#9ca3af' }}>

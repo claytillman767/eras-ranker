@@ -16,6 +16,13 @@ Newest entries go at the top.
 
 ---
 
+## 0.10.1 — 2026-05-10
+
+### Fixed
+- The Red and 1989 album themes listed under 0.10.0 didn't actually make it into the deploy — the new theme files were missing from the merge to `main`. This release fixes that: the autumn Red world, NYC 1989 world, All Too Well snowfall, Welcome to New York neon bloom, and the new "Your top 3" album-complete card are now live.
+
+---
+
 ## 0.10.0 — 2026-05-10
 
 ### Added
