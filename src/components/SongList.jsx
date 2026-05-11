@@ -319,6 +319,7 @@ export default function SongList({
           confirmExit={confirmExit}
           updateSetting={updateSetting}
           onGoToSpotifySettings={onGoToSpotifySettings}
+          getCompositeScore={getCompositeScore}
         />
       )}
 
