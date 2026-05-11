@@ -497,28 +497,55 @@ The user wants every finished change pushed live without waiting for a
 "go ahead" on the merge. As soon as the work compiles cleanly and the
 spec is met, take it the rest of the way.
 
-**Use the `shipper` subagent.** It owns the bump-version → write-CHANGELOG
-→ commit → push flow. Pass it the bump type (patch / minor / major, or
-"internal" to skip version bump) and a one-line description; it handles
-the rest.
+**Do the shipping inline — do NOT delegate to a subagent.** A previous
+shipper subagent silently failed to stage the actual code changes
+(only the version bump and CHANGELOG made it into the merge), so the
+user shipped two empty releases in a row before noticing. Lesson: keep
+the staging step where you can see it. The steps are short — run them
+in the main agent so you control exactly which files get committed.
 
-The shipper runs in two modes depending on the environment, and detects
-which automatically:
+The flow:
 
-- **Local mode** (Windows desktop, working from a `.claude/worktrees/`
-  worktree): full bump → commit → push → merge-to-main → push-main →
-  delete-remote-branch flow. Vercel auto-deploys on the push to `main`.
-- **Sandbox/web mode** (Claude Code on the web/mobile): the proxy blocks
-  direct pushes to `main`, so the shipper stops after pushing the
-  feature branch. The main agent then uses
-  `mcp__github__create_pull_request` to open a PR; the user merges it
-  on GitHub and Vercel deploys after the merge.
+1. **Verify the build is clean** — `npm run build` from the repo root.
+   If it errors, stop and fix.
+2. **Bump the version** in `package.json` per the loose-semver feel
+   above (patch / minor / major). Skip the bump for purely internal
+   changes that don't affect users.
+3. **Write a CHANGELOG entry** at the top of `CHANGELOG.md` under a
+   new dated header, grouped under `### Added` / `### Changed` /
+   `### Fixed` / `### Removed`. Plain-English, user-facing.
+4. **Stage explicitly with `git add <path1> <path2> ...`** — list
+   every file you changed by name. Do NOT use `git add -A`, `git
+   add .`, or `git commit -a` — those have bitten us when the
+   working tree had untracked files that weren't part of the change
+   (or when a subagent's narrower staging missed files we WERE
+   changing). Run `git status` after staging and confirm every
+   expected file is in "Changes to be committed" before committing.
+5. **Commit** with a message ending in the standard Co-Authored-By
+   trailer (`Co-Authored-By: Claude Opus 4.7 (1M context)
+   <noreply@anthropic.com>`).
+6. **Push the feature branch** (`git push -u origin <branch>`).
+7. **Merge to main and push**, depending on environment:
+   - **Local mode** (Windows desktop, from a `.claude/worktrees/`
+     worktree): `git checkout main && git pull && git merge --no-ff
+     <branch> -m "Merge: <one-line summary>" && git push origin main`.
+     Vercel auto-deploys on the push.
+   - **Sandbox/web mode** (Claude Code on the web/mobile): the proxy
+     blocks direct pushes to `main`, so stop after pushing the
+     feature branch and open a PR with
+     `mcp__github__create_pull_request`. The user merges it on
+     GitHub and Vercel deploys after the merge.
+8. **Verify the merge diff is non-trivial** — `git show --stat HEAD`
+   on main should list every file you expected. If it shows only
+   the version bump and CHANGELOG, you forgot to stage the actual
+   code; the deploy will go out empty.
 
 If a build fails or there's something genuinely uncertain about the
-change, stop and ask — but the default is "ship it." Don't pause to ask
-"do you want me to merge this?" — that question is already answered yes.
-On web/mobile, "ship it" means "push the branch and open the PR" — the
-PR merge is a one-tap action for the user on GitHub.
+change, stop and ask — but the default is "ship it." Don't pause to
+ask "do you want me to merge this?" — that question is already
+answered yes. On web/mobile, "ship it" means "push the branch and
+open the PR" — the PR merge is a one-tap action for the user on
+GitHub.
 
 ### Working on a second computer
 1. Install Git and Node.js
