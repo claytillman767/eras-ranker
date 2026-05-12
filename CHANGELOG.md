@@ -16,6 +16,27 @@ Newest entries go at the top.
 
 ---
 
+## 0.11.0 — 2026-05-12
+
+### Added
+- **Membership section in Settings.** A new dedicated home for your Pro
+  status, right below Account. Pro members see a status pill (Active,
+  Cancelling, or Payment failed), their plan and price, the next renewal
+  date, the perks they're using, and a one-tap link to manage the
+  subscription. Free members see a quick comparison of monthly vs. annual,
+  the full perk list, and an Unlock Pro button. Signed-out users get a
+  short pitch and a Sign in with Google button.
+- CSV export now appears in the perk list of the Vibe Check intro and the
+  Pro upgrade modal alongside the existing categories and playback perks,
+  so every Pro pitch surface tells the same story.
+
+### Changed
+- The "Manage subscription" link previously buried inside the Account card
+  moved to the new Membership section. Account is now identity-only
+  (avatar, email, sign out, forget me, delete account).
+
+---
+
 ## 0.10.1 — 2026-05-10
 
 ### Fixed

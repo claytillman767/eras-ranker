@@ -230,6 +230,12 @@ export default function VibeCheckIntro({
               title: 'Jump straight to the bridge',
               desc: "On the Bridge category, tap one button to skip right to the song's bridge.",
             },
+            {
+              spotify: false,
+              icon: '📤',
+              title: 'CSV export',
+              desc: 'Download all your ratings as a spreadsheet.',
+            },
           ].filter(item => {
             const knownNonPremium = spotify?.isConnected && !spotify?.isPremium;
             return !(item.spotify && knownNonPremium);

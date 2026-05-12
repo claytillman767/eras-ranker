@@ -72,6 +72,11 @@ export function usePro(user) {
   const [customerPortalUrl, setCustomerPortalUrl] = useState(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
   const [subscriptionEndsAt, setSubscriptionEndsAt] = useState(null);
+  // Next renewal date for ACTIVE subscriptions. Webhook stores LS's
+  // `renews_at` here on every subscription_created/updated event.
+  // (Distinct from subscriptionEndsAt, which is set only after a cancel.)
+  const [nextRenewalAt, setNextRenewalAt] = useState(null);
+  const [subscriptionPlan, setSubscriptionPlan] = useState(null);
 
   // True from the moment the user opens the LS checkout until the webhook
   // writes isPro=true (or the failsafe timer expires). Drives the
@@ -112,6 +117,8 @@ export function usePro(user) {
       setCustomerPortalUrl(null);
       setSubscriptionStatus(null);
       setSubscriptionEndsAt(null);
+      setNextRenewalAt(null);
+      setSubscriptionPlan(null);
       localStorage.removeItem(KEY_IS_PRO);
       return;
     }
@@ -139,6 +146,8 @@ export function usePro(user) {
         setCustomerPortalUrl(data?.customerPortalUrl ?? null);
         setSubscriptionStatus(data?.subscriptionStatus ?? null);
         setSubscriptionEndsAt(data?.subscriptionEndsAt ?? null);
+        setNextRenewalAt(data?.currentPeriodEnd ?? null);
+        setSubscriptionPlan(data?.proPlan ?? null);
       },
       () => {
         // Network or permission error — keep local state for now rather
@@ -341,6 +350,8 @@ export function usePro(user) {
     customerPortalUrl,
     subscriptionStatus,
     subscriptionEndsAt,
+    nextRenewalAt,
+    subscriptionPlan,
     enabledExtras,
     toggleExtra,
     customCategories,

@@ -108,6 +108,8 @@ export default function App() {
     customerPortalUrl,
     subscriptionStatus,
     subscriptionEndsAt,
+    nextRenewalAt,
+    subscriptionPlan,
     enabledExtras,
     toggleExtra,
     customCategories,
@@ -657,6 +659,8 @@ export default function App() {
             customerPortalUrl={customerPortalUrl}
             subscriptionStatus={subscriptionStatus}
             subscriptionEndsAt={subscriptionEndsAt}
+            nextRenewalAt={nextRenewalAt}
+            subscriptionPlan={subscriptionPlan}
             user={user}
             signIn={signIn}
             signOut={signOut}
