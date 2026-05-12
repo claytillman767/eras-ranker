@@ -20,10 +20,9 @@ export default function PaywallCard({ onUnlock, user, signIn, spotify }) {
   const knownNonPremium = spotify?.isConnected && !spotify?.isPremium;
   const features = [
     { kind: 'playback', label: 'Songs autoplay through Spotify while you rate' },
-    { kind: 'playback', label: 'Skip to the chorus, bridge, opening or closing line' },
+    { kind: 'playback', label: 'Really sit with each song — jump to any chorus, bridge, opening, or closing line' },
     { kind: 'always',   label: '8 new categories to score' },
     { kind: 'always',   label: 'Add your own custom categories' },
-    { kind: 'always',   label: 'Export your full rankings list' },
   ].filter(f => !(f.kind === 'playback' && knownNonPremium));
 
   function handleUnlock() {
@@ -53,7 +52,7 @@ export default function PaywallCard({ onUnlock, user, signIn, spotify }) {
               account so the lead never overpromises. */}
           <p style={{ fontSize: 13, color: '#4b5563', margin: '0 0 12px', lineHeight: 1.5 }}>
             {knownNonPremium
-              ? 'Unlock extra categories, build your own custom scoring system, and export your full rankings list.'
+              ? 'Unlock extra categories and build your own custom scoring system.'
               : 'Unlock extra categories, build your own custom scoring system, and have every song play while you rate.'}
           </p>
 
