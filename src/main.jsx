@@ -55,6 +55,27 @@ if (typeof window !== 'undefined' && !document.getElementById('lemon-js')) {
     if (typeof window.createLemonSqueezy === 'function') {
       window.createLemonSqueezy();
     }
+    // Auto-close the LS overlay the moment a checkout succeeds, so the
+    // user never sees LS's "Thank you / View Order" screen. The "Processing
+    // payment…" banner is already showing in the app, and the celebration
+    // prompt fires within seconds once the webhook flips isPro on the
+    // user's Firestore record. Wrapped in optional chaining + a string
+    // .includes('success') match so a future event-name change in lemon.js
+    // can't crash the page.
+    if (window.LemonSqueezy?.Setup) {
+      try {
+        window.LemonSqueezy.Setup({
+          eventHandler: (event) => {
+            const name = String(event?.event || '').toLowerCase();
+            if (name.includes('success')) {
+              window.LemonSqueezy?.Url?.Close?.();
+            }
+          },
+        });
+      } catch (e) {
+        console.warn('lemon.js Setup failed:', e);
+      }
+    }
   };
   document.head.appendChild(s);
 }

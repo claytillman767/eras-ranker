@@ -16,6 +16,17 @@ Newest entries go at the top.
 
 ---
 
+## 0.11.3 — 2026-05-12
+
+### Changed
+- After a successful Pro purchase, the Lemon Squeezy "Thank you / View
+  Order" screen no longer appears. The checkout window closes
+  automatically and you land right back in the app, where the "You're
+  Pro!" celebration and the Connect Spotify prompt take over within a
+  couple of seconds.
+
+---
+
 ## 0.11.2 — 2026-05-12
 
 ### Fixed
