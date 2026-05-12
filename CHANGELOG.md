@@ -16,6 +16,19 @@ Newest entries go at the top.
 
 ---
 
+## 0.13.1 — 2026-05-12
+
+### Fixed
+- **Red album shuffle screen no longer flashes white.** The "Play / Skip"
+  question at the start of each song now lets the album's themed backdrop
+  show through on Red, Reputation, Lover, Folklore, Evermore, The Tortured
+  Poets Department, Life of a Showgirl, and 1989 — previously a generic
+  white-to-lavender gradient was painted over the top. Dark-themed albums
+  also get light-colored shuffle-screen text so the song title stays
+  readable on the deep backdrop.
+
+---
+
 ## 0.13.0 — 2026-05-12
 
 ### Removed
