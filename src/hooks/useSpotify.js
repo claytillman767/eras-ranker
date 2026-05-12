@@ -458,6 +458,23 @@ export function useSpotify(user) {
     }
   }, [isConnected, isPremium]);
 
+  // ── Tear down the SDK's virtual speaker when the tab actually closes ─────
+  // Without this, Spotify keeps the "Eras Ranker" device registered on the
+  // user's account after they leave. Next time they reach for Spotify
+  // (Android Auto, CarPlay, the desktop app) Spotify Connect can briefly
+  // route playback to the dead device before giving up. We skip the
+  // disconnect when the page is entering the BFCache (event.persisted) —
+  // the page might come back, and the player would be unusable until a
+  // refresh otherwise.
+  useEffect(() => {
+    const handlePageHide = (event) => {
+      if (event.persisted) return;
+      playerRef.current?.disconnect();
+    };
+    window.addEventListener('pagehide', handlePageHide);
+    return () => window.removeEventListener('pagehide', handlePageHide);
+  }, []);
+
   // ── Sync connection state to Firestore so we can see who has linked Spotify ─
   // Writes { spotifyConnected, spotifyLastConnectedAt } onto users/{uid}.
   // No-op when there is no signed-in user (anonymous browsing).

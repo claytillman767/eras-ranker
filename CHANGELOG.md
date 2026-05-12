@@ -16,6 +16,19 @@ Newest entries go at the top.
 
 ---
 
+## 0.14.3 — 2026-05-12
+
+### Fixed
+- **Spotify no longer leaves a ghost "Eras Ranker" speaker on your
+  account after you close the app.** Before this fix, the next time
+  you reached for Spotify — Android Auto, CarPlay, the desktop app —
+  Spotify Connect would briefly try to route playback to the dead
+  in-browser player before giving up, so a song might start playing
+  and then stop. The app now properly tells Spotify to remove the
+  speaker when you close the tab.
+
+---
+
 ## 0.14.2 — 2026-05-12
 
 ### Changed
