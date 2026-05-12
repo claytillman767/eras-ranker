@@ -9,10 +9,16 @@ import { isBetaEmail } from '../data/betaEmails';
 // Hardcoded because it rarely changes and avoids a new env var per store.
 const LS_STORE_SLUG = 'erasranker';
 
-// Variant IDs come from Vercel env vars so we can swap them without code
-// changes (e.g. switching from test to live mode in the future). When the
-// env var is missing, unlockPro falls back to the mock-grant path so local
-// dev still works for testing other features.
+// Variant checkout UUIDs come from Vercel env vars so we can swap them
+// without code changes (e.g. switching from test to live mode flips both
+// UUIDs at once). When either env var is missing, unlockPro falls back to
+// the mock-grant path so local dev still works for testing other features.
+//
+// IMPORTANT: these are the CHECKOUT UUIDs (e.g. 0c29fa1b-03ef-…) shown in
+// LS dashboard → Products → Share, NOT the internal numeric variant IDs.
+// LS's checkout URLs are `/checkout/buy/{uuid}`; numeric variant IDs 404
+// at `/buy/{id}`. Env var names kept as VARIANT_ID for backwards
+// compatibility with the existing Vercel config.
 const LS_VARIANT_MONTHLY = import.meta.env.VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY;
 const LS_VARIANT_ANNUAL  = import.meta.env.VITE_LEMON_SQUEEZY_VARIANT_ID_ANNUAL;
 const LS_WIRED = !!(LS_VARIANT_MONTHLY && LS_VARIANT_ANNUAL);
@@ -203,11 +209,14 @@ export function usePro(user) {
       return true;
     }
 
-    const variantId = plan === 'annual' ? LS_VARIANT_ANNUAL : LS_VARIANT_MONTHLY;
+    const variantUuid = plan === 'annual' ? LS_VARIANT_ANNUAL : LS_VARIANT_MONTHLY;
     const params = new URLSearchParams();
     params.set('checkout[custom][uid]', user.uid);
     if (user.email) params.set('checkout[email]', user.email);
-    const checkoutUrl = `https://${LS_STORE_SLUG}.lemonsqueezy.com/buy/${variantId}?${params.toString()}`;
+    // Path must be `/checkout/buy/{uuid}` — `/buy/{id}` returns 404 for
+    // most stores. UUID is the share-panel checkout UUID, not the
+    // numeric variant ID.
+    const checkoutUrl = `https://${LS_STORE_SLUG}.lemonsqueezy.com/checkout/buy/${variantUuid}?${params.toString()}`;
 
     // Mark in-flight and arm the failsafe so the banner doesn't hang forever
     // if the user closes the overlay without paying. The success path clears
