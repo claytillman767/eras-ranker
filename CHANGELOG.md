@@ -16,6 +16,24 @@ Newest entries go at the top.
 
 ---
 
+## 0.15.0 — 2026-05-12
+
+### Added
+- **Privacy Policy and Terms of Service.** Two new public pages at
+  `/privacy` and `/terms`, written in plain English. The Privacy Policy
+  covers exactly what data the App collects, how it's used, who it's
+  shared with (Google, Vercel, Lemon Squeezy, Spotify), your rights to
+  access or delete your data, and how AI tools and analytics may be
+  used. The Terms of Service cover who can use the App (13+), Pro
+  subscription billing and cancellation, public-profile rules, and
+  governing law.
+- **Legal links in two places.** A small "By signing in, you agree to
+  our Terms of Service and Privacy Policy" line on the Google sign-in
+  screen, and Privacy Policy · Terms of Service links right under the
+  version number at the bottom of Settings.
+
+---
+
 ## 0.14.1 — 2026-05-12
 
 ### Changed

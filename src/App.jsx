@@ -23,16 +23,25 @@ import Brackets from './components/brackets/Brackets';
 import ConnectSpotifyPrompt from './components/ConnectSpotifyPrompt';
 import ProcessingBanner from './components/ProcessingBanner';
 import ProfileView from './components/ProfileView';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import Terms from './components/Terms';
 import FeedbackButton from './components/FeedbackButton';
 import { ALL_ALBUMS } from './data/albums';
 
-// Hand-rolled URL routing for the public-profile feature. The app is
-// otherwise tab-driven, so adding react-router for one extra route would
-// be overkill. If we add more deep-linkable screens later, swap this for
-// a real router.
+// Hand-rolled URL routing. The app is otherwise tab-driven, so adding
+// react-router for a handful of extra routes would be overkill. If we
+// add more deep-linkable screens later, swap this for a real router.
 function getProfileUidFromPath() {
   const m = window.location.pathname.match(/^\/u\/([^/?#]+)/);
   return m ? decodeURIComponent(m[1]) : null;
+}
+
+// 'privacy' | 'terms' | null — checked at mount and on back/forward.
+function getLegalPath() {
+  const p = window.location.pathname;
+  if (p === '/privacy' || p === '/privacy/') return 'privacy';
+  if (p === '/terms' || p === '/terms/') return 'terms';
+  return null;
 }
 
 // Brackets feature is hidden from the published app until phase 2 of launch.
@@ -56,8 +65,12 @@ export default function App() {
   // back/forward navigation. Pre-empts the rest of the app and the beta gate
   // so a shared profile link is reachable without signing in.
   const [profileUid, setProfileUid] = useState(getProfileUidFromPath);
+  const [legalPath, setLegalPath] = useState(getLegalPath);
   useEffect(() => {
-    function onPop() { setProfileUid(getProfileUidFromPath()); }
+    function onPop() {
+      setProfileUid(getProfileUidFromPath());
+      setLegalPath(getLegalPath());
+    }
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
@@ -216,6 +229,13 @@ export default function App() {
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, [showUserMenu]);
+
+  // Legal pages take precedence over everything else — they must be
+  // reachable from anywhere (sign-in screen, external links from Lemon
+  // Squeezy / Google OAuth verification, etc.) without sitting through
+  // the welcome tour or sign-in flow.
+  if (legalPath === 'privacy') return <PrivacyPolicy />;
+  if (legalPath === 'terms')   return <Terms />;
 
   // Public profile route takes precedence over the welcome tour — a shared
   // link should always render the profile screen for unauthenticated visitors.

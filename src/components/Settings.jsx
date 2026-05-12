@@ -778,6 +778,29 @@ export default function Settings({
         }}>
           The Eras Ranker · v{__APP_VERSION__}
         </div>
+
+        {/* Legal links — sit right under the version line so they're easy
+            to find from anywhere in the app via Settings → bottom of page. */}
+        <div style={{
+          fontSize: 11,
+          color: '#9ca3af',
+          marginTop: 6,
+        }}>
+          <a
+            href="/privacy"
+            style={{ color: '#7c3aed', textDecoration: 'underline' }}
+          >
+            Privacy Policy
+          </a>
+          {' · '}
+          <a
+            href="/terms"
+            style={{ color: '#7c3aed', textDecoration: 'underline' }}
+          >
+            Terms of Service
+          </a>
+        </div>
+
         <div style={{ height: '0.5px', background: '#e5e7eb', margin: '10px 0' }} />
         <div style={{
           fontSize: 11,
