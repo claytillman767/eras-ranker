@@ -5,10 +5,10 @@ import { useEffect } from 'react';
 // device. Skip-able with a "Not now" button — the user can still sign in
 // later from the header avatar or Settings → Account.
 //
-// Auto-skips when a Google account is already connected (e.g. the user
-// signed in at the BetaGate, which currently forces Google sign-in to
-// enter the app at all). In that case the promo flag is set behind the
-// scenes so the screen never tries to reappear.
+// Auto-skips when a Google account is already connected (e.g. a returning
+// user signed in via the header avatar in a previous session). In that
+// case the promo flag is set behind the scenes so the screen never tries
+// to reappear.
 //
 // localStorage flag: eras_google_login_promo_seen — set on either Sign in
 // or Not now. Also set automatically when the auto-skip path runs.

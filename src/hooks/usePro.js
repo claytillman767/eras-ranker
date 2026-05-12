@@ -1,9 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
-import { isDevEmail } from '../uat';
-import { isBetaEmail } from '../data/betaEmails';
 
 // Lemon Squeezy storefront slug — the prefix on the checkout URL.
 // Hardcoded because it rarely changes and avoids a new env var per store.
@@ -135,14 +133,12 @@ export function usePro(user) {
       doc(db, 'users', user.uid),
       (snap) => {
         const data = snap.exists() ? snap.data() : null;
-        const cloudIsPro = data?.isPro === true;
-        // Beta override: anyone on the BETA_EMAILS allowlist gets Pro for
-        // free during the beta. Layered on top of cloud truth so removing
-        // someone from the list immediately revokes Pro on next render —
-        // we deliberately don't write the override to Firestore.
-        // Goes away when the beta gate is removed at launch.
-        const effectiveIsPro = cloudIsPro || isBetaEmail(user.email);
-        if (effectiveIsPro) {
+        // Cloud is the source of truth — written ONLY by the Lemon Squeezy
+        // webhook (paying customers) or manually in the Firebase console
+        // (e.g. comped beta testers). The client is rule-blocked from
+        // writing isPro/subscriptionId itself, so a tampered localStorage
+        // value cannot grant Pro.
+        if (data?.isPro === true) {
           setIsPro(true);
           localStorage.setItem(KEY_IS_PRO, 'true');
         } else {
@@ -178,35 +174,22 @@ export function usePro(user) {
   // can find the right Firestore doc when the subscription is created.
   //
   // Returns true if the checkout was opened, false if blocked (no user, or
-  // we're in mock-fallback mode and the legacy mock unlock fired instead).
-  // The caller doesn't need to await — Pro state flips via the onSnapshot
-  // listener once the webhook lands.
+  // LS env vars are missing — e.g. local dev). The caller doesn't need to
+  // await — Pro state flips via the onSnapshot listener once the webhook
+  // lands.
   //
   // Pro upgrades REQUIRE a signed-in account. LS's customer record needs a
   // stable identity, and the entitlement should follow the user across
   // devices.
+  //
+  // The client never writes isPro itself — Firestore rules block it. Comped
+  // accounts (developers, beta testers) get Pro by setting `isPro: true`
+  // directly on the user doc from the Firebase console.
   const unlockPro = useCallback((plan = 'monthly') => {
     if (!user || !db) return false;
-
-    // Mock-grant path. Used in three cases:
-    //   1. Local dev / pre-LS environments where the variant-ID env vars
-    //      aren't set, so other Pro features can be tested without LS.
-    //   2. Developer accounts (isDevEmail) so we can test upgrade-gated UI
-    //      end-to-end without running real cards through Lemon Squeezy.
-    //   3. Beta testers (isBetaEmail) — they already have Pro via the
-    //      override in the onSnapshot effect above; this just makes sure
-    //      a stray tap on an upgrade button never opens a real checkout.
-    // All three paths write isPro=true to Firestore + localStorage and skip
-    // the LS checkout entirely.
-    if (!LS_WIRED || isDevEmail(user.email) || isBetaEmail(user.email)) {
-      localStorage.setItem(KEY_IS_PRO, 'true');
-      setIsPro(true);
-      setDoc(
-        doc(db, 'users', user.uid),
-        { isPro: true, proPlan: plan, proUpgradedAt: serverTimestamp() },
-        { merge: true }
-      ).catch(() => {});
-      return true;
+    if (!LS_WIRED) {
+      console.warn('unlockPro: Lemon Squeezy variant env vars not set; cannot open checkout');
+      return false;
     }
 
     const variantUuid = plan === 'annual' ? LS_VARIANT_ANNUAL : LS_VARIANT_MONTHLY;

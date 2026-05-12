@@ -98,10 +98,9 @@ export default function DeleteAccountModal({ user, isPro, signOut, onClose }) {
         }
       }
 
-      // 5) Wipe local data on this device. Keep eras_beta_unlocked so the
-      //    sign-out lands on the welcome flow and not the beta gate.
+      // 5) Wipe local data on this device.
       Object.keys(localStorage)
-        .filter(k => k.startsWith('eras_') && k !== 'eras_beta_unlocked')
+        .filter(k => k.startsWith('eras_'))
         .forEach(k => localStorage.removeItem(k));
 
       setStep('done');

@@ -16,6 +16,38 @@ Newest entries go at the top.
 
 ---
 
+## 0.13.0 — 2026-05-12
+
+### Removed
+- **Beta gate is gone.** The full-screen password / Google-allowlist gate
+  that previously fronted the app has been removed. New visitors now land
+  directly on the Welcome tour, then the Google sign-in pitch, then the
+  Spotify connect pitch, and finally Home. Anonymous browsing is allowed —
+  signing in is a soft ask, never forced.
+
+### Changed
+- **Pro entitlement is now strictly cloud-controlled.** Real subscribers
+  get Pro flipped on by the Lemon Squeezy webhook. Comped accounts (e.g.
+  early testers) get Pro by having `isPro: true` set manually on their
+  user record in the Firebase console. The app no longer carries a
+  hardcoded list of email addresses anywhere in its public code.
+- The webhook now stamps `proSource: 'lemonsqueezy'` on real subscribers
+  so it's obvious in the console which Pro records came from a real
+  payment versus a manual grant — useful when auditing or revoking.
+
+### Fixed
+- **Security: Pro can no longer be self-granted from the browser.** The
+  Firestore rules now block clients from writing any of the Pro/billing
+  fields directly. Previously a sufficiently determined user could have
+  flipped `isPro` to true via the browser developer tools.
+- **Security: subscription-cancel endpoint now verifies ownership.**
+  `/api/cancel-subscription` cross-checks with Lemon Squeezy that the
+  caller's verified email matches the subscription's email before
+  cancelling, so a malicious user can't cancel someone else's
+  subscription even if other layers fail.
+
+---
+
 ## 0.12.0 — 2026-05-12
 
 ### Changed

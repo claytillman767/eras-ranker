@@ -7,14 +7,17 @@
 //
 // Authorization: the client sends a Firebase ID token in the Authorization
 // header. We verify the token via the Admin SDK, look up the user's
-// subscriptionId, and tell LS to cancel. The user can ONLY cancel their
-// own subscription this way — the uid in the verified token is what we
-// look up, never anything from the request body.
+// subscriptionId from Firestore, then CROSS-CHECK ownership against Lemon
+// Squeezy itself by fetching the subscription and verifying its `user_email`
+// matches the verified token's email. The cross-check is defense-in-depth on
+// top of the Firestore rules — even if the rule layer ever allowed the
+// client to overwrite subscriptionId, this endpoint would refuse to cancel
+// a subscription that doesn't belong to the caller.
 //
 // Idempotent: if the user has no Pro subscription, returns 200 OK with
 // `{ skipped: true }` so the caller doesn't have to special-case it.
 import { getAdminDb, getAdminAuth } from '../lib/firebase-admin.js';
-import { cancelSubscription } from '../lib/lemon-squeezy.js';
+import { getSubscription, cancelSubscription } from '../lib/lemon-squeezy.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -31,9 +34,11 @@ export default async function handler(req, res) {
 
   // 2) Verify the token. Admin SDK throws if the token is bad/expired.
   let uid;
+  let verifiedEmail;
   try {
     const decoded = await getAdminAuth().verifyIdToken(idToken);
     uid = decoded.uid;
+    verifiedEmail = (decoded.email || '').toLowerCase();
   } catch (e) {
     console.warn('cancel-subscription: token verify failed', e?.message);
     return res.status(401).json({ error: 'Invalid token' });
@@ -52,14 +57,41 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true, skipped: true, reason: 'no_subscription' });
   }
 
-  // 4) Tell LS to cancel. Cancel-at-period-end is the LS default; the user
-  //    keeps Pro access until the current period expires, then it lapses.
   const apiKey = process.env.LEMON_SQUEEZY_API_KEY;
   if (!apiKey) {
     console.error('cancel-subscription: LEMON_SQUEEZY_API_KEY not set');
     return res.status(500).json({ error: 'Server misconfigured' });
   }
 
+  // 4) Verify the LS subscription actually belongs to this Firebase user.
+  // The Firestore rule layer already blocks the client from writing
+  // subscriptionId — this is a second line of defense against IDOR.
+  try {
+    const sub = await getSubscription(subscriptionId, apiKey);
+    const subEmail = String(sub?.data?.attributes?.user_email || '').toLowerCase();
+    if (!subEmail || !verifiedEmail || subEmail !== verifiedEmail) {
+      console.warn('cancel-subscription: ownership mismatch', {
+        uid,
+        subscriptionId,
+        // Only the first character of each email is logged so the audit
+        // trail is useful without dumping full PII to Vercel logs.
+        verifiedInitial: verifiedEmail ? verifiedEmail[0] : null,
+        subEmailInitial: subEmail ? subEmail[0] : null,
+      });
+      return res.status(403).json({ error: 'Subscription does not belong to this user' });
+    }
+  } catch (e) {
+    const message = e?.message || '';
+    if (message.includes('404')) {
+      // Subscription no longer exists on the LS side — treat as already gone.
+      return res.status(200).json({ ok: true, skipped: true, reason: 'subscription_not_found' });
+    }
+    console.error('cancel-subscription: ownership check failed', { uid, subscriptionId, error: message });
+    return res.status(502).json({ error: 'Lemon Squeezy verify failed' });
+  }
+
+  // 5) Tell LS to cancel. Cancel-at-period-end is the LS default; the user
+  //    keeps Pro access until the current period expires, then it lapses.
   try {
     await cancelSubscription(subscriptionId, apiKey);
   } catch (e) {

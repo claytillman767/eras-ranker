@@ -8,7 +8,6 @@ import { useSettings } from './hooks/useSettings';
 import { useSpotify } from './hooks/useSpotify';
 import { useUserStats } from './hooks/useUserStats';
 import { useProfile } from './hooks/useProfile';
-import BetaGate from './components/BetaGate';
 import Welcome from './components/Welcome';
 import GoogleLoginPromo, { hasSeenGoogleLoginPromo } from './components/GoogleLoginPromo';
 import SpotifyIntro, { hasSeenSpotifyIntro } from './components/SpotifyIntro';
@@ -26,7 +25,6 @@ import ProcessingBanner from './components/ProcessingBanner';
 import ProfileView from './components/ProfileView';
 import FeedbackButton from './components/FeedbackButton';
 import { ALL_ALBUMS } from './data/albums';
-import { BETA_EMAILS } from './data/betaEmails';
 
 // Hand-rolled URL routing for the public-profile feature. The app is
 // otherwise tab-driven, so adding react-router for one extra route would
@@ -51,7 +49,6 @@ const TABS = [
   { id: 'settings', label: 'Settings' },
 ];
 
-const BETA_KEY = 'eras_beta_unlocked';
 const WELCOME_KEY = 'eras_welcome_seen';
 
 export default function App() {
@@ -72,10 +69,6 @@ export default function App() {
 
   // Auth
   const { user, authLoading, signIn, signOut } = useAuth();
-
-  // ── Beta gate state ──────────────────────────────────────────────────────────
-  const [betaUnlocked, setBetaUnlocked] = useState(() => localStorage.getItem(BETA_KEY) === 'true');
-  const [betaRejected, setBetaRejected] = useState(false);
 
   // ── Welcome tour state ───────────────────────────────────────────────────────
   const [welcomeSeen, setWelcomeSeen] = useState(() => localStorage.getItem(WELCOME_KEY) === '1');
@@ -224,55 +217,13 @@ export default function App() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [showUserMenu]);
 
-  // When a Google sign-in completes, check the allowlist and unlock the gate.
-  // If rejected, leave the user signed in so BetaGate can show the launch
-  // waitlist screen (which needs their email). The waitlist screen signs them
-  // out itself once they decide.
-  useEffect(() => {
-    if (betaUnlocked || authLoading || !user || betaRejected) return;
-    const allowed = BETA_EMAILS.map(e => e.trim().toLowerCase()).filter(Boolean);
-    // Empty list = allow any signed-in Google account
-    if (allowed.length === 0 || allowed.includes(user.email?.toLowerCase())) {
-      localStorage.setItem(BETA_KEY, 'true');
-      setBetaUnlocked(true);
-      setBetaRejected(false);
-    } else {
-      setBetaRejected(true);
-    }
-  }, [user, authLoading, betaUnlocked, betaRejected]);
-
-  // ── Gate check — safe to early-return now that all hooks are declared above ──
-  function handleBetaPassword() {
-    localStorage.setItem(BETA_KEY, 'true');
-    setBetaUnlocked(true);
-  }
-
-  function handleRejectedSignOut() {
-    setBetaRejected(false);
-    signOut();
-  }
-
-  // Public profile route takes precedence over both the beta gate and the
-  // welcome tour — a shared link should always render the profile screen
-  // for unauthenticated visitors.
+  // Public profile route takes precedence over the welcome tour — a shared
+  // link should always render the profile screen for unauthenticated visitors.
   if (profileUid) {
     return <ProfileView uid={profileUid} />;
   }
 
-  if (!betaUnlocked) {
-    return (
-      <BetaGate
-        onSignIn={signIn}
-        onPassword={handleBetaPassword}
-        loading={authLoading || (!!user && !betaRejected)}
-        rejected={betaRejected}
-        rejectedUser={betaRejected ? user : null}
-        onRejectedSignOut={handleRejectedSignOut}
-      />
-    );
-  }
-
-  // ── Welcome tour — shown once per device after the beta gate is passed ──────
+  // ── Welcome tour — shown once per device for new users ───────────────────────
   function dismissWelcome() {
     localStorage.setItem(WELCOME_KEY, '1');
     setWelcomeSeen(true);
@@ -290,7 +241,7 @@ export default function App() {
   // when no account is connected yet. The user can either sign in (default
   // path) or tap "Not now" to keep going as anonymous. The promo's own
   // useEffect auto-skips when a user is already signed in (e.g. they signed
-  // in via the BetaGate or via the header avatar in a previous session). ────
+  // back in via the header avatar in a previous session). ────
   if (!googleLoginPromoSeen && !user) {
     return (
       <GoogleLoginPromo

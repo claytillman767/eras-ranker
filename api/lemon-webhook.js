@@ -101,6 +101,12 @@ export default async function handler(req, res) {
       await userRef.set(
         {
           isPro: true,
+          // Marks this Pro grant as originating from a real Lemon Squeezy
+          // subscription. Anything written by hand in the Firebase console
+          // (e.g. a beta tester comp) leaves this field unset, so the
+          // operator can distinguish "real paying customer — DO NOT REVOKE"
+          // from "manual comp — safe to revoke" at a glance.
+          proSource: 'lemonsqueezy',
           subscriptionId: subscriptionId ?? null,
           subscriptionStatus: subscription?.status ?? null,
           customerId: subscription?.customer_id ?? null,
