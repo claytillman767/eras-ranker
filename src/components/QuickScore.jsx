@@ -2848,7 +2848,7 @@ function NoBridgeScreen({ songName, onContinue }) {
 // ── Shuffle screen — Play/Skip question with song lyrics floating in background ─
 // Lyrics fade in softly, then pulse up and out when the user picks an answer,
 // creating a bridge into the detailed rating questions.
-function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRating = 0, categoryNumber = 1, totalCategories = 1, isNightTheme = false, isDebutTheme = false, isSpeakNowTheme = false, isFearlessTheme = false }) {
+function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRating = 0, categoryNumber = 1, totalCategories = 1, hasThemedBackdrop = false, isDarkTheme = false }) {
   const [animating, setAnimating] = useState(false);
 
   // Show the previous pick (if any) by fading the unpicked side. Mirrors
@@ -2856,9 +2856,6 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
   const prevPlay = currentRating === 5;
   const prevSkip = currentRating === 1;
   const hasPrev = prevPlay || prevSkip;
-  // Themed albums all want the parent backdrop to bleed through; only
-  // the un-themed default keeps the original soft white→lavender gradient.
-  const useThemeBackdrop = isNightTheme || isDebutTheme || isSpeakNowTheme || isFearlessTheme;
 
   function handlePick(val) {
     if (animating) return;
@@ -2892,7 +2889,7 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
         // Themed albums use transparent so the parent backdrop +
         // ambient scene show through; otherwise the original soft
         // white→lavender gradient still ships.
-        background: useThemeBackdrop
+        background: hasThemedBackdrop
           ? 'transparent'
           : 'linear-gradient(180deg, #ffffff 0%, #fdf8ff 100%)',
         animation: animating ? 'shuffle-fade-out 0.72s ease forwards' : 'none',
@@ -2919,11 +2916,11 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
           <div style={{
             fontSize: 24,
             fontWeight: 700,
-            color: isNightTheme ? '#f3f4f6' : '#111827',
+            color: isDarkTheme ? '#f3f4f6' : '#111827',
             lineHeight: 1.3,
             marginBottom: 14,
             maxWidth: 300,
-            textShadow: isNightTheme ? '0 1px 8px rgba(0,0,0,0.4)' : 'none',
+            textShadow: isDarkTheme ? '0 1px 8px rgba(0,0,0,0.4)' : 'none',
           }}>
             {song.name}
           </div>
@@ -2932,15 +2929,15 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
               user sees this is question 1 of N, not a standalone choice. */}
           <div style={{
             fontSize: 12,
-            color: isNightTheme ? '#cbd5e1' : '#c4b5fd',
+            color: isDarkTheme ? '#cbd5e1' : '#c4b5fd',
             marginBottom: 18,
-            textShadow: isNightTheme ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
+            textShadow: isDarkTheme ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
           }}>
             Category {categoryNumber} of {totalCategories}
           </div>
 
           {/* Question */}
-          <div style={{ fontSize: 15, color: isNightTheme ? '#cbd5e1' : '#9ca3af', marginBottom: 52 }}>
+          <div style={{ fontSize: 15, color: isDarkTheme ? '#cbd5e1' : '#9ca3af', marginBottom: 52 }}>
             If this came on shuffle right now...
           </div>
 
@@ -3617,10 +3614,8 @@ export default function QuickScore({
           currentRating={currentRating}
           categoryNumber={catPos + 1}
           totalCategories={currentSong?.cats.length ?? 1}
-          isNightTheme={isNightTheme}
-          isDebutTheme={isDebutTheme}
-          isSpeakNowTheme={isSpeakNowTheme}
-          isFearlessTheme={isFearlessTheme}
+          hasThemedBackdrop={!!albumBackground}
+          isDarkTheme={isDarkTheme}
         />
       ) : (
         /* ── Fading wrapper — covers both NoBridgeScreen and star questions ── */
