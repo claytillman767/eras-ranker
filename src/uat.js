@@ -12,7 +12,9 @@
 export const UAT_NEW_USER_KEY = 'eras_uat_new_user';
 
 export const DEV_EMAILS = [
-  'clay.tillman7@gmail.com',
+  // TEMPORARILY EMPTY for real Lemon Squeezy purchase test on 2026-05-12.
+  // Add 'clay.tillman7@gmail.com' back after the test + refund completes
+  // so dev tools (UAT mode toggle, mock unlock) work again.
 ];
 
 const ONBOARDING_FLAG_KEYS = [

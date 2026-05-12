@@ -687,10 +687,11 @@ The webhook is the only trusted "did they pay" source — never trust the browse
 
 **Env vars needed in Vercel** (all server-side, NO `VITE_` prefix unless noted):
 - `LEMON_SQUEEZY_API_KEY` — server only, used by `/api/cancel-subscription` to call LS
+  - **Expires 2028-10-10.** LS does not allow keyless or no-expiration tokens. Set a calendar reminder for **2028-09-01** to rotate before expiry; if the key lapses, account deletion stops cancelling subscriptions silently (auth gets wiped, sub keeps charging) until a new key is generated and added to Vercel.
 - `LEMON_SQUEEZY_WEBHOOK_SECRET` — HMAC signing secret for verifying webhook payloads
 - `FIREBASE_SERVICE_ACCOUNT_B64` — base64 of the service account JSON
-- `VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY` — frontend uses this to open the monthly checkout (current value: `1619795`)
-- `VITE_LEMON_SQUEEZY_VARIANT_ID_ANNUAL` — frontend uses this to open the annual checkout (current value: `1619818`)
+- `VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY` — frontend uses this to open the monthly checkout (current value: `1645564`)
+- `VITE_LEMON_SQUEEZY_VARIANT_ID_ANNUAL` — frontend uses this to open the annual checkout (current value: `1645573`)
 
 **Note: `LEMON_SQUEEZY_STORE_ID` is NOT required.** All API calls (cancel subscription, etc.) work directly off subscription/customer IDs that come in the webhook payload. The store ID is only useful for admin scripts that query the LS API for "all subscriptions in store X" — not needed at runtime.
 
