@@ -12,7 +12,7 @@ Every user-facing decision should be evaluated against these four conversion goa
 
 1. **Account login (Google sign-in)** — the backbone. Required for cross-device sync, Pro billing, and identity. Pushed via the dedicated GoogleLoginPromo screen that appears right after the Welcome tour for anyone not yet signed in, with "Sign in with Google" as the primary CTA and "Not now" as the bypass.
 2. **Spotify connection (free for everyone)** — gives real album art across the app and is the natural runway toward Pro playback. Connecting is FREE; no Pro required. Pushed via the SpotifyIntro screen (shown once for signed-in users after the GoogleLoginPromo) and the Settings → Spotify section.
-3. **Pro upgrade ($4.99/mo or $46.71/yr)** — the revenue. Pro adds in-app autoplay, Play Bridge, 8 extra rating categories, custom categories, and CSV export. Pushed softly via the 30-song AutoplayNudge for connected free users, the VibeCheckIntro on first Vibe Check, and the PaywallCard in Categories.
+3. **Pro upgrade ($4.99/mo or $46.71/yr)** — the revenue. Pro adds in-app autoplay, per-moment seeking (chorus / bridge / opening / closing line), 8 extra rating categories, and custom categories. CSV export is FREE for everyone (data portability) — Settings → Data → Download CSV. Pushed softly via the 30-song AutoplayNudge for connected free users, the VibeCheckIntro on first Vibe Check, and the PaywallCard in Categories.
 4. **Sharing to social media** — viral growth. The shareable card unlocks once a user fully ranks at least one album (RankingCard / AlbumCompleteCard).
 
 **Stance the app takes:** the natural path is *Login → Connect Spotify → Pro → Share*. Any other path is an "avoidance" — always allowed, but never framed as the obvious thing to do. Skip buttons exist, but they sit in secondary positioning (smaller, lower contrast, farther from the primary CTA).
@@ -25,7 +25,7 @@ Inconsistent Pro copy across screens is a credibility hit on a paid product, so 
 
 **After implementing a Pro change, invoke the `pro-funnel-auditor` subagent** to verify copy consistency across every Pro-mentioning surface. The subagent owns the canonical file list and the Pro/Spotify boundary rules — it will return a prioritized fix list, then the main agent makes the edits.
 
-Same applies to Spotify-tier changes (free vs. Premium): playback-only Pro perks (autoplay, jump-to-bridge) MUST be hidden when `spotify?.isConnected && !spotify?.isPremium`, since Pro alone can't unlock playback for free Spotify accounts. The auditor enforces this rule.
+Same applies to Spotify-tier changes (free vs. Premium): playback-only Pro perks (autoplay, per-moment seeking) MUST be hidden when `spotify?.isConnected && !spotify?.isPremium`, since Pro alone can't unlock playback for free Spotify accounts. The auditor enforces this rule.
 
 ## Acting as a user-flow consultant
 
@@ -938,7 +938,7 @@ The SDK is built for desktop browsers, uses Widevine DRM, and requires Spotify P
 
 This is the biggest unknown in the plan. The cheapest test is to stand up a one-hour PWABuilder TWA pointing at the live site, sideload it onto a real Android phone, and try the autoplay + Play Bridge buttons. The outcome dictates the fallback:
 - **Works cleanly** → ship the wrapper as-is.
-- **Works but flaky** → hide the autoplay/Play Bridge buttons on Android only (degrade to album-art-only, same path as the existing non-Premium experience). PRO FUNNEL: minor impact — most Pro perks survive (extra categories, custom categories, CSV export).
+- **Works but flaky** → hide the autoplay/per-moment-seeking on Android only (degrade to album-art-only, same path as the existing non-Premium experience). PRO FUNNEL: minor impact — the non-playback Pro perks (extra categories, custom categories) survive.
 - **Doesn't work at all** → switch the Android build to Spotify's native Android SDK (2–3 weeks of real work) OR ship Android as a free-tier-style experience and keep Pro playback web-only.
 
 Do NOT commit to a launch date until this test has been run.
