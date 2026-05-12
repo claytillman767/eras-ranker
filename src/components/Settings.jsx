@@ -15,7 +15,7 @@ import { isDevEmail, isUatMode, setUatMode, clearOnboardingFlags } from '../uat'
 // Settings tab — app-wide display and behaviour preferences.
 export default function Settings({
   settings, updateSetting, spotify, isPro, unlockPro,
-  customerPortalUrl, subscriptionStatus, subscriptionEndsAt,
+  customerPortalUrl, subscriptionStatus, subscriptionEndsAt, nextRenewalAt, subscriptionPlan,
   user, signIn, signOut,
   ratings, activeCategories, customCategories,
   enabledExtras, toggleExtra,
@@ -214,16 +214,9 @@ export default function Settings({
                 </span>
               </div>
 
-              {/* Pro subscription summary — shown when the user is Pro and the
-                  webhook has stored a customer-portal URL. The portal lets
-                  them update their card, view invoices, cancel, etc. */}
-              {isPro && customerPortalUrl && (
-                <ManageSubscriptionRow
-                  portalUrl={customerPortalUrl}
-                  status={subscriptionStatus}
-                  endsAt={subscriptionEndsAt}
-                />
-              )}
+              {/* Pro subscription details moved into the dedicated Membership
+                  section below. Account stays single-purpose: identity +
+                  sign-out / forget / delete. */}
 
               {/* Sign out — non-destructive: cloud data is preserved */}
               <button
@@ -369,6 +362,21 @@ export default function Settings({
 
       {/* Dev-only UAT panel — only the developer email sees this row */}
       {isDevEmail(user?.email) && <UatToggle user={user} isPro={isPro} />}
+
+      {/* ── Membership section ── */}
+      <SectionHeader>Membership</SectionHeader>
+      <MembershipSection
+        user={user}
+        isPro={isPro}
+        unlockPro={unlockPro}
+        signIn={signIn}
+        spotify={spotify}
+        customerPortalUrl={customerPortalUrl}
+        subscriptionStatus={subscriptionStatus}
+        subscriptionEndsAt={subscriptionEndsAt}
+        nextRenewalAt={nextRenewalAt}
+        subscriptionPlan={subscriptionPlan}
+      />
 
       {/* ── Public profile section ── */}
       {user && profile && (
@@ -783,6 +791,7 @@ function ProModal({ onUnlock, onClose, user, signIn, spotify }) {
     { kind: 'emoji',    playback: true,  icon: '🌉', label: 'Jump to the bridge', desc: 'One-tap seek to any song’s bridge' },
     { kind: 'emoji',    playback: false, icon: '📊', label: '8 extra categories', desc: 'Hook, Vocals, Cry Factor, and more' },
     { kind: 'emoji',    playback: false, icon: '✏️', label: 'Custom categories',  desc: 'Add your own scoring dimensions' },
+    { kind: 'emoji',    playback: false, icon: '📤', label: 'CSV export',         desc: 'Download all your ratings as a spreadsheet' },
   ].filter(f => !(f.playback && knownNonPremium));
 
   function handleUnlock() {
@@ -1310,6 +1319,302 @@ function ManageSubscriptionRow({ portalUrl, status, endsAt }) {
       </div>
       <span style={{ fontSize: 14, color: '#a855f7', flexShrink: 0 }}>↗</span>
     </a>
+  );
+}
+
+// Membership section — the dedicated home for Pro status / upgrade in
+// Settings. Three states:
+//   1. Pro user      → status pill (Active / Cancels on X / Past due),
+//                      plan + renewal date, perks list, Manage subscription.
+//   2. Free signed-in → "Free plan" header, inline plan picker, perks list,
+//                      Unlock Pro button (mirrors ProModal's upgrade flow).
+//   3. Signed-out    → short pitch + Sign in with Google CTA, since Pro
+//                      requires identity (billing follows the account).
+//
+// Playback-only perks (autoplay, Play Bridge) are hidden when the user is
+// connected to a free Spotify account — Pro alone can't unlock playback
+// for non-Premium Spotify users. Same guardrail as ProModal/PaywallCard.
+function MembershipSection({
+  user, isPro, unlockPro, signIn, spotify,
+  customerPortalUrl, subscriptionStatus, subscriptionEndsAt,
+  nextRenewalAt, subscriptionPlan,
+}) {
+  const [plan, setPlan] = useState(subscriptionPlan === 'annual' ? 'annual' : 'monthly');
+
+  // Pro perk catalogue. Filtered when the user has a free Spotify so we're
+  // not selling playback features Pro can't deliver to them.
+  const knownNonPremium = spotify?.isConnected && !spotify?.isPremium;
+  const proPerks = [
+    { kind: 'spotify',  playback: true,  label: 'Songs autoplay while you rate', desc: 'Each song plays through Spotify (Premium required)' },
+    { kind: 'emoji',    playback: true,  icon: '🌉', label: 'Jump to the bridge', desc: 'One-tap seek to any song’s bridge' },
+    { kind: 'emoji',    playback: false, icon: '📊', label: '8 extra categories', desc: 'Hook, Vocals, Cry Factor, and more' },
+    { kind: 'emoji',    playback: false, icon: '✏️', label: 'Custom categories',  desc: 'Add your own scoring dimensions' },
+    { kind: 'emoji',    playback: false, icon: '📤', label: 'CSV export',         desc: 'Download all your ratings as a spreadsheet' },
+  ].filter(p => !(p.playback && knownNonPremium));
+
+  // STATE 3 — signed-out. Pro requires identity, so the only CTA is sign-in.
+  if (!user) {
+    return (
+      <div style={{
+        background: '#ffffff',
+        border: '0.5px solid #e5e7eb',
+        borderRadius: 12,
+        padding: '16px',
+        marginBottom: 28,
+      }}>
+        <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.5, marginBottom: 14 }}>
+          Pro is tied to your account so it follows you to every device. Sign in to upgrade.
+        </div>
+        <button
+          onClick={signIn}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            width: '100%',
+            padding: '11px',
+            borderRadius: 10,
+            border: '1px solid #d1d5db',
+            background: '#ffffff',
+            fontSize: 14,
+            fontWeight: 500,
+            color: '#111827',
+            cursor: 'pointer',
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 18 18">
+            <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+            <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+            <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+            <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+          </svg>
+          Sign in with Google
+        </button>
+      </div>
+    );
+  }
+
+  // STATE 1 — Pro. Show status pill, plan/renewal info, perks, manage button.
+  if (isPro) {
+    const isCancelled = subscriptionStatus === 'cancelled';
+    const isPastDue = subscriptionStatus === 'past_due';
+
+    // Pretty date for the relevant "next thing happens on" line.
+    function fmtDate(iso) {
+      if (!iso) return null;
+      const d = new Date(iso);
+      return Number.isNaN(d.getTime())
+        ? null
+        : d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    const renewLabel = fmtDate(nextRenewalAt);
+    const endsLabel = fmtDate(subscriptionEndsAt);
+
+    // Status pill style/label depends on subscription state.
+    const pill = isCancelled
+      ? { bg: '#fef3c7', border: '#fde68a', color: '#92400e', text: 'Cancelling' }
+      : isPastDue
+        ? { bg: '#fee2e2', border: '#fecaca', color: '#b91c1c', text: 'Payment failed' }
+        : { bg: '#dcfce7', border: '#bbf7d0', color: '#166534', text: 'Active' };
+
+    // Plan label — we only know monthly vs annual if the webhook stored it.
+    const planLabel = subscriptionPlan === 'annual'
+      ? 'Annual — $46.71/year'
+      : subscriptionPlan === 'monthly'
+        ? 'Monthly — $4.99/month'
+        : 'Pro membership';
+
+    // Subline under the plan — explains when the next billing event happens.
+    let subline;
+    if (isCancelled && endsLabel) {
+      subline = `Access ends ${endsLabel}. Restart anytime from the portal.`;
+    } else if (isPastDue) {
+      subline = 'Last payment failed — update your card to keep Pro active.';
+    } else if (renewLabel) {
+      subline = `Renews on ${renewLabel}`;
+    } else {
+      subline = 'Thanks for supporting the app.';
+    }
+
+    return (
+      <div style={{
+        background: '#ffffff',
+        border: '0.5px solid #e5e7eb',
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 28,
+      }}>
+        {/* Status header — pill on the right, plan name + subline on the left. */}
+        <div style={{
+          padding: '16px',
+          borderBottom: '0.5px solid #f3f4f6',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 12,
+        }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <span style={{ fontSize: 18 }}>⭐</span>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>
+                {planLabel}
+              </div>
+            </div>
+            <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>
+              {subline}
+            </div>
+          </div>
+          <span style={{
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            padding: '4px 8px',
+            borderRadius: 999,
+            background: pill.bg,
+            border: `0.5px solid ${pill.border}`,
+            color: pill.color,
+            flexShrink: 0,
+            marginTop: 2,
+          }}>
+            {pill.text}
+          </span>
+        </div>
+
+        {/* Perks list — what they're getting for their money. */}
+        <div style={{ padding: '12px 16px 14px', borderBottom: '0.5px solid #f3f4f6' }}>
+          <div style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: '#6b7280',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            marginBottom: 10,
+          }}>
+            What you’re getting
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {proPerks.map(p => (
+              <PerkRow key={p.label} perk={p} />
+            ))}
+          </div>
+        </div>
+
+        {/* Manage subscription button — links to LS customer portal. */}
+        <div style={{ padding: '12px' }}>
+          {customerPortalUrl ? (
+            <ManageSubscriptionRow
+              portalUrl={customerPortalUrl}
+              status={subscriptionStatus}
+              endsAt={subscriptionEndsAt}
+            />
+          ) : (
+            <div style={{
+              fontSize: 11,
+              color: '#6b7280',
+              padding: '8px 12px',
+              textAlign: 'center',
+              lineHeight: 1.4,
+            }}>
+              Subscription details are syncing. The manage link will appear here in a moment.
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // STATE 2 — Free, signed-in. Show plan picker + perks + Unlock button.
+  return (
+    <div style={{
+      background: '#ffffff',
+      border: '0.5px solid #e5e7eb',
+      borderRadius: 12,
+      overflow: 'hidden',
+      marginBottom: 28,
+    }}>
+      <div style={{ padding: '16px', borderBottom: '0.5px solid #f3f4f6' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>
+            You’re on the Free plan
+          </div>
+        </div>
+        <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>
+          Upgrade to Pro for $4.99/month, or save 22% with the annual plan. Cancel anytime.
+        </div>
+      </div>
+
+      {/* Perks the user would unlock. */}
+      <div style={{ padding: '12px 16px 14px', borderBottom: '0.5px solid #f3f4f6' }}>
+        <div style={{
+          fontSize: 11,
+          fontWeight: 600,
+          color: '#6b7280',
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          marginBottom: 10,
+        }}>
+          You’ll unlock
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {proPerks.map(p => (
+            <PerkRow key={p.label} perk={p} />
+          ))}
+        </div>
+      </div>
+
+      <div style={{ padding: '14px 16px 16px' }}>
+        <div style={{ marginBottom: 14 }}>
+          <PlanPicker plan={plan} onChange={setPlan} />
+        </div>
+        <button
+          onClick={() => unlockPro(plan)}
+          style={{
+            width: '100%',
+            padding: '13px',
+            borderRadius: 12,
+            border: 'none',
+            background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+            color: '#ffffff',
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: 'pointer',
+            boxShadow: '0 4px 16px rgba(168,85,247,0.30)',
+          }}
+        >
+          {plan === 'annual' ? 'Subscribe — $46.71/year' : 'Subscribe — $4.99/month'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// One row in the perks list — icon tile + label + description. Used by both
+// the Pro-active and Free states so the same perks render consistently.
+function PerkRow({ perk }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        background: perk.kind === 'spotify' ? '#ffffff' : '#f3e8ff',
+        border: perk.kind === 'spotify' ? '0.5px solid #e5e7eb' : 'none',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 16,
+        flexShrink: 0,
+      }}>
+        {perk.kind === 'spotify'
+          ? <SpotifyBadge variant="green" size={24} />
+          : perk.icon}
+      </div>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{perk.label}</div>
+        <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4 }}>{perk.desc}</div>
+      </div>
+    </div>
   );
 }
 
