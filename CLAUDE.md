@@ -893,6 +893,100 @@ A separate, lower-stakes channel from the user-facing notifications above. Goal:
 - The endpoint scans Firestore for the conditions above and emails a single summary via Resend / Postmark (same provider as the user notification system — share the account).
 - Empty days send a one-line "all clear" so silence ≠ "the cron is broken."
 
+### Google Play Store launch plan (planned — NOT BUILT, DO NOT begin without explicit user instruction)
+
+**Goal:** publish The Eras Ranker on the Google Play Store as an Android app, without rewriting the codebase. The existing PWA is the foundation; the Android "app" is a thin wrapper around `erasranker.com`.
+
+**Approach chosen: Trusted Web Activity (TWA) wrapper.** Generated with Bubblewrap or PWABuilder. The Android binary is a one-screen shell that opens the live PWA fullscreen with no browser chrome. Every web deploy to Vercel updates the Android app instantly — no Play Store resubmission needed for code changes. This is the same approach Google uses for its own PWA-backed Play Store apps and works because the app is already a compliant PWA (manifest.json + service worker + HTTPS + responsive design).
+
+**Why not React Native or a full rewrite:** ~2 months of work to rebuild what already exists, no real user-facing benefit, doubles ongoing maintenance. Only worth doing if the TWA wrapper proves unable to host Spotify playback (see decision #2 below).
+
+#### Two big decisions that must be settled before any building starts
+
+**Decision 1 — How to handle Pro subscriptions inside the Android app. PRO FUNNEL: major impact.**
+
+Google Play requires that digital goods sold inside an Android app use **Google Play Billing**, and Google takes **15% (first $1M/yr per developer) to 30%** of every sale. This rule applies even though Lemon Squeezy is the back-end on web. You cannot just open a Lemon Squeezy checkout from inside the Android app for Pro upgrades — Google will reject the app.
+
+Three real options, none of them locked in yet:
+- **A. Dual billing (recommended).** Pro sold on web stays Lemon Squeezy (you keep ~95%). Pro sold inside the Android app uses Google Play Billing (you keep ~85%). The same Firebase user can buy on either side and Pro syncs across both. Adds ~1 week of dev work: a Google Play Developer API webhook into a new Vercel function, plus a billing-source flag on the Firestore user doc so cancellations are routed to the right provider.
+- **B. View-only on Android.** No in-app Pro upgrade flow at all. Users who want Pro have to open `erasranker.com` in a browser. Google now permits this (after Epic v. Google and the EU DMA), but the UX is meaningfully worse and conversions will drop. Zero billing-tax exposure, zero Play Billing dev work.
+- **C. Don't ship to Play Store yet.** Let users install the PWA directly from Chrome ("Add to Home Screen"). No Google cut, no review, but no Play Store discovery channel either.
+
+Recommendation in the conversation was **Option A** for a paid product, but the user has not formally chosen. Settle this before Phase 2.
+
+**Decision 2 — Does Spotify Web Playback SDK work inside the TWA wrapper?**
+
+The SDK is built for desktop browsers, uses Widevine DRM, and requires Spotify Premium. Inside a TWA it runs through Chrome on Android, so it *should* work — but Spotify themselves recommend their native Android SDK for mobile apps, and DRM-protected playback in webview-style wrappers is the exact kind of thing that works on desktop and breaks on mobile.
+
+This is the biggest unknown in the plan. The cheapest test is to stand up a one-hour PWABuilder TWA pointing at the live site, sideload it onto a real Android phone, and try the autoplay + Play Bridge buttons. The outcome dictates the fallback:
+- **Works cleanly** → ship the wrapper as-is.
+- **Works but flaky** → hide the autoplay/Play Bridge buttons on Android only (degrade to album-art-only, same path as the existing non-Premium experience). PRO FUNNEL: minor impact — most Pro perks survive (extra categories, custom categories, CSV export).
+- **Doesn't work at all** → switch the Android build to Spotify's native Android SDK (2–3 weeks of real work) OR ship Android as a free-tier-style experience and keep Pro playback web-only.
+
+Do NOT commit to a launch date until this test has been run.
+
+#### Phases (assumes TWA + Decision 1 Option A)
+
+**Phase 0 — Pre-work that has to happen regardless (~2 weeks).** All cross-referenced to the "Pre-launch checklist" below:
+- Privacy policy live at `erasranker.com/privacy` (already on pre-launch checklist).
+- `privacy@erasranker.com` working via Cloudflare Email Routing (already on pre-launch checklist).
+- BetaGate removed (already planned for launch).
+- Real Lemon Squeezy billing wired up and verified on web (see "Payment provider — Lemon Squeezy plan" earlier in this file).
+- Trivia facts fact-checked (already on pre-launch checklist).
+- A once-over from a lawyer ($200-ish consult) on the "Taylor Swift" trademark angle. Apps that rank a celebrity's songs are usually fine, but Google has rejected fan apps occasionally. The app name "The Eras Ranker" is neutral; the question is the album list and emoji identifiers.
+
+**Phase 1 — Build the Android wrapper (~3–5 days).**
+- Generate the TWA wrapper with Bubblewrap (CLI, runs locally) or PWABuilder (web UI). Either outputs a signed `.aab` (Android App Bundle, the Play Store format).
+- Host `assetlinks.json` at `https://erasranker.com/.well-known/assetlinks.json` so Chrome verifies the Android app owns the domain and shows the PWA fullscreen with no browser address bar.
+- Test on real Android devices — at minimum one current phone, ideally one older. Specifically verify:
+  - Google sign-in via `signInWithRedirect` (the redirect can open an external browser tab inside a wrapper and break the flow — known TWA gotcha; fix is to use `signInWithPopup` on Android, or detect the wrapper and adjust).
+  - Spotify autoplay + Play Bridge (Decision 2 above).
+  - Service worker caching after a Vercel deploy.
+  - The hardware back button (default TWA behavior closes the whole app instead of going back one screen — fixable via the wrapper config).
+  - Lemon Squeezy checkout overlay (must be replaced with Google Play Billing flow on Android per Decision 1).
+  - Public profile sharing — the Android share sheet integration.
+
+**Phase 2 — Wire up Google Play Billing if Decision 1 = Option A (~1 week).**
+- New Vercel function `/api/google-play-webhook` that receives Real-Time Developer Notifications from Google Play (subscription state changes).
+- Server-side receipt validation via the Google Play Developer API (service account credential added to Vercel env vars, base64-encoded like the Firebase Admin SDK key).
+- Firestore: add `billingProvider: 'lemonsqueezy' | 'googleplay'` to the user doc. Drives which cancellation flow runs on account deletion. Update `DeleteAccountModal` accordingly — today it only knows about Lemon Squeezy.
+- In `usePro.js`, detect when running inside the Android wrapper (look for a `?source=android` URL parameter the wrapper appends, or a custom user-agent string) and route Pro upgrades through Google Play Billing instead of the Lemon Squeezy checkout overlay. Same `onSnapshot` listener flips the UI to Pro once the webhook updates Firestore.
+
+**Phase 3 — Play Store listing assets (~2–3 days, mostly design and copy).**
+- High-res app icon, 512×512 PNG, NO transparency (Play Store rejects transparent icons).
+- Feature graphic, 1024×500 PNG. Shown at the top of the store listing. Treat as marketing artwork.
+- Screenshots — at least 2, ideally 4–6. Phone size minimum; Google encourages 7" and 10" tablet shots too.
+- Short description, 80 chars max — shown in search results.
+- Full description, up to 4000 chars — landing page copy.
+- Content rating questionnaire (answered in Play Console).
+- Data Safety form — declare every piece of data collected (Google account, ratings, Spotify connection, payment info via Play Billing, etc.) and where it goes. MUST match the privacy policy exactly — Google rejects on mismatches.
+- Category: Music & Audio.
+
+**Phase 4 — Closed test + production review (~2–3 weeks of mostly waiting).**
+- Google Play Developer account: $25 one-time fee.
+- **Mandatory closed test:** Google now requires new personal developer accounts to run a closed test with **at least 12 testers for 14 consecutive days** before being eligible to publish to production. The beta email allowlist (`src/data/betaEmails.js`) can feed directly into this. This wait is non-negotiable — do not plan a launch date that assumes you can skip it.
+- Submit for production review. First review usually 3–7 days. Common rejection reasons: privacy policy ↔ Data Safety mismatch, missing content rating, trademark concerns, undisclosed in-app purchases. Each rejection cycle adds another 3–7 days.
+
+#### Realistic total timeline
+
+About **7–8 weeks from kickoff to live in the Play Store** at a steady part-time pace, assuming no major Phase 1 testing surprises and one rejection cycle. Add ~1 week if Decision 1 = Option A (Play Billing integration). Add 2–3 weeks if Decision 2 forces a fallback to Spotify's native Android SDK.
+
+#### Risks and unknowns to revisit before starting
+
+1. **Spotify playback in the wrapper is the largest unknown.** Decision 2 above. One afternoon of testing settles it.
+2. **The Play Billing tax is a real revenue hit on Android-originated Pro subs.** Decision 1 above. Pricing may need a second look — e.g. raising the Android-side price slightly to absorb the tax, or making the annual tier cheaper than monthly on Android specifically to push users toward the lower-fee bucket.
+3. **Trademark review.** Probably fine, not guaranteed.
+4. **14-day closed test wait is hard-locked** for new developer accounts.
+5. **iOS / Apple App Store is a much bigger lift if pursued later.** Apple has historically been stricter on fan apps AND on billing — they don't allow the external-checkout workaround that Google now permits. The Android path does NOT translate cleanly to iOS; a separate plan will be needed.
+6. **Account deletion on Android.** Google Play requires apps with sign-in to provide in-app account deletion (already built — see `DeleteAccountModal`) AND a web-accessible deletion path linked from the Play Store listing. Settings → Delete my account satisfies the in-app side; the Play Store listing will need a public URL like `erasranker.com/delete-account` that explains the flow and links to it.
+
+#### Conversion-funnel implications
+
+- **LOGIN FUNNEL:** Play Store install gives a small lift — users who installed an app are measurably more likely to sign in than users who hit a website. The Welcome → GoogleLoginPromo → SpotifyIntro flow stays unchanged.
+- **SPOTIFY FUNNEL:** depends entirely on Decision 2. If playback works, no change. If it doesn't, the SpotifyIntro pitch needs an Android-specific variant ("album art everywhere" instead of "and hear your songs play").
+- **PRO FUNNEL:** Decision 1 directly governs this. Option A preserves the funnel with a tax. Option B noticeably weakens it (every upgrade ask now requires leaving the app). Option C punts it entirely.
+- **SHARING FUNNEL:** Android share sheet is generally better than the iOS web share sheet, so RankingCard / AlbumCompleteCard shares should perform at least as well, possibly better, than the web equivalent.
+
 ---
 
 ## Pre-launch checklist
