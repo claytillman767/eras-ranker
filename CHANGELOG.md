@@ -16,6 +16,29 @@ Newest entries go at the top.
 
 ---
 
+## 0.14.1 — 2026-05-12
+
+### Changed
+- **Pro pitch reframed around honest scoring.** The "skip to a moment"
+  perk used to read like a feature ("Skip to any moment"). It now reads
+  as a promise to the user: **"Really sit with each song — skip to the
+  chorus, bridge, opening or closing line so the rating you give matches
+  the song you actually heard."** Same wording everywhere Pro is pitched.
+- **Spotify perks now lead the first-Vibe-Check pitch.** The "Hear it.
+  Rate it." screen used to show the two non-Spotify perks (categories,
+  custom scoring) first and the playback perks below. Order flipped —
+  autoplay and "really sit with each song" are the headline now, since
+  they're the perks the screen is actually selling.
+
+### Removed
+- **CSV export is no longer a Pro perk.** It was already a free feature
+  in Settings → Data — we just shouldn't have been listing it on the
+  paywall. Exporting your own ratings is something every user should be
+  able to do without paying. The download itself is unchanged; only the
+  Pro pitch copy has lost the mention.
+
+---
+
 ## 0.14.0 — 2026-05-12
 
 ### Added

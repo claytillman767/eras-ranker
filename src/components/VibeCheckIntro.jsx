@@ -207,6 +207,18 @@ export default function VibeCheckIntro({
               Premium) and for connected Premium users (perks are real). */}
           {[
             {
+              spotify: true,
+              icon: '🎵',
+              title: 'Songs autoplay while you rate',
+              desc: 'Each song starts automatically from a hand-picked moment as the screen opens.',
+            },
+            {
+              spotify: true,
+              icon: '⏩',
+              title: 'Really sit with each song',
+              desc: 'Tap to revisit the chorus, bridge, opening line, or closing line — so the rating you give matches the song you actually heard.',
+            },
+            {
               spotify: false,
               icon: '📊',
               title: '8 extra rating categories',
@@ -217,24 +229,6 @@ export default function VibeCheckIntro({
               icon: '✏️',
               title: 'Custom categories',
               desc: 'Add your own scoring dimensions and tune their weights.',
-            },
-            {
-              spotify: true,
-              icon: '🎵',
-              title: 'Songs autoplay while you rate',
-              desc: 'Each song starts automatically from a hand-picked moment as the screen opens.',
-            },
-            {
-              spotify: true,
-              icon: '⏩',
-              title: 'Skip to any part of the song',
-              desc: 'Tap to jump straight to the chorus, bridge, opening line, or closing line.',
-            },
-            {
-              spotify: false,
-              icon: '📤',
-              title: 'CSV export',
-              desc: 'Download all your ratings as a spreadsheet.',
             },
           ].filter(item => {
             const knownNonPremium = spotify?.isConnected && !spotify?.isPremium;

@@ -540,7 +540,7 @@ export default function Settings({
             </div>
             <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.5, marginBottom: 14 }}>
               Connect to see real album art everywhere in the app.
-              {!isPro && ' Pro unlocks autoplay and skip-to-moment so each song plays while you rate.'}
+              {!isPro && ' Pro lets songs play while you rate and lets you jump to any moment, so your rankings reflect what you actually heard.'}
             </div>
 
             {spotify?.error && (
@@ -818,16 +818,15 @@ function ProModal({ onUnlock, onClose, user, signIn, spotify }) {
   const [step, setStep] = useState('features');
   const [plan, setPlan] = useState('monthly'); // monthly is the lower-commitment default
   // Pro perks list. Note: connecting Spotify itself is FREE — Pro adds the
-  // in-app playback (autoplay + skip-to-moment jumps). Playback perks are
-  // hidden when we already know the user's Spotify is non-Premium, since Pro
-  // alone cannot unlock playback for them — they'd need to upgrade Spotify too.
+  // in-app playback (autoplay + per-moment jumps). Playback perks are hidden
+  // when we already know the user's Spotify is non-Premium, since Pro alone
+  // cannot unlock playback for them — they'd need to upgrade Spotify too.
   const knownNonPremium = spotify?.isConnected && !spotify?.isPremium;
   const features = [
     { kind: 'spotify',  playback: true,  label: 'Songs autoplay while you rate', desc: 'Each song plays automatically through Spotify (Premium required)' },
-    { kind: 'emoji',    playback: true,  icon: '⏩', label: 'Skip to any moment',  desc: 'Jump to the chorus, bridge, opening line, or closing line' },
+    { kind: 'emoji',    playback: true,  icon: '⏩', label: 'Really sit with each song', desc: 'Skip to the chorus, bridge, opening, or closing line — so the rating you give matches the song you actually heard' },
     { kind: 'emoji',    playback: false, icon: '📊', label: '8 extra categories', desc: 'Hook, Vocals, Cry Factor, and more' },
     { kind: 'emoji',    playback: false, icon: '✏️', label: 'Custom categories',  desc: 'Add your own scoring dimensions' },
-    { kind: 'emoji',    playback: false, icon: '📤', label: 'CSV export',         desc: 'Download all your ratings as a spreadsheet' },
   ].filter(f => !(f.playback && knownNonPremium));
 
   function handleUnlock() {
@@ -1367,9 +1366,9 @@ function ManageSubscriptionRow({ portalUrl, status, endsAt }) {
 //   3. Signed-out    → short pitch + Sign in with Google CTA, since Pro
 //                      requires identity (billing follows the account).
 //
-// Playback-only perks (autoplay, skip-to-moment) are hidden when the user is
-// connected to a free Spotify account — Pro alone can't unlock playback
-// for non-Premium Spotify users. Same guardrail as ProModal/PaywallCard.
+// Playback-only perks (autoplay, per-moment seeking) are hidden when the
+// user is connected to a free Spotify account — Pro alone can't unlock
+// playback for non-Premium Spotify users. Same guardrail as ProModal/PaywallCard.
 function MembershipSection({
   user, isPro, unlockPro, signIn, spotify,
   customerPortalUrl, subscriptionStatus, subscriptionEndsAt,
@@ -1382,10 +1381,9 @@ function MembershipSection({
   const knownNonPremium = spotify?.isConnected && !spotify?.isPremium;
   const proPerks = [
     { kind: 'spotify',  playback: true,  label: 'Songs autoplay while you rate', desc: 'Each song plays through Spotify (Premium required)' },
-    { kind: 'emoji',    playback: true,  icon: '⏩', label: 'Skip to any moment',  desc: 'Jump to the chorus, bridge, opening line, or closing line' },
+    { kind: 'emoji',    playback: true,  icon: '⏩', label: 'Really sit with each song', desc: 'Skip to the chorus, bridge, opening, or closing line — so the rating you give matches the song you actually heard' },
     { kind: 'emoji',    playback: false, icon: '📊', label: '8 extra categories', desc: 'Hook, Vocals, Cry Factor, and more' },
     { kind: 'emoji',    playback: false, icon: '✏️', label: 'Custom categories',  desc: 'Add your own scoring dimensions' },
-    { kind: 'emoji',    playback: false, icon: '📤', label: 'CSV export',         desc: 'Download all your ratings as a spreadsheet' },
   ].filter(p => !(p.playback && knownNonPremium));
 
   // STATE 3 — signed-out. Pro requires identity, so the only CTA is sign-in.
