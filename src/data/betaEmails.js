@@ -6,7 +6,6 @@
 // Empty array = ANY signed-in Google account is allowed through (open beta).
 // Non-empty   = only the listed addresses are allowed.
 export const BETA_EMAILS = [
-  'clay.tillman7@gmail.com',
   'chelsetillman@gmail.com',
   'ashleymacree@gmail.com',
   'isabessa05@gmail.com',
