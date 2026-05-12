@@ -16,6 +16,16 @@ Newest entries go at the top.
 
 ---
 
+## 0.11.2 — 2026-05-12
+
+### Fixed
+- The "🎉 You're Pro!" celebration prompt no longer appears the moment
+  you tap Subscribe. It now waits until the payment is actually
+  confirmed, so backing out of the credit-card screen no longer leaves
+  the celebration prompt hanging around as if you'd paid.
+
+---
+
 ## 0.11.1 — 2026-05-12
 
 ### Fixed

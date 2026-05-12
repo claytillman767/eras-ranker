@@ -153,22 +153,59 @@ export default function App() {
   // Holds the album the user just chose Vibe Check for, while the
   // Spotify intro screen is showing (first-time only).
   const [pendingVibeCheckAlbumId, setPendingVibeCheckAlbumId] = useState(null);
-  // Set true right after a successful Pro upgrade so we can auto-prompt
-  // the user to connect Spotify (instead of forcing the three-tap detour
-  // through Settings → Spotify → Connect).
+  // True once the user-facing "🎉 You're Pro!" prompt should actually render
+  // (i.e., the webhook has confirmed payment AND the user clicked Subscribe
+  // in this session). Distinct from `pendingUpgradeIntent` below, which is
+  // only the user's intent — not proof of payment.
   const [showConnectSpotifyPrompt, setShowConnectSpotifyPrompt] = useState(false);
+  // Set true the moment the user clicks Subscribe; cleared when isPro flips
+  // to true (success — fire the prompt) OR when isUpgrading lapses without
+  // isPro becoming true (failsafe — user closed the LS overlay without
+  // paying, never show the prompt). Plain in-memory state because LS keeps
+  // the user on the same page; if the user refreshes mid-checkout we lose
+  // the intent and the celebration prompt is skipped — they still get Pro
+  // when the webhook lands, just without the auto-Connect-Spotify CTA.
+  const [pendingUpgradeIntent, setPendingUpgradeIntent] = useState(false);
 
-  // Wraps usePro's unlockPro so any successful upgrade triggers the
-  // Connect Spotify prompt — unless the user already has Spotify connected,
-  // in which case the prompt would be redundant. Suppressed inside
-  // VibeCheckIntro by using the raw unlockPro there (its own UI adapts).
+  // Wraps usePro's unlockPro. We mark "the user clicked Subscribe" here;
+  // the celebration prompt itself only fires once isPro actually flips true
+  // (driven by the webhook → Firestore → onSnapshot path). Suppressed
+  // inside VibeCheckIntro by using the raw unlockPro there.
   function handleUnlockProGlobal(plan) {
     const ok = unlockPro(plan);
     if (ok && !spotify?.isConnected) {
-      setShowConnectSpotifyPrompt(true);
+      setPendingUpgradeIntent(true);
     }
     return ok;
   }
+
+  // Fire the celebration prompt only when isPro transitions false→true
+  // AND the user actually clicked Subscribe in this session (pending
+  // intent). prevIsProRef stops this from re-firing when isPro is already
+  // true at mount (returning Pro user signing back in).
+  const prevIsProRef = useRef(isPro);
+  useEffect(() => {
+    const prev = prevIsProRef.current;
+    prevIsProRef.current = isPro;
+    if (!prev && isPro && pendingUpgradeIntent && !spotify?.isConnected) {
+      setShowConnectSpotifyPrompt(true);
+      setPendingUpgradeIntent(false);
+    }
+  }, [isPro, pendingUpgradeIntent, spotify?.isConnected]);
+
+  // Clear pending intent if the upgrade attempt lapses (isUpgrading was
+  // true, now it's false, and isPro never flipped) — i.e., the LS overlay
+  // closed without payment, or the 90s failsafe expired. Without this,
+  // a stale intent would silently fire on the next legitimate session
+  // where isPro transitions true for any other reason.
+  const prevIsUpgradingRef = useRef(isUpgrading);
+  useEffect(() => {
+    const prev = prevIsUpgradingRef.current;
+    prevIsUpgradingRef.current = isUpgrading;
+    if (prev && !isUpgrading && !isPro) {
+      setPendingUpgradeIntent(false);
+    }
+  }, [isUpgrading, isPro]);
 
   function handleConnectSpotifyFromPrompt() {
     setShowConnectSpotifyPrompt(false);
