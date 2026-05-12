@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { getBridgeLyrics, getSnippetLyrics, hasBridge } from '../data/lyricsAccess';
 import { DEFAULT_CATEGORIES } from '../data/categories';
 import SpotifyMiniPlayer from './SpotifyMiniPlayer';
+import SpotifyJumpRow from './SpotifyJumpRow';
 import AutoplayNudge, { hasSeenAutoplayNudge, markAutoplayNudgeSeen } from './AutoplayNudge';
 import { getAlbumTheme } from '../themes/albumThemes';
 
@@ -3113,7 +3114,15 @@ export default function QuickScore({
   // to interrupt the song-to-song transition with the nudge.
   const [pendingNudgeAdvance, setPendingNudgeAdvance] = useState(null);
 
-  const playbackEnabled = isPro || demoAutoplay;
+  // Playback features (mini player, autoplay, jump-to-moment, Play Bridge)
+  // require BOTH Pro AND Spotify Premium. Pre-existing gate only checked
+  // Pro, which let a Pro + Spotify-Free user see the mini player and pills
+  // even though the SDK never inits for free Spotify (the playerReady check
+  // contained most of the harm, but the marketing boundary was wrong).
+  // `?? true` keeps the optimistic default when Premium status hasn't been
+  // fetched yet OR the user isn't connected to Spotify at all — same shape
+  // as the `knownNonPremium` filter used on Pro pitch surfaces.
+  const playbackEnabled = (isPro || demoAutoplay) && (spotify?.isPremium ?? true);
   const [songPos, setSongPos] = useState(initialSongPos);
   const [catPos, setCatPos] = useState(0);
   const [done, setDone] = useState(false);
@@ -3677,18 +3686,37 @@ export default function QuickScore({
           {/* Song name / Spotify mini player. Free Spotify-connected users get
               album art across the app, but the inline mini player implies
               playback control — gated on playbackEnabled so they see the plain
-              song title here instead of a non-functional player. */}
+              song title here instead of a non-functional player.
+              The jump row directly under the mini player surfaces "jump to a
+              moment" pills (opening line / chorus / closing line) for the
+              current song — also Pro + Premium gated via playbackEnabled. */}
           {spotify?.isConnected && playbackEnabled ? (
-            <SpotifyMiniPlayer
-              isConnected={!!spotify?.isConnected}
-              playerReady={!!spotify?.playerReady}
-              isPlaying={!!spotify?.isPlaying}
-              songName={currentSong?.name}
-              trackUri={spotify?.currentTrackUri}
-              onTogglePlay={spotify?.togglePlay}
-              onGoToSettings={onGoToSpotifySettings}
-              style={{ margin: `0 0 ${currentCat?.id === 'lyrics' ? 16 : 32}px`, width: '100%', maxWidth: 300 }}
-            />
+            <>
+              <SpotifyMiniPlayer
+                isConnected={!!spotify?.isConnected}
+                playerReady={!!spotify?.playerReady}
+                isPlaying={!!spotify?.isPlaying}
+                songName={currentSong?.name}
+                trackUri={spotify?.currentTrackUri}
+                onTogglePlay={spotify?.togglePlay}
+                onGoToSettings={onGoToSpotifySettings}
+                style={{ margin: '0 0 12px', width: '100%', maxWidth: 300 }}
+              />
+              {spotify?.playerReady && currentSong && (
+                <SpotifyJumpRow
+                  albumId={albumId}
+                  songIndex={currentSong.index}
+                  onPlay={(categoryKey) => spotify.playTrack(
+                    albumId,
+                    currentSong.index,
+                    currentSong.name,
+                    albumName,
+                    categoryKey
+                  )}
+                  style={{ marginBottom: currentCat?.id === 'lyrics' ? 12 : 24 }}
+                />
+              )}
+            </>
           ) : (
             <div style={{
               fontSize: 22,

@@ -20,7 +20,7 @@ export default function PaywallCard({ onUnlock, user, signIn, spotify }) {
   const knownNonPremium = spotify?.isConnected && !spotify?.isPremium;
   const features = [
     { kind: 'playback', label: 'Songs autoplay through Spotify while you rate' },
-    { kind: 'playback', label: 'Jump straight to any song’s bridge' },
+    { kind: 'playback', label: 'Skip to the chorus, bridge, opening or closing line' },
     { kind: 'always',   label: '8 new categories to score' },
     { kind: 'always',   label: 'Add your own custom categories' },
     { kind: 'always',   label: 'Export your full rankings list' },
