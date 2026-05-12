@@ -690,8 +690,8 @@ The webhook is the only trusted "did they pay" source — never trust the browse
   - **Expires 2028-10-10.** LS does not allow keyless or no-expiration tokens. Set a calendar reminder for **2028-09-01** to rotate before expiry; if the key lapses, account deletion stops cancelling subscriptions silently (auth gets wiped, sub keeps charging) until a new key is generated and added to Vercel.
 - `LEMON_SQUEEZY_WEBHOOK_SECRET` — HMAC signing secret for verifying webhook payloads
 - `FIREBASE_SERVICE_ACCOUNT_B64` — base64 of the service account JSON
-- `VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY` — frontend uses this to open the monthly checkout (current value: `1645564`)
-- `VITE_LEMON_SQUEEZY_VARIANT_ID_ANNUAL` — frontend uses this to open the annual checkout (current value: `1645573`)
+- `VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY` — frontend uses this to build the monthly checkout URL. **Despite the name, the VALUE must be the LS "checkout UUID" (e.g. `0c29fa1b-03ef-48dd-97a9-ab68c0f5c7b2`), NOT the numeric variant ID.** LS's checkout URLs are `/checkout/buy/{uuid}` — numeric IDs 404. Find the UUID in LS dashboard → Products → click product → Share (the "Checkout link" tab in the share panel reveals the full URL with UUID).
+- `VITE_LEMON_SQUEEZY_VARIANT_ID_ANNUAL` — annual variant checkout UUID, same format as above. Test mode and Live mode have DIFFERENT UUIDs for the same variant — swap both env vars when flipping the store between modes.
 
 **Note: `LEMON_SQUEEZY_STORE_ID` is NOT required.** All API calls (cancel subscription, etc.) work directly off subscription/customer IDs that come in the webhook payload. The store ID is only useful for admin scripts that query the LS API for "all subscriptions in store X" — not needed at runtime.
 

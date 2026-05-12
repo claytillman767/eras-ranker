@@ -16,6 +16,16 @@ Newest entries go at the top.
 
 ---
 
+## 0.11.1 — 2026-05-12
+
+### Fixed
+- The Unlock Pro button now reaches the Lemon Squeezy checkout instead of
+  hitting a 404. The Lemon Squeezy checkout URL format uses a different
+  path and ID style than the previous version used; this release matches
+  what Lemon Squeezy actually expects.
+
+---
+
 ## 0.11.0 — 2026-05-12
 
 ### Added
