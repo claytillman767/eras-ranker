@@ -565,6 +565,26 @@ answered yes. On web/mobile, "ship it" means "push the branch and
 open the PR" — the PR merge is a one-tap action for the user on
 GitHub.
 
+**CLAUDE.md changes ship automatically — no questions asked.** Any
+time CLAUDE.md is edited (status updates, new notes, marking items
+done, fixing references, etc.) the change should be committed,
+pushed, and merged to main as part of the same turn — no "want me
+to ship this?" prompt. CLAUDE.md is docs-only, so:
+- **Skip the version bump** (per the "purely internal changes" rule
+  above)
+- **Skip the CHANGELOG entry** — CHANGELOG is user-facing release
+  notes; CLAUDE.md edits aren't user-visible
+- Stage with `git add CLAUDE.md` (plus any other files in the same
+  change)
+- Commit message: short imperative like `"Update CLAUDE.md: <what
+  changed>"`
+- Then push the branch + merge to main exactly like any other ship
+
+The reason: keeping CLAUDE.md in sync with reality across sessions
+matters more than a confirmation step, and forgetting to ship a
+CLAUDE.md edit means future Claude reads stale instructions. Default
+is ship.
+
 ### Working on a second computer
 1. Install Git and Node.js
 2. `git clone https://github.com/claytillman767/eras-ranker`
@@ -898,7 +918,7 @@ Firestore's `setDoc` throws **synchronously** when data contains nested arrays. 
 
 ### Daily developer health-check email (planned — NOT BUILT)
 
-A separate, lower-stakes channel from the user-facing notifications above. Goal: send the developer (claytillman767@gmail.com) one email per day summarising anything that needs human attention, so silent failures stop being silent.
+A separate, lower-stakes channel from the user-facing notifications above. Goal: send the developer (clay.tillman7@gmail.com) one email per day summarising anything that needs human attention, so silent failures stop being silent.
 
 **Use cases to include from day one:**
 - **Account-deletion partial failures.** When [DeleteAccountModal](src/components/DeleteAccountModal.jsx) gets past Firestore deletes (steps 2–3) but `deleteUser()` (step 4) fails, the user ends up with an orphan Firebase auth record and no Firestore data. We need to detect these and clean them up. Cheapest detection: each session start, check whether `users/{uid}` exists for the signed-in user — if missing AND `signedUpAt` was previously written, log a `deletionOrphan` flag somewhere the daily job can find. Daily email lists any uids in that state so the developer can manually delete the auth record from the Firebase console.
@@ -1021,24 +1041,26 @@ About **7–8 weeks from kickoff to live in the Play Store** at a steady part-ti
 - Verify the default fallback fact too ("over 200 million records worldwide")
 - Consider expanding the list once verified — 10 facts is thin if a user plays many brackets
 
-### Set up `privacy@erasranker.com` via Cloudflare Email Routing
-**Why this matters:** the privacy policy needs a real contact email at the company domain (a personal Gmail looks unprofessional and signals the operation isn't serious). The same address is needed for Lemon Squeezy merchant onboarding, Google OAuth verification, and as the listed contact for any DMCA / takedown / data-subject requests.
+### ~~Set up `privacy@erasranker.com` via Cloudflare Email Routing~~ ✅ DONE
+**Status:** Cloudflare account is active. DNS for `erasranker.com` was migrated from Vercel to Cloudflare (Vercel still hosts the site — only DNS moved). Email Routing is enabled with six receive-only addresses live, all forwarding to `clay.tillman7@gmail.com`:
 
-**The plan: Cloudflare Email Routing — free, unlimited aliases, no monthly fee.** Receive-only by default; can layer "send as" later via a free SMTP relay (Brevo) if reply-from-real-address is wanted.
+- `privacy@erasranker.com`
+- `support@erasranker.com`
+- `legal@erasranker.com`
+- `dmca@erasranker.com`
+- `hello@erasranker.com`
+- `noreply@erasranker.com`
 
-**Setup (~45 min, one time):**
-1. Make a free Cloudflare account.
-2. Add `erasranker.com` to Cloudflare and switch the domain's nameservers from Vercel's to Cloudflare's. **Vercel still hosts the site** — DNS just lives at Cloudflare. The site keeps working.
-3. In Cloudflare → Email → Email Routing, click Enable. Cloudflare auto-adds the MX records.
-4. Add `privacy@erasranker.com` as a forwarding rule → forward to `claytillman767@gmail.com`. Send a test email.
-5. While you're there, add the other addresses you'll likely want over time: `support@`, `legal@`, `dmca@`, `hello@`, `noreply@`. Each takes 10 seconds and stays free.
+**Configuration notes for future Claude sessions:**
+- Cloudflare proxy status for every DNS record pointing to Vercel must stay set to **"DNS only" (grey cloud)**, NOT "Proxied" (orange cloud). Stacking Cloudflare's CDN on top of Vercel's CDN causes SSL handshake issues and bypasses Vercel's edge network. If a record gets accidentally flipped to Proxied later, toggle it back to grey.
+- Catch-All rule is intentionally **disabled** (Drop). Emails to typo'd / undefined addresses bounce back to sender. Enabling catch-all with forwarding would flood the inbox with spam.
+- Domain registration is still at Vercel — only the nameservers point to Cloudflare. Auto-renewal and ownership stay with Vercel.
 
-**Optional follow-up (~30 min, free, do later if needed):**
-- Sign up for Brevo (free SMTP relay, 300 emails/day).
-- In Gmail → Settings → Accounts → "Send mail as" → add `privacy@erasranker.com` using Brevo SMTP credentials.
-- Replies now go out from `privacy@erasranker.com` instead of the personal Gmail.
+**Still deferred (optional follow-up, ~30 min, free):**
+- Sign up for Brevo (free SMTP relay, 300 emails/day) to enable replying *from* the `@erasranker.com` addresses instead of the personal Gmail. Today the addresses are receive-only — any reply Clay sends to a customer goes out from `clay.tillman7@gmail.com`, which reveals the personal address. Brevo + Gmail "Send mail as" fixes that.
+- Do this when the personal-Gmail-on-reply starts to bother (or before any customer-facing reply situation, e.g. once Lemon Squeezy goes live and customer-support emails start arriving).
 
-**Doesn't conflict with Resend.** When the user-facing notification system (transactional emails, see "Notification System" above) is wired with Resend, Resend will own a separate sub-address like `notifications@erasranker.com` or `hello@erasranker.com`. They share the domain, not the address.
+**Doesn't conflict with Resend.** When the user-facing notification system (transactional emails, see "Notification System" above) is wired with Resend, Resend will own a separate sending sub-address. They share the domain, not the address.
 
 ### Write and publish the privacy policy
 **Why this matters:** GDPR, CCPA, Apple/Google store policies, Lemon Squeezy onboarding, Google OAuth verification, and every email service all require a real privacy policy URL. Cannot launch publicly without one.
