@@ -192,6 +192,28 @@ export default function GoogleLoginPromo({ user, signIn, onContinue }) {
           Not now
         </button>
 
+        {/* Legal agreement — small, grey, sits above the "you can sign in
+            later" note. Required for Google OAuth verification and Lemon
+            Squeezy onboarding, and gives the user a clear pre-sign-in
+            consent moment. */}
+        <div style={{
+          fontSize: 11,
+          color: '#9ca3af',
+          textAlign: 'center',
+          lineHeight: 1.6,
+          marginBottom: 10,
+        }}>
+          By signing in, you agree to our{' '}
+          <a href="/terms" style={{ color: '#7c3aed', textDecoration: 'underline' }}>
+            Terms of Service
+          </a>
+          {' '}and{' '}
+          <a href="/privacy" style={{ color: '#7c3aed', textDecoration: 'underline' }}>
+            Privacy Policy
+          </a>
+          .
+        </div>
+
         {/* Footer note */}
         <div style={{
           fontSize: 11,
