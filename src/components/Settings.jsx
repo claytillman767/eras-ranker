@@ -45,10 +45,9 @@ export default function Settings({
   }
 
   async function doForgetMe() {
-    // Wipe all app-owned localStorage keys, but keep beta-gate unlock so the
-    // user doesn't have to re-enter the password on the next session.
+    // Wipe all app-owned localStorage keys.
     Object.keys(localStorage)
-      .filter(k => k.startsWith('eras_') && k !== 'eras_beta_unlocked')
+      .filter(k => k.startsWith('eras_'))
       .forEach(k => localStorage.removeItem(k));
 
     try {

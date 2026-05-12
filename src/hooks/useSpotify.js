@@ -449,7 +449,7 @@ export function useSpotify(user) {
 
   // ── Sync connection state to Firestore so we can see who has linked Spotify ─
   // Writes { spotifyConnected, spotifyLastConnectedAt } onto users/{uid}.
-  // No-op when there is no signed-in user (e.g. password-bypass beta path).
+  // No-op when there is no signed-in user (anonymous browsing).
   useEffect(() => {
     if (!user || !db) return;
     const update = isConnected

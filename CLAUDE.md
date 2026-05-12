@@ -17,7 +17,7 @@ Every user-facing decision should be evaluated against these four conversion goa
 
 **Stance the app takes:** the natural path is *Login → Connect Spotify → Pro → Share*. Any other path is an "avoidance" — always allowed, but never framed as the obvious thing to do. Skip buttons exist, but they sit in secondary positioning (smaller, lower contrast, farther from the primary CTA).
 
-**Design as if the BetaGate doesn't exist.** The BetaGate is a short-term beta-access artifact and will be removed entirely before any real users are directed at the site. Treat the *first screen users actually see* as the Welcome tour, and the *first conversion ask* as the GoogleLoginPromo right after it. Do NOT factor BetaGate behaviour into funnel analysis, do NOT raise concerns about the password-bypass path, and do NOT redesign the BetaGate — it is locked because it's going away anyway. The canonical post-launch flow is: Welcome → GoogleLoginPromo → (if signed in) SpotifyIntro → Home.
+**Canonical first-time flow:** Welcome tour → GoogleLoginPromo → (if signed in) SpotifyIntro → Home. Anonymous users can browse the whole app; signing in is a soft ask, never forced.
 
 ## When you change Pro benefits
 
@@ -115,9 +115,8 @@ src/
   main.jsx                 — entry point; wraps <App> in <ErrorBoundary>; registers service worker
   App.jsx                  — root; 5 tabs: Home, Albums, Brackets, Rankings, Settings
                              Categories is now a section inside Settings (not its own tab)
-                             ALL hooks must be declared before the beta gate early return (Rules of Hooks)
-                             Beta gate check: if 'eras_beta_unlocked' not in localStorage, renders BetaGate
                              Passes user/signIn/signOut to Settings; passes isPro ? spotify.albumArt : null to grid/songlist
+                             First-time flow: Welcome → GoogleLoginPromo (if signed out) → SpotifyIntro (if signed in) → Home
   firebase.js              — initialises Firebase app, exports auth, db, googleProvider
                              Explicitly sets browserLocalPersistence to prevent silent session-only fallback
   data/
@@ -185,13 +184,6 @@ src/
   components/
     ErrorBoundary.jsx      — top-level React error boundary; catches any unhandled crash and shows a
                              friendly "Something went wrong — Reload" screen instead of blank white page
-    BetaGate.jsx           — full-screen access gate rendered by App when beta is not unlocked
-                             Two paths: Google sign-in (checked against BETA_EMAILS allowlist in
-                             src/data/betaEmails.js) or dev bypass password (VITE_BETA_PASSWORD);
-                             on pass, sets localStorage 'eras_beta_unlocked'
-                             Shows spinner while authLoading or while a signed-in user is being verified
-                             If email is not on the allowlist: shows rejection message + signs user out
-                             Empty BETA_EMAILS array = any Google account allowed through
     FeedbackButton.jsx     — floating "send feedback" button visible across the main app for any
                              signed-in user. Bottom-right corner, opens a textarea modal.
                              Submissions land in Firestore `feedback` collection (write-only from
@@ -268,24 +260,24 @@ src/
 `tv` `fe` `st` `rd` `89` `rp` `lv` `fl` `ev` `ml` `tp` `ls`
 
 ## Pro system
-- `isPro` stored as `'eras_is_pro'` in localStorage; `unlockPro()` is a mock — no payment wired
-  (Lemon Squeezy subscription billing is the chosen replacement — see "Payment provider plan" below)
+- `isPro` stored as `'eras_is_pro'` in localStorage; real billing runs through Lemon Squeezy
+  (subscription) — see "Payment provider plan" below.
 - **Pro upgrades require a signed-in user.** `unlockPro()` no-ops and returns `false` if no user.
   Reason: a paid upgrade must be tied to identity so it survives device wipes and follows the user
-  to other devices, and Stripe will need a customer record once real billing is wired up.
-- **Cloud is the source of truth for `isPro`.** On sign-in, usePro fetches the Firestore doc and
-  forces local `isPro` to match `users/{uid}.isPro`. This protects against localStorage tampering
-  (`localStorage.setItem('eras_is_pro','true')`) — the next sign-in will reset it. Unlike other
-  hooks, usePro does NOT migrate localStorage up to Firestore: a local-only Pro flag is treated as
-  stale or tampered, never as truth.
-- **Beta override.** During the beta, anyone whose email is in `BETA_EMAILS` (`src/data/betaEmails.js`)
-  gets Pro for free. Implemented as a render-only override in usePro's Firestore snapshot callback
-  (cloud value OR'd with `isBetaEmail(user.email)`) — never written to Firestore, so removing
-  someone from the list revokes their Pro immediately. Goes away when the beta gate is removed at
-  launch.
+  to other devices, and Lemon Squeezy needs a customer record.
+- **Cloud is the source of truth for `isPro`.** The Lemon Squeezy webhook (`api/lemon-webhook.js`)
+  is the ONLY thing that writes `isPro: true` on the user doc for paying customers. The client is
+  rule-blocked from writing `isPro` itself, so `localStorage.setItem('eras_is_pro','true')` does
+  nothing — the next snapshot from Firestore overwrites it back to false. usePro listens via
+  `onSnapshot` so a successful payment flips the UI to Pro within a second or two without a refresh.
+- **Comped accounts (beta testers, developer accounts).** Set `isPro: true` manually on the user's
+  `users/{uid}` doc from the Firebase console. Leave `proSource` blank (or set it to `'beta'` /
+  `'comped'` / a name) so it's obvious in the console that this entry was NOT a real subscription.
+  Webhook-granted accounts always have `proSource: 'lemonsqueezy'` AND a populated `subscriptionId`
+  — either of those means "real paying customer, DO NOT REVOKE without being sure."
 - **Sign-out revokes Pro locally.** On a real sign-out transition (had a user, now don't), usePro
   clears `eras_is_pro` and resets `isPro` state. Firestore still has the user's record, so signing
-  back in instantly restores Pro via the hydration branch. Detection uses a `prevUserRef` so the
+  back in instantly restores Pro via the snapshot listener. Detection uses a `prevUserRef` so the
   initial `null → null` render on app load doesn't trigger a false revocation.
 - Pro UI surfaces (Settings ProModal, PaywallCard, VibeCheckIntro) keep "Unlock Pro" tappable; if
   no user, tapping it routes through a shared "Sign in to continue" step (Back arrow → returns).
@@ -311,17 +303,6 @@ src/
 - Settings → Spotify shows "Album art only" status for non-Premium
   accounts and hides the autoplay/bridge/volume controls (they
   don't work without Premium).
-
-## Beta gate
-- Allowlist lives in **`src/data/betaEmails.js`** as the `BETA_EMAILS` array.
-  Empty array = any signed-in Google account allowed through. Edit the file and ship to update.
-- Dev bypass password is set via env var `VITE_BETA_PASSWORD` (set in `.env` locally
-  and in Vercel environment settings). If unset, the password field is hidden.
-- Gate state stored in localStorage key `'eras_beta_unlocked'`; once set, user never sees gate again on that device
-- Gate is a full-screen overlay — app content is never visible behind it
-- Google sign-in through the gate also logs the user into the app (same Firebase auth action)
-- **Beta testers get Pro for free.** Anyone whose email is on `BETA_EMAILS` gets `isPro: true` automatically — applied as an override in `usePro.js`'s Firestore snapshot callback (cloud value OR'd with `isBetaEmail(user.email)`). The override is render-only — it does NOT write to Firestore — so removing someone from the list immediately revokes their Pro on the next render. `unlockPro()` also short-circuits to the mock-grant path for beta emails so a stray tap never opens a real Lemon Squeezy checkout. Goes away naturally when the beta gate is removed at launch.
-- **Important:** all data hooks in App.jsx must remain declared BEFORE the `if (!betaUnlocked)` return
 
 ## QuickScore flow
 - Covers full viewport (`position: fixed, inset: 0, zIndex: 1000`)
@@ -370,10 +351,23 @@ All user data lives in a single Firestore document: `users/{uid}`
 | `totalRatings` | integer — count of unique songs rated (any category) |
 | `albumsCompleted` | integer — count of fully-rated albums |
 | `signedUpAt` | server timestamp — set ONCE on first session ever |
-| `signedUpVia` | `'google'` (password-bypass users have no Firebase user, so no field) |
+| `signedUpVia` | `'google'` |
 | `signupSource` | string — value of `?ref=<source>` URL param at first visit |
 | `referrer` | string — `document.referrer` at first visit |
-| `proUpgradedAt` | server timestamp — set when `unlockPro()` fires (mock today, Lemon Squeezy planned) |
+| `isPro` | bool — written ONLY by the Lemon Squeezy webhook or manually in Firebase console |
+| `proSource` | `'lemonsqueezy'` for real subscriptions; blank or `'beta'` / `'comped'` for hand-granted Pro |
+| `subscriptionId` | LS subscription numeric ID — present means "real paying customer" |
+| `subscriptionStatus` | LS status string (`'active'`, `'cancelled'`, `'past_due'`, …) |
+| `customerId` | LS customer numeric ID |
+| `customerPortalUrl` | one-time portal URL the user uses to manage their subscription |
+| `updatePaymentMethodUrl` | LS-issued URL for swapping the saved card |
+| `currentPeriodEnd` | ISO timestamp when the current billing period ends / renews |
+| `subscriptionEndsAt` | set when the user cancels — when access actually lapses |
+| `subscriptionCancelledAt` | server timestamp — set when LS marks the sub cancelled |
+| `paymentFailedAt` | server timestamp — set on first failed payment |
+| `proUpdatedAt` | server timestamp — bumped on every webhook-driven update |
+| `proLastEvent` | LS event_name from the most recent webhook write (audit trail) |
+| `proPlan` | `'monthly'` \| `'annual'` — the plan the user is on |
 
 ### Sync behaviour
 - App loads instantly from **localStorage** (no flicker)
@@ -384,22 +378,50 @@ All user data lives in a single Firestore document: `users/{uid}`
 - On sign-out: app continues using whatever is in localStorage
 
 ### Firestore security rules
-Set in Firebase console → Firestore → Rules. Users can only read/write their own document. The `launchWaitlist` collection is write-only from the client (BetaGate creates one doc when a rejected user opts in to be notified at launch); reads happen only via the Firebase console. The `profiles` collection is the public-share mirror — readable by anyone when the user has flipped their profile on, writable only by the owner. The `feedback` collection is write-only from any signed-in user (FeedbackButton); reads only via the Firebase console.
+Set in Firebase console → Firestore → Rules. Users can only read/write their own document, BUT specific Pro/billing fields are server-only (Lemon Squeezy webhook → Firebase Admin SDK bypasses rules; the client cannot write them directly). The `profiles` collection is the public-share mirror — readable by anyone when the user has flipped their profile on, writable only by the owner. The `feedback` collection is write-only from any signed-in user (FeedbackButton); reads only via the Firebase console.
+
+**Manually paste this into Firebase console → Firestore → Rules after any change here:**
 ```
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Fields the LS webhook owns. The client must NEVER be able to set these
+    // — that would be a Pro-bypass (write isPro=true) or a cross-user
+    // subscription hijack (overwrite subscriptionId to a victim's ID and
+    // then call /api/cancel-subscription). The webhook uses the Firebase
+    // Admin SDK which bypasses rules, so legitimate writes still work.
+    function lockedBillingFields() {
+      return [
+        'isPro', 'proSource', 'subscriptionId', 'subscriptionStatus',
+        'customerId', 'customerPortalUrl', 'updatePaymentMethodUrl',
+        'currentPeriodEnd', 'subscriptionEndsAt', 'subscriptionCancelledAt',
+        'paymentFailedAt', 'proUpdatedAt', 'proLastEvent', 'proPlan',
+        'proUpgradedAt'
+      ];
+    }
+
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Create: the owner can create their own doc, but cannot pre-seed any
+      // billing field on creation (would let an attacker self-grant Pro on
+      // first sign-in).
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && !request.resource.data.keys().hasAny(lockedBillingFields());
+
+      // Update: the owner can change anything EXCEPT the billing fields.
+      // hasAny on the diff catches both writes and deletes of those keys.
+      allow update: if request.auth != null
+                    && request.auth.uid == userId
+                    && !request.resource.data.diff(resource.data)
+                          .affectedKeys()
+                          .hasAny(lockedBillingFields());
+
+      allow delete: if request.auth != null && request.auth.uid == userId;
     }
-    match /launchWaitlist/{email} {
-      // Authenticated user can create/update only their own waitlist record
-      // (doc ID must match their auth email).
-      allow create, update: if request.auth != null
-                            && email == request.auth.token.email
-                            && request.resource.data.email == request.auth.token.email;
-      allow read, delete: if false; // owner reads via Firebase console
-    }
+
     match /profiles/{userId} {
       // Public read when the owner has turned their profile on. Owner can
       // always read their own doc (e.g. while it's still 'off' on first load).
@@ -411,6 +433,7 @@ service cloud.firestore {
                             && request.resource.data.ownerUid == userId;
       allow delete: if request.auth != null && request.auth.uid == userId;
     }
+
     match /feedback/{id} {
       // Any signed-in user can submit feedback. The uid field MUST match
       // the writer so submissions can't be spoofed under another user's
@@ -433,23 +456,20 @@ A signed-in user can flip on a public profile under **Settings → Public profil
 - **Collection:** `profiles/{uid}` — fields: `visibility` (`'off'` | `'unlisted'`), `bio`, `albumRankings`, `displayName`, `photoURL`, `ownerUid`, `updatedAt`.
 - **Default:** `visibility: 'off'` for every new account. The doc isn't even created until the user first toggles the feature on.
 - **Mirroring:** [src/hooks/useProfile.js](src/hooks/useProfile.js) auto-syncs `albumRankings` to the cloud doc whenever the user's ratings change AND the profile is on. Writes are debounced 1.5s so a rapid QuickScore session doesn't fan out into many writes.
-- **Routing:** Hand-rolled URL match in [src/App.jsx](src/App.jsx) — `/u/{uid}` short-circuits the beta gate / welcome tour and renders [src/components/ProfileView.jsx](src/components/ProfileView.jsx) directly. No router dependency.
+- **Routing:** Hand-rolled URL match in [src/App.jsx](src/App.jsx) — `/u/{uid}` short-circuits the welcome tour and renders [src/components/ProfileView.jsx](src/components/ProfileView.jsx) directly. No router dependency.
 - **Bio guardrails:** [src/utils/profanity.js](src/utils/profanity.js) — 140-char limit, profanity wordlist, URL/domain pattern rejection. Validated client-side on save; the cloud rule is purely auth/uid-based, so the filter is the only spam barrier today.
 - **Visibility levels:** Only two — `'off'` (only the owner can read the doc) and `'unlisted'` (anyone can read). No "logged-in only" or "discoverable" tiers in v1. If a `loggedIn` tier is added later, update both the rule and `ProfileView`'s availability check.
 - **Vanity handles:** Not built. URLs are uid-based for v1. A `/u/{handle}` upgrade is plotted in the original scope but parked.
-
-### Beta gate rejection → launch waitlist
-When a Google sign-in succeeds but the email isn't on the `BETA_EMAILS` allowlist (in `src/data/betaEmails.js`), BetaGate (instead of immediately signing the user out) shows a "we'll email you at launch" opt-in. Clicking it writes `{ email, name, photoURL, requestedAt }` to `launchWaitlist/{email}` in Firestore, then signs the user out. Owner views the list at Firebase console → Firestore → `launchWaitlist` collection.
 
 ### Delete account flow
 Live under **Settings → Account → Delete my account**. Implemented entirely client-side in [src/components/DeleteAccountModal.jsx](src/components/DeleteAccountModal.jsx) — no Vercel function or Firebase Admin SDK required.
 
 **Order of operations during deletion (matters for privacy):**
-1. Cancel any active Lemon Squeezy subscription via `/api/cancel-subscription`. Gated on `import.meta.env.VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY` being set — when the env var is missing (mock-unlock mode), this step is skipped entirely. Once the env var is added in Vercel, the call activates automatically. The endpoint itself is idempotent and skips gracefully when the user has no `subscriptionId` on their Firestore doc.
+1. Cancel any active Lemon Squeezy subscription via `/api/cancel-subscription`. The endpoint verifies the caller's Firebase ID token AND cross-checks with Lemon Squeezy that the subscription's `user_email` matches the token's email — this defends against IDOR even if the Firestore rules ever drift. Idempotent: returns success when the user has no `subscriptionId`, when LS returns 404, etc.
 2. Delete `profiles/{uid}` doc — kills the public link immediately. `ProfileView` already handles missing docs as "not available."
 3. Delete `users/{uid}` doc — wipes ratings, brackets, Pro flag, profile mirror.
 4. `deleteUser()` on the Firebase auth record — sign-out is automatic.
-5. Wipe `eras_*` localStorage keys (keeps `eras_beta_unlocked` so re-entry doesn't bounce off the gate).
+5. Wipe `eras_*` localStorage keys.
 
 **Why this order:** auth must outlive the Firestore writes (the security rules require `request.auth.uid === userId` to delete the doc), and we purge auth last so a partial failure leaves orphan docs only — never a case where auth survives WITH active Firestore data, which would be a bigger privacy hole.
 
@@ -486,11 +506,9 @@ Live under **Settings → Account → Delete my account**. Implemented entirely 
   - `GENIUS_API_TOKEN` — Python lyrics scripts only, not needed at runtime
   - `VITE_FIREBASE_*` — Firebase config keys
   - `VITE_SPOTIFY_CLIENT_ID` — Spotify OAuth client ID
-  - `VITE_BETA_PASSWORD` — dev bypass password for beta gate
-- **Beta email allowlist** lives in `src/data/betaEmails.js` (committed to the repo, NOT an env var)
 - **`.claude/settings.local.json`** is gitignored — do not commit it
 - **Vercel build settings:** Framework = Vite, Build = `npm run build`, Output = `dist`, Root Directory = (blank/repo root)
-- **Vercel environment variables:** must mirror all `VITE_*` values from `.env` — including `VITE_BETA_PASSWORD`
+- **Vercel environment variables:** must mirror all `VITE_*` values from `.env`. **Note:** the now-removed `VITE_BETA_PASSWORD` env var can be deleted from Vercel any time — nothing reads it anymore.
 
 ### Shipping flow — push, merge, deploy in one go
 The user wants every finished change pushed live without waiting for a
@@ -551,7 +569,7 @@ GitHub.
 1. Install Git and Node.js
 2. `git clone https://github.com/claytillman767/eras-ranker`
 3. `cd eras-ranker && npm install`
-4. Create `.env` manually — paste in the Genius API token AND all `VITE_FIREBASE_*` keys (find them in Firebase console → Project settings → Your apps), plus `VITE_SPOTIFY_CLIENT_ID` and `VITE_BETA_PASSWORD`
+4. Create `.env` manually — paste in the Genius API token AND all `VITE_FIREBASE_*` keys (find them in Firebase console → Project settings → Your apps), plus `VITE_SPOTIFY_CLIENT_ID`
 5. `npm run dev` to start
 
 ---
@@ -930,7 +948,7 @@ Do NOT commit to a launch date until this test has been run.
 **Phase 0 — Pre-work that has to happen regardless (~2 weeks).** All cross-referenced to the "Pre-launch checklist" below:
 - Privacy policy live at `erasranker.com/privacy` (already on pre-launch checklist).
 - `privacy@erasranker.com` working via Cloudflare Email Routing (already on pre-launch checklist).
-- BetaGate removed (already planned for launch).
+- BetaGate already removed.
 - Real Lemon Squeezy billing wired up and verified on web (see "Payment provider — Lemon Squeezy plan" earlier in this file).
 - Trivia facts fact-checked (already on pre-launch checklist).
 - A once-over from a lawyer ($200-ish consult) on the "Taylor Swift" trademark angle. Apps that rank a celebrity's songs are usually fine, but Google has rejected fan apps occasionally. The app name "The Eras Ranker" is neutral; the question is the album list and emoji identifiers.
@@ -964,7 +982,7 @@ Do NOT commit to a launch date until this test has been run.
 
 **Phase 4 — Closed test + production review (~2–3 weeks of mostly waiting).**
 - Google Play Developer account: $25 one-time fee.
-- **Mandatory closed test:** Google now requires new personal developer accounts to run a closed test with **at least 12 testers for 14 consecutive days** before being eligible to publish to production. The beta email allowlist (`src/data/betaEmails.js`) can feed directly into this. This wait is non-negotiable — do not plan a launch date that assumes you can skip it.
+- **Mandatory closed test:** Google now requires new personal developer accounts to run a closed test with **at least 12 testers for 14 consecutive days** before being eligible to publish to production. Pull your tester list from the manually-comped Pro users in `users/{uid}` (the same people who currently have `proSource: 'beta'` or similar). This wait is non-negotiable — do not plan a launch date that assumes you can skip it.
 - Submit for production review. First review usually 3–7 days. Common rejection reasons: privacy policy ↔ Data Safety mismatch, missing content rating, trademark concerns, undisclosed in-app purchases. Each rejection cycle adds another 3–7 days.
 
 #### Realistic total timeline

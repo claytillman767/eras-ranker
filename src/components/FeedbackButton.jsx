@@ -6,10 +6,6 @@ import { db } from '../firebase';
 // any signed-in user. Submissions land in the `feedback` Firestore
 // collection, which is write-only from the client — the developer reads
 // them via the Firebase console.
-//
-// Beta-only feature in spirit. Shown alongside the BetaGate, so it goes
-// away naturally if/when the gate is removed at launch (or can be gated
-// behind a different flag at that point).
 
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev';
 const MAX_LEN = 1500;
