@@ -16,6 +16,25 @@ Newest entries go at the top.
 
 ---
 
+## 0.14.2 — 2026-05-12
+
+### Changed
+- **Spotify Premium caveat tightened on every Pro-pitch surface that
+  was leaking it.** Five places used to pitch autoplay (or "songs play
+  while you rate") without mentioning that Spotify Premium is also
+  required — which set up Pro subscribers on free Spotify for a
+  bait-and-switch. The "You're Pro!" post-upgrade prompt, the
+  AlbumModeModal connect-Spotify nudge, the Welcome tour Slide 2,
+  and the GoogleLoginPromo footer all now either name the Premium
+  requirement explicitly or no longer sell the playback perk in a
+  context where Premium can't be confirmed.
+- **Welcome tour Slide 2 pitch strengthened.** The Vibe Check card on
+  Slide 2 used to mention only autoplay as a Pro perk. It now also
+  mentions the per-moment seeking ("jump to any chorus, bridge, or
+  line"), matching the broader pitch on every other Pro-pitch surface.
+
+---
+
 ## 0.14.1 — 2026-05-12
 
 ### Changed

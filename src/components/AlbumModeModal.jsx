@@ -129,7 +129,9 @@ export default function AlbumModeModal({
             </div>
             <div style={{ fontSize: 12, color: '#4b5563', lineHeight: 1.45, marginBottom: 12 }}>
               You're Pro — connect Spotify so each song plays automatically while you rate.
-              One more step.
+              <span style={{ color: '#6b7280', display: 'block', marginTop: 4 }}>
+                Spotify Premium is needed for songs to play in-app.
+              </span>
             </div>
             <button
               onClick={handleConnect}

@@ -475,7 +475,7 @@ function SlideModes({ onAdvance }) {
           // Pro upsell line gets its own visual weight — purple pill + line so
           // the user can scan that there's a paid version of this experience
           // without re-reading the description.
-          proLine="Songs autoplay through Spotify while you rate."
+          proLine="With Pro: songs play while you rate, and you can jump to any chorus, bridge, or line."
           delay="0s"
           onTap={onAdvance}
         />

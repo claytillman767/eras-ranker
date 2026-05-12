@@ -42,7 +42,7 @@ export default function ConnectSpotifyPrompt({ onConnect, onDismiss, isLoading }
           You're Pro!
         </div>
         <div style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.5, marginBottom: 24 }}>
-          Connect Spotify now to start the autoplay you just unlocked — and pull in real album art everywhere.
+          Connect Spotify now to pull in real album art everywhere — and if you have Spotify Premium, every song will autoplay while you rate.
         </div>
 
         {/* Connect button — Spotify branding (green on white, logo + label) */}
