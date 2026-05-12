@@ -16,6 +16,30 @@ Newest entries go at the top.
 
 ---
 
+## 0.12.0 — 2026-05-12
+
+### Changed
+- **Settings screen redesigned** for a more polished, professional feel.
+  A proper "Settings" page title now anchors the screen, sections share
+  consistent spacing, and the layout reads more like a modern app.
+- The Spotify section now sits higher in the page, just after Public
+  profile — closer to where you'd expect a connected service to live.
+- The Display section has been renamed to **Preferences** and is the
+  new home for "Show welcome tour again" (previously a small loose link
+  that lived between Account and Membership).
+- Inside Account, Sign out is now visually separated from the more
+  serious actions ("Forget me on this device" and "Delete my account")
+  by a "Danger zone" divider so they read as a distinct cluster.
+- The footer (version number + fan-made disclaimer) is now one tidy
+  card at the bottom instead of two competing styles.
+
+### Removed
+- The redundant Spotify Premium paragraph that floated below the
+  Spotify card — the connect button and connected-state subtitles
+  already cover Premium clearly.
+
+---
+
 ## 0.11.3 — 2026-05-12
 
 ### Changed

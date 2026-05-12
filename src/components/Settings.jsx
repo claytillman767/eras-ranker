@@ -139,6 +139,24 @@ export default function Settings({
   return (
     <div style={{ paddingTop: 20, paddingBottom: 40 }}>
 
+      {/* Page title — gives the screen a proper anchor so it doesn't start
+          cold on a tiny section header. */}
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{
+          fontSize: 28,
+          fontWeight: 700,
+          color: '#111827',
+          margin: 0,
+          marginBottom: 4,
+          letterSpacing: '-0.01em',
+        }}>
+          Settings
+        </h1>
+        <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.4 }}>
+          Account, membership, and app preferences.
+        </div>
+      </div>
+
       {/* ── Pro upgrade modal ── */}
       {showProModal && (
         <ProModal
@@ -157,7 +175,7 @@ export default function Settings({
         border: '0.5px solid #e5e7eb',
         borderRadius: 12,
         overflow: 'hidden',
-        marginBottom: 12,
+        marginBottom: 24,
       }}>
         {user ? (
           <>
@@ -246,6 +264,28 @@ export default function Settings({
                 </div>
                 <span style={{ fontSize: 14, color: '#9ca3af', flexShrink: 0 }}>→</span>
               </button>
+
+              {/* Danger zone divider — separates non-destructive Sign out
+                  from the destructive Forget/Delete cluster so they read as
+                  a distinct group. */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                marginTop: 16,
+                marginBottom: 10,
+              }}>
+                <div style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: '#9ca3af',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                }}>
+                  Danger zone
+                </div>
+                <div style={{ flex: 1, height: '0.5px', background: '#f3f4f6' }} />
+              </div>
 
               {/* Forget me on this device — destructive: wipes local data */}
               <button
@@ -340,26 +380,6 @@ export default function Settings({
         )}
       </div>
 
-      {/* Replay welcome tour — small text link below the Account card */}
-      {onShowWelcome && (
-        <button
-          onClick={onShowWelcome}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#a855f7',
-            fontSize: 12,
-            fontWeight: 500,
-            cursor: 'pointer',
-            padding: '2px 4px',
-            marginBottom: 28,
-            display: 'inline-block',
-          }}
-        >
-          Show welcome tour again
-        </button>
-      )}
-
       {/* Dev-only UAT panel — only the developer email sees this row */}
       {isDevEmail(user?.email) && <UatToggle user={user} isPro={isPro} />}
 
@@ -386,24 +406,6 @@ export default function Settings({
         </>
       )}
 
-      {/* ── Display section ── */}
-      <SectionHeader>Display</SectionHeader>
-
-      <div style={{
-        background: '#ffffff',
-        border: '0.5px solid #e5e7eb',
-        borderRadius: 12,
-        overflow: 'hidden',
-        marginBottom: 28,
-      }}>
-        <SettingRow
-          label="Confirm before exiting QuickScore"
-          description="Ask for confirmation before closing the rating screen mid-session."
-          value={settings.confirmQuickScoreExit ?? true}
-          onChange={v => updateSetting('confirmQuickScoreExit', v)}
-        />
-      </div>
-
       {/* ── Spotify section ── */}
       {/* Connection itself is FREE for everyone (gives real album art across
           the app). Playback features (autoplay, bridge autoplay, volume) stay
@@ -416,6 +418,7 @@ export default function Settings({
         border: '0.5px solid #e5e7eb',
         borderRadius: 12,
         overflow: 'hidden',
+        marginBottom: 24,
       }}>
         {spotify?.isConnected ? (
           <>
@@ -589,26 +592,6 @@ export default function Settings({
         )}
       </div>
 
-      {/* ── Spotify Premium note ── */}
-      <div style={{
-        marginTop: 10,
-        padding: '10px 14px',
-        fontSize: 11,
-        color: '#6b7280',
-        lineHeight: 1.5,
-      }}>
-        Spotify Premium lets you play any track, podcast episode or audiobook, ad-free and with better audio quality.{' '}
-        <a
-          href="https://spotify.com/premium"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: '#374151', textDecoration: 'underline', fontWeight: 500 }}
-        >
-          Go to spotify.com/premium
-        </a>{' '}
-        to try it for free.
-      </div>
-
       {/* ── Rating Categories section ── */}
       <SectionHeader>Rating Categories</SectionHeader>
       <button
@@ -619,7 +602,7 @@ export default function Settings({
           border: '0.5px solid #e5e7eb',
           borderRadius: 12,
           padding: '14px 16px',
-          marginBottom: 28,
+          marginBottom: 24,
           textAlign: 'left',
           cursor: 'pointer',
           display: 'flex',
@@ -666,6 +649,55 @@ export default function Settings({
         />
       )}
 
+      {/* ── Preferences section ── */}
+      {/* App-wide behaviour toggles. Renamed from "Display" since the rows
+          here are about how the app behaves (rather than visual theming). */}
+      <SectionHeader>Preferences</SectionHeader>
+      <div style={{
+        background: '#ffffff',
+        border: '0.5px solid #e5e7eb',
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 24,
+      }}>
+        <SettingRow
+          label="Confirm before exiting QuickScore"
+          description="Ask for confirmation before closing the rating screen mid-session."
+          value={settings.confirmQuickScoreExit ?? true}
+          onChange={v => updateSetting('confirmQuickScoreExit', v)}
+        />
+        {onShowWelcome && (
+          <>
+            <div style={{ height: '0.5px', background: '#f3f4f6', margin: '0 16px' }} />
+            <button
+              onClick={onShowWelcome}
+              style={{
+                width: '100%',
+                background: 'none',
+                border: 'none',
+                padding: '14px 16px',
+                textAlign: 'left',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: '#111827', marginBottom: 2 }}>
+                  Show welcome tour again
+                </div>
+                <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>
+                  Replays the intro slides — handy when you want a refresher.
+                </div>
+              </div>
+              <span style={{ fontSize: 14, color: '#a855f7', flexShrink: 0 }}>→</span>
+            </button>
+          </>
+        )}
+      </div>
+
       {/* ── Data section ── */}
       <SectionHeader>Data</SectionHeader>
       <div style={{
@@ -673,7 +705,7 @@ export default function Settings({
         border: '0.5px solid #e5e7eb',
         borderRadius: 12,
         overflow: 'hidden',
-        marginBottom: 28,
+        marginBottom: 24,
       }}>
         <div style={{ padding: '14px 16px' }}>
           <div style={{ fontSize: 14, fontWeight: 500, color: '#111827', marginBottom: 2 }}>
@@ -726,31 +758,36 @@ export default function Settings({
         </div>
       </div>
 
-      {/* ── About / version ── */}
+      {/* ── Footer: version + disclaimer ── */}
+      {/* Unified footer block — single card with the version line on top and
+          the fan-made disclaimer below, separated by a thin divider. Replaces
+          the earlier setup where the version was loose centred text and the
+          disclaimer was its own card. */}
       <div style={{
-        marginTop: 32,
-        textAlign: 'center',
-        fontSize: 11,
-        color: '#9ca3af',
-        letterSpacing: '0.04em',
-      }}>
-        The Eras Ranker · v{__APP_VERSION__}
-      </div>
-
-      {/* ── Disclaimer ── */}
-      <div style={{
-        marginTop: 8,
-        padding: '12px 14px',
+        marginTop: 16,
+        padding: '14px 16px',
         background: '#f9fafb',
         border: '0.5px solid #e5e7eb',
-        borderRadius: 10,
-        fontSize: 11,
-        color: '#9ca3af',
-        lineHeight: 1.5,
+        borderRadius: 12,
         textAlign: 'center',
       }}>
-        This app is a fan-made project and is not affiliated with, endorsed by,
-        or connected to Taylor Swift or TAS Rights Management, LLC.
+        <div style={{
+          fontSize: 11,
+          fontWeight: 600,
+          color: '#6b7280',
+          letterSpacing: '0.04em',
+        }}>
+          The Eras Ranker · v{__APP_VERSION__}
+        </div>
+        <div style={{ height: '0.5px', background: '#e5e7eb', margin: '10px 0' }} />
+        <div style={{
+          fontSize: 11,
+          color: '#9ca3af',
+          lineHeight: 1.5,
+        }}>
+          This app is a fan-made project and is not affiliated with, endorsed by,
+          or connected to Taylor Swift or TAS Rights Management, LLC.
+        </div>
       </div>
 
       {confirmState && (
@@ -1067,7 +1104,7 @@ function PublicProfileSection({ profile }) {
       border: '0.5px solid #e5e7eb',
       borderRadius: 12,
       overflow: 'hidden',
-      marginBottom: 28,
+      marginBottom: 24,
     }}>
       {/* Toggle */}
       <div style={{
@@ -1360,7 +1397,7 @@ function MembershipSection({
         border: '0.5px solid #e5e7eb',
         borderRadius: 12,
         padding: '16px',
-        marginBottom: 28,
+        marginBottom: 24,
       }}>
         <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.5, marginBottom: 14 }}>
           Pro is tied to your account so it follows you to every device. Sign in to upgrade.
@@ -1443,7 +1480,7 @@ function MembershipSection({
         border: '0.5px solid #e5e7eb',
         borderRadius: 12,
         overflow: 'hidden',
-        marginBottom: 28,
+        marginBottom: 24,
       }}>
         {/* Status header — pill on the right, plan name + subline on the left. */}
         <div style={{
@@ -1531,7 +1568,7 @@ function MembershipSection({
       border: '0.5px solid #e5e7eb',
       borderRadius: 12,
       overflow: 'hidden',
-      marginBottom: 28,
+      marginBottom: 24,
     }}>
       <div style={{ padding: '16px', borderBottom: '0.5px solid #f3f4f6' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -1656,7 +1693,7 @@ function UatToggle({ user, isPro }) {
       border: '0.5px solid #fde68a',
       borderRadius: 12,
       padding: '4px 0',
-      marginBottom: 28,
+      marginBottom: 24,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
