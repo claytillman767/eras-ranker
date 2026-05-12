@@ -16,6 +16,17 @@ import { db } from '../firebase';
 import { ALBUMS, SONGS } from '../data/albums';
 import { SPOTIFY_START_TIMES } from '../data/spotifyStartTimes';
 import { SPOTIFY_BRIDGE_TIMES } from '../data/spotifyBridgeTimes';
+import { SPOTIFY_CATEGORY_TIMES } from '../data/spotifyCategoryTimes';
+
+// Category keys that resolve through SPOTIFY_CATEGORY_TIMES (the per-song,
+// per-moment timestamp map). Anything not in this set falls through to the
+// shuffle / bridge legacy paths below.
+const CATEGORY_SCREEN_KEYS = new Set([
+  'best-opening-line',
+  'best-chorus',
+  'hook',
+  'best-closing-line',
+]);
 
 const CLIENT_ID   = import.meta.env.VITE_SPOTIFY_CLIENT_ID ?? '';
 const REDIRECT_URI = window.location.origin + '/';
@@ -544,7 +555,13 @@ export function useSpotify(user) {
 
   // ── Play a specific song ──────────────────────────────────────────────────
   // albumId + songIndex are used as the cache key; songName + albumName for the search.
-  // screen: 'shuffle' (first screen) | 'bridge' (bridge category)
+  // screen:
+  //   'shuffle'              → SPOTIFY_START_TIMES (per-song shuffle-screen start)
+  //   'bridge'               → SPOTIFY_BRIDGE_TIMES (bridge category seek)
+  //   'best-opening-line'    → SPOTIFY_CATEGORY_TIMES[key].best-opening-line
+  //   'best-chorus' / 'hook' → SPOTIFY_CATEGORY_TIMES[key].best-chorus (or hook — same value)
+  //   'best-closing-line'    → SPOTIFY_CATEGORY_TIMES[key].best-closing-line
+  // Any unrecognised value falls back to shuffle.
   const playTrack = useCallback(async (albumId, songIndex, songName, albumName, screen = 'shuffle') => {
     const token = await getFreshToken();
     if (!token || !deviceIdRef.current) return;
@@ -574,9 +591,14 @@ export function useSpotify(user) {
 
     if (!uri) return; // song not found on Spotify
 
-    const startMs = screen === 'bridge'
-      ? (SPOTIFY_BRIDGE_TIMES[cacheKey] ?? 0)
-      : (SPOTIFY_START_TIMES[cacheKey] ?? 0);
+    let startMs;
+    if (screen === 'bridge') {
+      startMs = SPOTIFY_BRIDGE_TIMES[cacheKey] ?? 0;
+    } else if (CATEGORY_SCREEN_KEYS.has(screen)) {
+      startMs = SPOTIFY_CATEGORY_TIMES[cacheKey]?.[screen] ?? 0;
+    } else {
+      startMs = SPOTIFY_START_TIMES[cacheKey] ?? 0;
+    }
 
     try {
       await spotifyApiFetch(

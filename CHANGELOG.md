@@ -16,6 +16,31 @@ Newest entries go at the top.
 
 ---
 
+## 0.14.0 — 2026-05-12
+
+### Added
+- **Skip to any moment (Pro).** A new row of "jump-to" pills appears under
+  the song's mini player inside Vibe Check for Pro users on Spotify Premium.
+  One tap skips straight to the song's opening line, chorus, or closing
+  line — no more waiting for the part you want to hear while you rate.
+  The existing Play Bridge button on the Bridge category stays exactly
+  where it was.
+
+### Changed
+- **Pro pitch updated everywhere.** The paywall, the Vibe Check intro, and
+  the Pro modal in Settings all now describe Pro's playback perk as
+  "Skip to any moment" instead of the bridge-only framing it used before.
+  The icon shifted from the bridge 🌉 to the skip-ahead ⏩.
+
+### Fixed
+- **Pro + free-Spotify gate tightened.** A Pro user signed into a free
+  Spotify account no longer sees the mini player or autoplay-related
+  controls light up inside Vibe Check — Pro alone can't deliver playback
+  for free Spotify accounts, and the in-app behavior now matches what the
+  paywall already promised.
+
+---
+
 ## 0.13.1 — 2026-05-12
 
 ### Fixed

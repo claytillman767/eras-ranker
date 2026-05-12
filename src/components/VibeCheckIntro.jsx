@@ -226,9 +226,9 @@ export default function VibeCheckIntro({
             },
             {
               spotify: true,
-              icon: '🌉',
-              title: 'Jump straight to the bridge',
-              desc: "On the Bridge category, tap one button to skip right to the song's bridge.",
+              icon: '⏩',
+              title: 'Skip to any part of the song',
+              desc: 'Tap to jump straight to the chorus, bridge, opening line, or closing line.',
             },
             {
               spotify: false,
