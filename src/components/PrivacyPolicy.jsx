@@ -1,12 +1,14 @@
 import { useEffect } from 'react';
+import { LEGAL_VERSION, formatLegalDate } from '../data/legalVersion';
 
 // Privacy policy reachable at /privacy. Linked from the sign-in screen,
 // Settings footer, and (eventually) external requests like Lemon Squeezy
 // onboarding and Google OAuth verification.
 //
-// To update: bump EFFECTIVE_DATE and edit the relevant section. The same
-// date shows at the top and in the "Changes to this policy" section.
-const EFFECTIVE_DATE = 'May 12, 2026';
+// The displayed effective date is derived from LEGAL_VERSION in
+// src/data/legalVersion.js — bump it there when this policy materially
+// changes, and the modal-driven re-acceptance flow handles the rest.
+const EFFECTIVE_DATE = formatLegalDate(LEGAL_VERSION);
 
 export default function PrivacyPolicy() {
   useEffect(() => {

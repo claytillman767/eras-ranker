@@ -27,6 +27,25 @@ Inconsistent Pro copy across screens is a credibility hit on a paid product, so 
 
 Same applies to Spotify-tier changes (free vs. Premium): playback-only Pro perks (autoplay, jump-to-bridge) MUST be hidden when `spotify?.isConnected && !spotify?.isPremium`, since Pro alone can't unlock playback for free Spotify accounts. The auditor enforces this rule.
 
+## When you change the Privacy Policy or Terms of Service
+
+The legal text lives in [src/components/PrivacyPolicy.jsx](src/components/PrivacyPolicy.jsx) and [src/components/Terms.jsx](src/components/Terms.jsx), served at `/privacy` and `/terms`. The current accepted version is tracked per user in Firestore.
+
+**Material changes** — anything that affects what data is collected, how it's used, who it's shared with, user rights, Pro pricing/cancellation terms, or acceptable-use rules — require a version bump so existing users are re-prompted:
+
+1. Edit the policy text in [src/components/PrivacyPolicy.jsx](src/components/PrivacyPolicy.jsx) and/or [src/components/Terms.jsx](src/components/Terms.jsx).
+2. Bump `LEGAL_VERSION` in [src/data/legalVersion.js](src/data/legalVersion.js) to today's date (`YYYY-MM-DD`).
+3. Set `LEGAL_VERSION_CHANGES_NOTE` in the same file to a 1–2 sentence plain-English summary of what changed. This text shows inside [src/components/UpdatedTermsModal.jsx](src/components/UpdatedTermsModal.jsx) when a user is asked to re-accept.
+4. Per Section 11 of the Privacy Policy, also email signed-in users at least 14 days before the change takes effect. The in-app modal is the friction-free confirmation on next visit, NOT the only notification.
+
+**Non-material changes** (typo fixes, formatting tweaks, wording that doesn't change meaning) — just edit the file. Do NOT bump `LEGAL_VERSION`, or every existing user will see a re-acceptance modal for a change they don't need to re-accept.
+
+How the acceptance system works:
+- [src/hooks/useUserStats.js](src/hooks/useUserStats.js) writes `termsAcceptedVersion = LEGAL_VERSION` and `termsAcceptedAt` to each user's Firestore doc on their first session ever. For users who predate the tracking feature, this also runs on their next session as a one-time grandfather (so the modal does not fire for terms that haven't changed since they signed up).
+- [src/hooks/useTermsAcceptance.js](src/hooks/useTermsAcceptance.js) compares the stored version to the current `LEGAL_VERSION` via an `onSnapshot` listener. When they don't match, it returns `needsAcceptance: true`.
+- [src/App.jsx](src/App.jsx) pre-empts the rest of the app with [src/components/UpdatedTermsModal.jsx](src/components/UpdatedTermsModal.jsx) when `needsAcceptance` is true. The modal's inline links to /privacy and /terms open in a new tab so users can read the new text without losing the modal.
+- Clicking "I agree, continue" writes the new `LEGAL_VERSION` to the user's doc; the snapshot listener flips `needsAcceptance` back to false and the modal disappears.
+
 ## Acting as a user-flow consultant
 
 When a change touches **any of the four conversion goals**, don't just implement what was asked — proactively consult on funnel impact. Specifically, ask yourself (and surface concerns to the user *before* implementing if any answer is no):
@@ -117,6 +136,11 @@ src/
                              Categories is now a section inside Settings (not its own tab)
                              Passes user/signIn/signOut to Settings; passes isPro ? spotify.albumArt : null to grid/songlist
                              First-time flow: Welcome → GoogleLoginPromo (if signed out) → SpotifyIntro (if signed in) → Home
+                             Hand-rolled URL routing pre-empts the tab UI: /privacy → PrivacyPolicy,
+                               /terms → Terms, /u/{uid} → ProfileView. Updates from popstate events.
+                             Updated-terms gate: useTermsAcceptance(user) compares the user's stored
+                               version to LEGAL_VERSION; on mismatch, renders UpdatedTermsModal in
+                               place of the main app until the user re-accepts.
   firebase.js              — initialises Firebase app, exports auth, db, googleProvider
                              Explicitly sets browserLocalPersistence to prevent silent session-only fallback
   data/
@@ -144,6 +168,12 @@ src/
     spotifyBridgeTimes.js  — DO NOT edit by hand; regenerate: python find_bridge_times.py
                              Bridge section start positions in ms, keyed by "albumId_songIndex"
                              Used by playTrack() when screen='bridge'
+    legalVersion.js        — Single source of truth for the current legal-text version (YYYY-MM-DD).
+                             Bump LEGAL_VERSION on material Privacy Policy / Terms changes; set
+                             LEGAL_VERSION_CHANGES_NOTE to a short summary shown in the re-accept
+                             modal. Imported by PrivacyPolicy.jsx, Terms.jsx, useUserStats.js,
+                             useTermsAcceptance.js, and UpdatedTermsModal.jsx.
+                             Also exports formatLegalDate() for the human-readable display date.
   hooks/
     useAuth.js             — Firebase Google sign-in via signInWithRedirect (NOT popup — redirect is
                              more reliable on mobile/Safari); exposes user, authLoading, signIn, signOut
@@ -181,9 +211,26 @@ src/
     useSettings.js         — app-wide settings; localStorage 'eras_settings' + Firestore sync
                              DEFAULTS: { showCategoryBars: true, spotifyAutoplay: true }
                              Note: Spotify start time is NOT in settings — it's developer-set in spotifyStartTimes.js
+    useTermsAcceptance.js  — Watches the signed-in user's termsAcceptedVersion via onSnapshot.
+                             Returns { needsAcceptance, acceptTerms, loading }.
+                             needsAcceptance true ⇒ App.jsx renders UpdatedTermsModal.
+                             acceptTerms() writes LEGAL_VERSION + serverTimestamp to the user doc.
+                             Grandfather rule: missing field reads as LEGAL_VERSION (no modal).
   components/
     ErrorBoundary.jsx      — top-level React error boundary; catches any unhandled crash and shows a
                              friendly "Something went wrong — Reload" screen instead of blank white page
+    PrivacyPolicy.jsx      — Public legal page served at /privacy. Plain-English Privacy Policy,
+                             routed by hand-rolled URL match in App.jsx. Effective date is derived
+                             from LEGAL_VERSION in data/legalVersion.js.
+    Terms.jsx              — Public legal page served at /terms. Plain-English Terms of Service.
+                             Same routing pattern + LEGAL_VERSION source as PrivacyPolicy.jsx.
+                             Governing law: Texas, Collin County. No binding arbitration; class-action
+                             waiver in section 13.
+    UpdatedTermsModal.jsx  — Full-screen pre-emptive overlay shown when useTermsAcceptance returns
+                             needsAcceptance: true. Reads LEGAL_VERSION + LEGAL_VERSION_CHANGES_NOTE
+                             from data/legalVersion.js. Has one button ("I agree, continue") that
+                             calls the onAccept prop; inline links to /privacy and /terms open in a
+                             new tab so the modal stays visible while users read the full text.
     FeedbackButton.jsx     — floating "send feedback" button visible across the main app for any
                              signed-in user. Bottom-right corner, opens a textarea modal.
                              Submissions land in Firestore `feedback` collection (write-only from
@@ -354,6 +401,8 @@ All user data lives in a single Firestore document: `users/{uid}`
 | `signedUpVia` | `'google'` |
 | `signupSource` | string — value of `?ref=<source>` URL param at first visit |
 | `referrer` | string — `document.referrer` at first visit |
+| `termsAcceptedVersion` | string — date (YYYY-MM-DD) of the legal-text version this user accepted; written once by useUserStats on first session, then by UpdatedTermsModal on each re-acceptance |
+| `termsAcceptedAt` | server timestamp — paired with termsAcceptedVersion; bumped on every acceptance write |
 | `isPro` | bool — written ONLY by the Lemon Squeezy webhook or manually in Firebase console |
 | `proSource` | `'lemonsqueezy'` for real subscriptions; blank or `'beta'` / `'comped'` for hand-granted Pro |
 | `subscriptionId` | LS subscription numeric ID — present means "real paying customer" |
