@@ -17,7 +17,7 @@ export default function SpotifyAttribution({ visible = true, style }) {
       alignItems: 'center',
       justifyContent: 'flex-end',
       gap: 4,
-      fontSize: 10,
+      fontSize: 11,
       color: '#9ca3af',
       letterSpacing: '0.02em',
       ...style,

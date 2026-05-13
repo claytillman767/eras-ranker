@@ -569,7 +569,7 @@ export default function Settings({
                 padding: '12px',
                 borderRadius: 10,
                 border: 'none',
-                background: spotify?.isLoading ? '#1aa84a' : '#1DB954',
+                background: spotify?.isLoading ? '#9ca3af' : '#1DB954',
                 color: '#ffffff',
                 fontSize: 14,
                 fontWeight: 600,
@@ -579,7 +579,7 @@ export default function Settings({
               {spotify?.isLoading ? (
                 <Spinner size={18} />
               ) : (
-                <SpotifyBadge variant="white" />
+                <SpotifyBadge variant="white" size={24} />
               )}
               {spotify?.isLoading ? 'Connecting to Spotify…' : 'Connect Spotify'}
             </button>

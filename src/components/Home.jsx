@@ -61,6 +61,7 @@ export default function Home({
   onSelectAlbum,
   onGoToAlbums,
   spotifyAlbumArt,
+  spotifyAlbumIds,
 }) {
   // ── Computed totals ──────────────────────────────────────────────
   const totalSongs = ALL_ALBUMS.reduce((sum, a) => sum + (SONGS[a.id]?.length || 0), 0);
@@ -553,6 +554,28 @@ export default function Home({
                   }} />
                 </div>
               </div>
+
+              {/* Open in Spotify — per-row link-back required when art is from Spotify */}
+              {spotifyAlbumIds?.[album.id] && (
+                <a
+                  href={`https://open.spotify.com/album/${spotifyAlbumIds[album.id]}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                  aria-label={`Open ${album.name} on Spotify`}
+                  title="Open in Spotify"
+                  style={{
+                    flexShrink: 0,
+                    width: 22, height: 22,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#9ca3af',
+                    fontSize: 13,
+                    textDecoration: 'none',
+                  }}
+                >
+                  ↗
+                </a>
+              )}
             </div>
           );
         })}

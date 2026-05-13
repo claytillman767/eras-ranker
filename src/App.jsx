@@ -608,6 +608,7 @@ export default function App() {
             onSelectAlbum={handleSelectAlbum}
             onGoToAlbums={() => setActiveTab('albums')}
             spotifyAlbumArt={spotify.albumArt}
+            spotifyAlbumIds={spotify.albumSpotifyIds}
           />
         )}
 

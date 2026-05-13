@@ -58,16 +58,16 @@ export default function ConnectSpotifyPrompt({ onConnect, onDismiss, isLoading }
             padding: '14px',
             borderRadius: 12,
             border: 'none',
-            background: isLoading ? '#a7f3d0' : '#1DB954',
+            background: isLoading ? '#9ca3af' : '#1DB954',
             color: '#ffffff',
             fontSize: 15,
             fontWeight: 700,
             cursor: isLoading ? 'default' : 'pointer',
-            boxShadow: '0 4px 12px rgba(29,185,84,0.3)',
+            boxShadow: isLoading ? 'none' : '0 4px 12px rgba(29,185,84,0.3)',
             marginBottom: 10,
           }}
         >
-          <SpotifyBadge variant="white" size={22} />
+          <SpotifyBadge variant="white" size={24} />
           {isLoading ? 'Connecting…' : 'Connect Spotify'}
         </button>
 
