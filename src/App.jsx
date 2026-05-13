@@ -8,6 +8,7 @@ import { useSettings } from './hooks/useSettings';
 import { useSpotify } from './hooks/useSpotify';
 import { useUserStats } from './hooks/useUserStats';
 import { useProfile } from './hooks/useProfile';
+import { useTermsAcceptance } from './hooks/useTermsAcceptance';
 import Welcome from './components/Welcome';
 import GoogleLoginPromo, { hasSeenGoogleLoginPromo } from './components/GoogleLoginPromo';
 import SpotifyIntro, { hasSeenSpotifyIntro } from './components/SpotifyIntro';
@@ -25,6 +26,7 @@ import ProcessingBanner from './components/ProcessingBanner';
 import ProfileView from './components/ProfileView';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import Terms from './components/Terms';
+import UpdatedTermsModal from './components/UpdatedTermsModal';
 import FeedbackButton from './components/FeedbackButton';
 import { ALL_ALBUMS } from './data/albums';
 
@@ -146,6 +148,13 @@ export default function App() {
   // Per-user analytics: lastActiveAt, sessionCount, totalRatings, albumsCompleted, signup origin
   useUserStats(user, ratings);
 
+  // Legal acceptance — fires UpdatedTermsModal when the signed-in user's
+  // stored termsAcceptedVersion doesn't match the current LEGAL_VERSION.
+  // Anonymous users are unaffected (no Firestore doc to compare against);
+  // their acceptance is governed by ToS section 1 ("by using the App you
+  // agree...") and recorded on their first sign-in via useUserStats.
+  const { needsAcceptance, acceptTerms } = useTermsAcceptance(user);
+
   // Sync stored volume to the Spotify player whenever it becomes ready
   useEffect(() => {
     if (spotify.playerReady) {
@@ -233,7 +242,9 @@ export default function App() {
   // Legal pages take precedence over everything else — they must be
   // reachable from anywhere (sign-in screen, external links from Lemon
   // Squeezy / Google OAuth verification, etc.) without sitting through
-  // the welcome tour or sign-in flow.
+  // the welcome tour or sign-in flow. Also reachable while the
+  // UpdatedTermsModal is up (its links open in a new tab, but pasting
+  // /privacy directly into the URL bar still works).
   if (legalPath === 'privacy') return <PrivacyPolicy />;
   if (legalPath === 'terms')   return <Terms />;
 
@@ -241,6 +252,15 @@ export default function App() {
   // link should always render the profile screen for unauthenticated visitors.
   if (profileUid) {
     return <ProfileView uid={profileUid} />;
+  }
+
+  // Updated-terms gate — pre-empts the rest of the app for a signed-in
+  // user whose stored acceptance version doesn't match LEGAL_VERSION.
+  // Anonymous users skip this entirely (no Firestore doc → no mismatch).
+  // The modal is shown AFTER the legal routes above so its inline links
+  // to /privacy and /terms still work.
+  if (needsAcceptance) {
+    return <UpdatedTermsModal onAccept={acceptTerms} />;
   }
 
   // ── Welcome tour — shown once per device for new users ───────────────────────

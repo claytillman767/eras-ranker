@@ -16,6 +16,20 @@ Newest entries go at the top.
 
 ---
 
+## 0.15.1 — 2026-05-12
+
+### Added
+- **Re-accept Terms prompt for future Privacy Policy / Terms of Service
+  updates.** When we materially change the Privacy Policy or Terms in
+  the future, signed-in users will see a brief "We've updated our
+  Terms" prompt on their next visit, with one tap to confirm. The
+  prompt includes a short plain-English summary of what changed and
+  inline links to read the full text in a new tab. Users who signed
+  up before today are grandfathered in — no prompt for this initial
+  rollout, since the terms haven't changed since they signed up.
+
+---
+
 ## 0.15.0 — 2026-05-12
 
 ### Added

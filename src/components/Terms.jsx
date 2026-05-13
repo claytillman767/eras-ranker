@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
+import { LEGAL_VERSION, formatLegalDate } from '../data/legalVersion';
 
 // Terms of Service reachable at /terms. Linked from the sign-in screen,
 // Settings footer, and external services that ask for our terms URL.
 //
-// To update: bump EFFECTIVE_DATE and edit the relevant section. The same
-// date shows at the top and in the "Changes to these terms" section.
-const EFFECTIVE_DATE = 'May 12, 2026';
+// The displayed effective date is derived from LEGAL_VERSION in
+// src/data/legalVersion.js — bump it there when these terms materially
+// change, and the modal-driven re-acceptance flow handles the rest.
+const EFFECTIVE_DATE = formatLegalDate(LEGAL_VERSION);
 
 export default function Terms() {
   useEffect(() => {
