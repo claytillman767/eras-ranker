@@ -254,7 +254,7 @@ export default function VibeCheckIntro({
                 flexShrink: 0,
                 fontSize: 18,
               }}>
-                {item.spotify ? <SpotifyBadge size={22} /> : item.icon}
+                {item.spotify ? <SpotifyBadge size={24} /> : item.icon}
               </div>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
@@ -280,7 +280,7 @@ export default function VibeCheckIntro({
             alignItems: 'center',
             gap: 6,
           }}>
-            <SpotifyBadge size={14} />
+            <SpotifyBadge size={24} />
             <span>
               {spotify?.isConnected && !spotify?.isPremium
                 ? <>Your Spotify is free, so you'll see real album art everywhere. <b style={{ color: '#111827' }}>Spotify Premium</b> is needed for in-app playback (separate from Eras Ranker Pro).</>
@@ -336,19 +336,19 @@ export default function VibeCheckIntro({
               padding: '14px',
               borderRadius: 12,
               border: 'none',
-              background: spotify?.isLoading ? '#1aa84a' : '#1DB954',
+              background: spotify?.isLoading ? '#9ca3af' : '#1DB954',
               color: '#ffffff',
               fontSize: 15,
               fontWeight: 700,
               cursor: spotify?.isLoading ? 'default' : 'pointer',
-              boxShadow: '0 4px 12px rgba(29,185,84,0.3)',
+              boxShadow: spotify?.isLoading ? 'none' : '0 4px 12px rgba(29,185,84,0.3)',
               marginBottom: 10,
             }}
           >
             {spotify?.isLoading ? (
               <Spinner size={20} />
             ) : (
-              <SpotifyBadge variant="white" size={22} />
+              <SpotifyBadge variant="white" size={24} />
             )}
             {spotify?.isLoading ? 'Connecting to Spotify…' : 'Connect Spotify'}
           </button>

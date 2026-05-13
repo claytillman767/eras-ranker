@@ -3,6 +3,7 @@ import { ALL_ALBUMS } from '../../data/albums';
 import { getEraColors } from '../../constants/eraColors';
 import { getSnippetLyrics, getBridgeLyrics } from '../../data/lyricsAccess';
 import { BRACKET_CATEGORIES } from '../../constants/bracketCategories';
+import SpotifyBadge from '../SpotifyBadge';
 
 // Length of each Spotify clip — matches the wireframe's "~15s clip" copy.
 const CLIP_MS = 15000;
@@ -465,6 +466,38 @@ export default function Matchup({
             }}
           >✕</button>
         </div>
+
+        {/* Spotify attribution strip — required when the screen plays Spotify
+            audio. White background only (Spotify-green logo branding rule). */}
+        {isSpotifyConnected && (
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: 10, padding: '8px 16px',
+            background: '#ffffff',
+            borderBottom: '1px solid #f3f4f6',
+            flexShrink: 0,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+              <SpotifyBadge size={24} />
+              <span style={{ fontSize: 11, color: '#6b7280', letterSpacing: '0.04em' }}>
+                Powered by Spotify
+              </span>
+            </div>
+            <a
+              href={spotify?.currentSongName
+                ? `https://open.spotify.com/search/${encodeURIComponent('Taylor Swift ' + spotify.currentSongName)}`
+                : 'https://open.spotify.com'}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontSize: 11, color: '#6b7280',
+                textDecoration: 'none', whiteSpace: 'nowrap',
+              }}
+            >
+              Open in Spotify ↗
+            </a>
+          </div>
+        )}
 
         {/* Round dots + label */}
         <div style={{

@@ -115,14 +115,15 @@ export default function AlbumModeModal({
             who haven't recently dismissed it */}
         {showNudge && (
           <div style={{
-            background: '#f0fdf4',
-            border: '0.5px solid #bbf7d0',
+            background: '#ffffff',
+            border: '0.5px solid #e5e7eb',
             borderRadius: 12,
             padding: '14px 16px',
             marginBottom: 14,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-              <SpotifyBadge variant="green" size={26} />
+              <SpotifyBadge variant="green" size={24} />
               <div style={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>
                 Connect Spotify for sound?
               </div>
@@ -145,7 +146,7 @@ export default function AlbumModeModal({
                 padding: '11px',
                 borderRadius: 10,
                 border: 'none',
-                background: spotify?.isLoading ? '#a7f3d0' : '#1DB954',
+                background: spotify?.isLoading ? '#9ca3af' : '#1DB954',
                 color: '#ffffff',
                 fontSize: 14,
                 fontWeight: 700,
@@ -153,7 +154,7 @@ export default function AlbumModeModal({
                 marginBottom: 8,
               }}
             >
-              <SpotifyBadge variant="white" size={18} />
+              <SpotifyBadge variant="white" size={24} />
               {spotify?.isLoading ? 'Connecting…' : 'Connect Spotify'}
             </button>
             <div style={{ display: 'flex', gap: 8 }}>

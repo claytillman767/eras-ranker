@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { getEraColors } from '../../constants/eraColors';
 import { ALL_ALBUMS } from '../../data/albums';
 import { getCommunityVotePercent, getCurrentWeekNumber } from '../../constants/bracketCategories';
+import SpotifyBadge from '../SpotifyBadge';
 
 const DAILY_STYLE = `
 @keyframes daily-slide-in {
@@ -14,18 +15,6 @@ const DAILY_STYLE = `
   100% { opacity: 1; transform: scale(1); }
 }
 `;
-
-function SpotifyIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
-      <circle cx="12" cy="12" r="12" fill="#1DB954" />
-      <path
-        d="M17.25 16.31c-.19.31-.6.41-.91.22-2.49-1.52-5.63-1.87-9.33-1.02-.35.08-.7-.13-.79-.48-.08-.35.13-.7.48-.79 4.05-.93 7.52-.53 10.33 1.16.31.19.41.6.22.91zm1.26-2.81c-.24.38-.75.5-1.13.27-2.85-1.75-7.19-2.26-10.56-1.24-.43.13-.88-.11-1.01-.54-.13-.43.11-.88.54-1.01 3.86-1.17 8.66-.6 11.89 1.4.38.23.5.75.27 1.12zm.11-2.93c-3.42-2.03-9.07-2.21-12.33-1.22-.51.16-1.06-.13-1.22-.64-.16-.51.13-1.06.64-1.22C9.12 6.33 15.3 6.54 19.21 8.9c.46.27.61.86.34 1.32-.27.46-.86.61-1.32.34z"
-        fill="white"
-      />
-    </svg>
-  );
-}
 
 function DailySongCard({ song, onPick, chosen, isWinner, onPlayBridge, canPlayBridge }) {
   const colors = getEraColors(song.albumId);
@@ -70,6 +59,7 @@ function DailySongCard({ song, onPick, chosen, isWinner, onPlayBridge, canPlayBr
         {canPlayBridge && (
           <button
             onClick={e => { e.stopPropagation(); onPlayBridge(song, album); }}
+            aria-label="Play bridge"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -85,7 +75,7 @@ function DailySongCard({ song, onPick, chosen, isWinner, onPlayBridge, canPlayBr
               marginLeft: 'auto',
             }}
           >
-            <SpotifyIcon />
+            <span style={{ fontSize: 9 }}>▶</span>
             Bridge
           </button>
         )}
@@ -269,6 +259,38 @@ export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing,
             >✕</button>
           </div>
         </div>
+
+        {/* Spotify attribution strip — required when the screen plays Spotify
+            audio. White background only (Spotify-green logo branding rule). */}
+        {isSpotifyConnected && (
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: 10, padding: '8px 16px',
+            background: '#ffffff',
+            borderBottom: '1px solid #f3f4f6',
+            flexShrink: 0,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+              <SpotifyBadge size={24} />
+              <span style={{ fontSize: 11, color: '#6b7280', letterSpacing: '0.04em' }}>
+                Powered by Spotify
+              </span>
+            </div>
+            <a
+              href={spotify?.currentSongName
+                ? `https://open.spotify.com/search/${encodeURIComponent('Taylor Swift ' + spotify.currentSongName)}`
+                : 'https://open.spotify.com'}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontSize: 11, color: '#6b7280',
+                textDecoration: 'none', whiteSpace: 'nowrap',
+              }}
+            >
+              Open in Spotify ↗
+            </a>
+          </div>
+        )}
 
         {/* Body */}
         <div style={{ flex: 1, padding: '12px 16px 24px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>

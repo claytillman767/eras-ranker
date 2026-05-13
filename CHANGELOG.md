@@ -16,7 +16,34 @@ Newest entries go at the top.
 
 ---
 
-## 0.15.1 — 2026-05-12
+## 0.15.2 — 2026-05-12
+
+### Added
+- Bracket screens (Daily Matchup and the full bracket Matchup) now show a
+  "Powered by Spotify" attribution strip with the Spotify logo and an
+  "Open in Spotify" link whenever Spotify is connected — so the link back
+  to Spotify is always one tap away from the playing song.
+- The Home album checklist now shows a small "↗" link beside each row that
+  displays Spotify-sourced album art, opening that album on Spotify.
+
+### Changed
+- Spotify logos that were under the official 21px minimum (in the Daily
+  Matchup card, Vibe Check intro, Album mode picker, and Play Bridge
+  button) have been raised to the 24px standard. Two leftover inline logo
+  copies were consolidated onto the shared Spotify badge component so the
+  size rule is enforced from one place.
+- "Connecting…" buttons across the Spotify connect flow now use a neutral
+  gray loading state instead of a non-standard derived green shade, which
+  matches Spotify's brand-color rule that reserves Spotify Green for the
+  logo itself.
+- The "Powered by Spotify" caption inside the Quick Score mini player is
+  slightly larger (10px → 11px) and easier to read.
+- The Spotify-white logo variant now renders as a clean white circle with
+  cut-out waves on green buttons, instead of the semi-transparent ghost it
+  used to render as.
+- The Connect-Spotify nudge inside the Album mode picker now sits on a
+  clean white panel instead of a green-tinted one — keeps the green
+  Spotify logo from sitting on a green-ish background.
 
 ### Added
 - **Re-accept Terms prompt for future Privacy Policy / Terms of Service

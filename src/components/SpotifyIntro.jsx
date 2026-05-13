@@ -154,16 +154,16 @@ export default function SpotifyIntro({ spotify, onContinue }) {
             padding: '14px',
             borderRadius: 12,
             border: 'none',
-            background: spotify?.isLoading ? '#a7f3d0' : '#1DB954',
+            background: spotify?.isLoading ? '#9ca3af' : '#1DB954',
             color: '#ffffff',
             fontSize: 15,
             fontWeight: 700,
             cursor: spotify?.isLoading ? 'default' : 'pointer',
-            boxShadow: '0 4px 14px rgba(29,185,84,0.28)',
+            boxShadow: spotify?.isLoading ? 'none' : '0 4px 14px rgba(29,185,84,0.28)',
             marginBottom: 10,
           }}
         >
-          {spotify?.isLoading ? <Spinner size={18} /> : <SpotifyBadge variant="white" size={22} />}
+          {spotify?.isLoading ? <Spinner size={18} /> : <SpotifyBadge variant="white" size={24} />}
           {spotify?.isLoading ? 'Connecting…' : 'Connect Spotify'}
         </button>
 
