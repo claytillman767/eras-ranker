@@ -3,7 +3,6 @@ import { hasBridge } from '../data/lyricsAccess';
 
 // Bracket categories — each defines a head-to-head competition theme.
 // lyricsContext: which lyric section is most relevant to show during matchups.
-// spotifyContext: 'shuffle' | 'bridge' — which timestamp to use for Spotify playback.
 // songFilter: optional fn(albumId, songIndex) => bool to restrict which songs qualify.
 export const BRACKET_CATEGORIES = [
   {
@@ -11,7 +10,6 @@ export const BRACKET_CATEGORIES = [
     name: 'Best Bridge',
     description: 'The 8-bar moment that breaks you every time',
     lyricsContext: 'bridge',
-    spotifyContext: 'bridge',
     estimatedMinutes: 8,
     songFilter: (albumId, songIndex) => hasBridge(albumId, songIndex),
   },
@@ -20,7 +18,6 @@ export const BRACKET_CATEGORIES = [
     name: 'Most Devastating Song',
     description: 'The one that makes you pull over your car',
     lyricsContext: 'snippet',
-    spotifyContext: 'shuffle',
     estimatedMinutes: 9,
     songFilter: null,
   },
@@ -29,7 +26,6 @@ export const BRACKET_CATEGORIES = [
     name: 'Best Opening Line',
     description: 'First impressions that never leave',
     lyricsContext: 'snippet',
-    spotifyContext: 'shuffle',
     estimatedMinutes: 7,
     songFilter: null,
   },
@@ -38,7 +34,6 @@ export const BRACKET_CATEGORIES = [
     name: 'Most Romantic Song',
     description: 'The one you send without context',
     lyricsContext: 'snippet',
-    spotifyContext: 'shuffle',
     estimatedMinutes: 8,
     songFilter: null,
   },
@@ -47,7 +42,6 @@ export const BRACKET_CATEGORIES = [
     name: 'Best Vocal Performance',
     description: "Where her voice does something impossible",
     lyricsContext: 'snippet',
-    spotifyContext: 'shuffle',
     estimatedMinutes: 9,
     songFilter: null,
   },
@@ -56,7 +50,6 @@ export const BRACKET_CATEGORIES = [
     name: 'Most Underrated Song',
     description: 'The ones that deserved more',
     lyricsContext: 'snippet',
-    spotifyContext: 'shuffle',
     estimatedMinutes: 8,
     songFilter: null,
   },
@@ -65,7 +58,6 @@ export const BRACKET_CATEGORIES = [
     name: 'Best Chorus',
     description: 'The part you scream at concerts',
     lyricsContext: 'snippet',
-    spotifyContext: 'shuffle',
     estimatedMinutes: 7,
     songFilter: null,
   },
@@ -74,7 +66,6 @@ export const BRACKET_CATEGORIES = [
     name: 'Best Closing Line',
     description: 'The last thing she says that wrecks you',
     lyricsContext: 'snippet',
-    spotifyContext: 'shuffle',
     estimatedMinutes: 7,
     songFilter: null,
   },
@@ -83,7 +74,6 @@ export const BRACKET_CATEGORIES = [
     name: 'Weekly Community Pick',
     description: 'A new category every Monday — the whole community votes',
     lyricsContext: 'snippet',
-    spotifyContext: 'shuffle',
     estimatedMinutes: 10,
     songFilter: null,
     isWeekly: true,

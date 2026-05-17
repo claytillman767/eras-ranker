@@ -5,13 +5,11 @@ import { usePro } from './hooks/usePro';
 import { useManualOrder } from './hooks/useManualOrder';
 import { useAlbumModes } from './hooks/useAlbumModes';
 import { useSettings } from './hooks/useSettings';
-import { useSpotify } from './hooks/useSpotify';
 import { useUserStats } from './hooks/useUserStats';
 import { useProfile } from './hooks/useProfile';
 import { useTermsAcceptance } from './hooks/useTermsAcceptance';
 import Welcome from './components/Welcome';
 import GoogleLoginPromo, { hasSeenGoogleLoginPromo } from './components/GoogleLoginPromo';
-import SpotifyIntro, { hasSeenSpotifyIntro } from './components/SpotifyIntro';
 import VibeCheckIntro, { hasSeenVibeCheckIntro } from './components/VibeCheckIntro';
 import Home from './components/Home';
 import AlbumGrid from './components/AlbumGrid';
@@ -21,7 +19,6 @@ import Rankings from './components/Rankings';
 import Categories from './components/Categories';
 import Settings from './components/Settings';
 import Brackets from './components/brackets/Brackets';
-import ConnectSpotifyPrompt from './components/ConnectSpotifyPrompt';
 import ProcessingBanner from './components/ProcessingBanner';
 import ProfileView from './components/ProfileView';
 import PrivacyPolicy from './components/PrivacyPolicy';
@@ -89,12 +86,9 @@ export default function App() {
   const [welcomeSeen, setWelcomeSeen] = useState(() => localStorage.getItem(WELCOME_KEY) === '1');
 
   // ── Onboarding screen state (one-time per device) ───────────────────────────
-  // Order: Welcome tour → GoogleLoginPromo (only if not signed in) → SpotifyIntro
-  //        (only if signed in, since real album art needs Spotify connected).
-  // Tracked via state so connecting/skipping advances to the next screen
-  // without a full reload.
+  // Order: Welcome tour → GoogleLoginPromo (only if not signed in) → Home.
+  // Tracked via state so signing in / skipping advances without a full reload.
   const [googleLoginPromoSeen, setGoogleLoginPromoSeen] = useState(hasSeenGoogleLoginPromo);
-  const [spotifyIntroSeen, setSpotifyIntroSeen] = useState(hasSeenSpotifyIntro);
 
   // ── Data hooks — ALL hooks must be declared before any conditional return ────
   const {
@@ -139,7 +133,6 @@ export default function App() {
   const { getManualOrder, moveUp, moveDown, reorder, setOrder } = useManualOrder(user);
   const { getAlbumMode, setAlbumMode } = useAlbumModes(user);
   const { settings, updateSetting } = useSettings(user);
-  const spotify = useSpotify(user);
 
   // Public profile (anyone-with-link sharing). Mirrors album rankings to
   // a separate Firestore doc when the user has it turned on.
@@ -155,77 +148,12 @@ export default function App() {
   // agree...") and recorded on their first sign-in via useUserStats.
   const { needsAcceptance, acceptTerms } = useTermsAcceptance(user);
 
-  // Sync stored volume to the Spotify player whenever it becomes ready
-  useEffect(() => {
-    if (spotify.playerReady) {
-      spotify.setVolume(settings.spotifyVolume ?? 0.8);
-    }
-  }, [spotify.playerReady]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const [pendingAlbumId, setPendingAlbumId] = useState(null);
   const [autoStartScore, setAutoStartScore] = useState(false);
   const [autoStartSongIndex, setAutoStartSongIndex] = useState(null);
   // Holds the album the user just chose Vibe Check for, while the
-  // Spotify intro screen is showing (first-time only).
+  // Vibe Check intro screen is showing (first-time only).
   const [pendingVibeCheckAlbumId, setPendingVibeCheckAlbumId] = useState(null);
-  // True once the user-facing "🎉 You're Pro!" prompt should actually render
-  // (i.e., the webhook has confirmed payment AND the user clicked Subscribe
-  // in this session). Distinct from `pendingUpgradeIntent` below, which is
-  // only the user's intent — not proof of payment.
-  const [showConnectSpotifyPrompt, setShowConnectSpotifyPrompt] = useState(false);
-  // Set true the moment the user clicks Subscribe; cleared when isPro flips
-  // to true (success — fire the prompt) OR when isUpgrading lapses without
-  // isPro becoming true (failsafe — user closed the LS overlay without
-  // paying, never show the prompt). Plain in-memory state because LS keeps
-  // the user on the same page; if the user refreshes mid-checkout we lose
-  // the intent and the celebration prompt is skipped — they still get Pro
-  // when the webhook lands, just without the auto-Connect-Spotify CTA.
-  const [pendingUpgradeIntent, setPendingUpgradeIntent] = useState(false);
-
-  // Wraps usePro's unlockPro. We mark "the user clicked Subscribe" here;
-  // the celebration prompt itself only fires once isPro actually flips true
-  // (driven by the webhook → Firestore → onSnapshot path). Suppressed
-  // inside VibeCheckIntro by using the raw unlockPro there.
-  function handleUnlockProGlobal(plan) {
-    const ok = unlockPro(plan);
-    if (ok && !spotify?.isConnected) {
-      setPendingUpgradeIntent(true);
-    }
-    return ok;
-  }
-
-  // Fire the celebration prompt only when isPro transitions false→true
-  // AND the user actually clicked Subscribe in this session (pending
-  // intent). prevIsProRef stops this from re-firing when isPro is already
-  // true at mount (returning Pro user signing back in).
-  const prevIsProRef = useRef(isPro);
-  useEffect(() => {
-    const prev = prevIsProRef.current;
-    prevIsProRef.current = isPro;
-    if (!prev && isPro && pendingUpgradeIntent && !spotify?.isConnected) {
-      setShowConnectSpotifyPrompt(true);
-      setPendingUpgradeIntent(false);
-    }
-  }, [isPro, pendingUpgradeIntent, spotify?.isConnected]);
-
-  // Clear pending intent if the upgrade attempt lapses (isUpgrading was
-  // true, now it's false, and isPro never flipped) — i.e., the LS overlay
-  // closed without payment, or the 90s failsafe expired. Without this,
-  // a stale intent would silently fire on the next legitimate session
-  // where isPro transitions true for any other reason.
-  const prevIsUpgradingRef = useRef(isUpgrading);
-  useEffect(() => {
-    const prev = prevIsUpgradingRef.current;
-    prevIsUpgradingRef.current = isUpgrading;
-    if (prev && !isUpgrading && !isPro) {
-      setPendingUpgradeIntent(false);
-    }
-  }, [isUpgrading, isPro]);
-
-  function handleConnectSpotifyFromPrompt() {
-    setShowConnectSpotifyPrompt(false);
-    spotify?.connect?.(); // redirects to Spotify OAuth
-  }
 
   // Close the user menu if the user clicks anywhere outside it
   useEffect(() => {
@@ -274,7 +202,7 @@ export default function App() {
   }
 
   if (!welcomeSeen) {
-    return <Welcome onClose={dismissWelcome} spotifyAlbumArt={spotify.albumArt} />;
+    return <Welcome onClose={dismissWelcome} />;
   }
 
   // ── Google login promo — shown once per device after the Welcome tour, only
@@ -292,18 +220,6 @@ export default function App() {
     );
   }
 
-  // ── Spotify intro — shown once per device after Google sign-in. Pitches
-  // free album art across the app. Skip-able. We only render this when a
-  // user is signed in because the real value (cross-device sync of the
-  // Spotify-connected state) only kicks in with an account. ────────────────
-  if (user && !spotifyIntroSeen) {
-    return (
-      <SpotifyIntro
-        spotify={spotify}
-        onContinue={() => setSpotifyIntroSeen(true)}
-      />
-    );
-  }
   // ────────────────────────────────────────────────────────────────────────────
 
   function handleSelectAlbum(albumId) {
@@ -320,10 +236,8 @@ export default function App() {
     const albumId = pendingAlbumId;
     setPendingAlbumId(null); // close the AlbumModeModal either way
 
-    // First Vibe Check ever? Show the Spotify intro before launching QuickScore.
-    // Skipped for users who are already enjoying it (Pro + Spotify connected).
-    const alreadyBenefits = isPro && spotify?.isConnected;
-    if (!hasSeenVibeCheckIntro() && !alreadyBenefits) {
+    // First Vibe Check ever? Show the Vibe Check intro before launching QuickScore.
+    if (!hasSeenVibeCheckIntro()) {
       setPendingVibeCheckAlbumId(albumId);
       return;
     }
@@ -331,8 +245,8 @@ export default function App() {
     launchVibeCheck(albumId);
   }
 
-  // Common launch path used by both the normal flow and after the Spotify
-  // intro is dismissed. Records the album mode and opens QuickScore.
+  // Common launch path used by both the normal flow and after the Vibe
+  // Check intro is dismissed. Records the album mode and opens QuickScore.
   function launchVibeCheck(albumId) {
     if (!albumId) return;
     setAlbumMode(albumId, 'score');
@@ -563,30 +477,17 @@ export default function App() {
           onChooseScore={handleChooseScore}
           onChooseManual={handleChooseManual}
           onBack={() => setPendingAlbumId(null)}
-          isPro={isPro}
-          spotify={spotify}
         />
       )}
 
-      {/* Spotify intro — shown ONCE on the user's first Vibe Check */}
+      {/* Vibe Check intro — shown ONCE on the user's first Vibe Check */}
       {pendingVibeCheckAlbumId !== null && (
         <VibeCheckIntro
           user={user}
           isPro={isPro}
-          spotify={spotify}
           unlockPro={unlockPro}
           signIn={signIn}
           onContinue={handleVibeCheckIntroContinue}
-        />
-      )}
-
-      {/* Auto-prompt to connect Spotify right after a successful Pro upgrade.
-          Removes the three-tap detour through Settings → Spotify → Connect. */}
-      {showConnectSpotifyPrompt && !spotify?.isConnected && (
-        <ConnectSpotifyPrompt
-          isLoading={spotify?.isLoading}
-          onConnect={handleConnectSpotifyFromPrompt}
-          onDismiss={() => setShowConnectSpotifyPrompt(false)}
         />
       )}
 
@@ -607,8 +508,6 @@ export default function App() {
             onContinueRating={handleContinueRating}
             onSelectAlbum={handleSelectAlbum}
             onGoToAlbums={() => setActiveTab('albums')}
-            spotifyAlbumArt={spotify.albumArt}
-            spotifyAlbumIds={spotify.albumSpotifyIds}
           />
         )}
 
@@ -619,8 +518,6 @@ export default function App() {
             getAlbumScore={getAlbumScore}
             getRatedCount={getRatedCount}
             activeCategories={activeCategories}
-            albumArt={spotify.albumArt}
-            albumSpotifyIds={spotify.albumSpotifyIds}
           />
         )}
 
@@ -646,15 +543,8 @@ export default function App() {
               onAutoStartConsumed={() => { setAutoStartScore(false); setAutoStartSongIndex(null); }}
               showCategoryBars={settings.showCategoryBars}
               albumMode={getAlbumMode(selectedAlbumId)}
-              spotify={spotify}
               isPro={isPro}
-              spotifyAutoplay={settings.spotifyAutoplay}
-              spotifyBridgeAutoplay={settings.spotifyBridgeAutoplay}
-              spotifyAlbumArt={spotify.albumArt}
-              spotifyAlbumIds={spotify.albumSpotifyIds}
-              onGoToSpotifySettings={() => setActiveTab('settings')}
               confirmExit={settings.confirmQuickScoreExit}
-              updateSetting={updateSetting}
             />
           ) : (
             <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 14, padding: '60px 0' }}>
@@ -664,7 +554,7 @@ export default function App() {
         )}
 
         {activeTab === 'brackets' && (
-          <Brackets user={user} spotify={isPro ? spotify : null} isPro={isPro} />
+          <Brackets user={user} isPro={isPro} />
         )}
 
         {activeTab === 'rankings' && (
@@ -673,7 +563,6 @@ export default function App() {
             getAlbumScore={getAlbumScore}
             activeCategories={activeCategories}
             ratings={ratings}
-            spotifyAlbumArt={spotify.albumArt}
             onSelectAlbum={handleSelectAlbum}
           />
         )}
@@ -682,9 +571,8 @@ export default function App() {
           <Settings
             settings={settings}
             updateSetting={updateSetting}
-            spotify={spotify}
             isPro={isPro}
-            unlockPro={handleUnlockProGlobal}
+            unlockPro={unlockPro}
             customerPortalUrl={customerPortalUrl}
             subscriptionStatus={subscriptionStatus}
             subscriptionEndsAt={subscriptionEndsAt}

@@ -16,6 +16,34 @@ Newest entries go at the top.
 
 ---
 
+## 0.16.0 — 2026-05-16
+
+### Removed
+- **Spotify connection has been removed entirely.** Spotify ended the kind
+  of API access this app relied on for independent developers, so the
+  feature could no longer work for everyone. As a result:
+  - Songs no longer play while you rate, and the "Play Bridge" / jump-to-a-
+    moment buttons are gone.
+  - Real album cover art is gone — every album now shows as its colored
+    tile with an emoji, everywhere in the app (home, albums, rankings,
+    brackets, the welcome tour, and shareable cards).
+  - The Spotify section in Settings, the connect prompts, and the autoplay
+    nudges have all been removed.
+
+### Changed
+- **Pro now includes the 8 extra rating categories and custom categories.**
+  The two Spotify-only Pro perks (songs autoplaying, jumping to specific
+  moments) no longer exist, so they've been removed from every place Pro is
+  described. Pro pricing is unchanged ($4.99/mo or $46.71/yr).
+- The first-time flow is now simply Welcome tour → sign-in prompt → Home.
+- Bracket matchups are now read-and-vote (song title + a lyric line) with
+  no audio.
+- Privacy Policy and Terms updated to drop the Spotify sections. Because
+  this changes what third parties are involved, signed-in users will be
+  asked to re-accept the updated terms on their next visit.
+
+---
+
 ## 0.15.2 — 2026-05-12
 
 ### Added

@@ -37,17 +37,9 @@ export default function SongList({
   showCategoryBars,
   // Album mode — used to show the one-time drag hint when 'manual'
   albumMode,
-  // Spotify playback (optional — omit to hide the feature entirely)
-  spotify,
   isPro,
-  spotifyAutoplay,
-  spotifyBridgeAutoplay,
-  spotifyAlbumArt,
-  spotifyAlbumIds,
-  onGoToSpotifySettings,
   // Rating behavior
   confirmExit,
-  updateSetting,
 }) {
   // Which song row is expanded (showing action buttons)
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -312,13 +304,8 @@ export default function SongList({
           ratings={ratings}
           onRate={(songIndex, catId, val) => setStarRating(albumId, songIndex, catId, val)}
           onClose={() => setQuickScoreSongs(null)}
-          spotify={spotify}
           isPro={isPro}
-          spotifyAutoplay={spotifyAutoplay}
-          spotifyBridgeAutoplay={spotifyBridgeAutoplay}
           confirmExit={confirmExit}
-          updateSetting={updateSetting}
-          onGoToSpotifySettings={onGoToSpotifySettings}
           getCompositeScore={getCompositeScore}
         />
       )}
@@ -346,8 +333,6 @@ export default function SongList({
             getRatedCount={getRatedCount}
             activeCategories={activeCategories}
             onBack={onBack}
-            spotifyArtUrl={spotifyAlbumArt?.[albumId] ?? null}
-            spotifyAlbumId={spotifyAlbumIds?.[albumId] ?? null}
             isLover={isLover}
           />
 

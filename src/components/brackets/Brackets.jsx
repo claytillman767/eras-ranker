@@ -10,7 +10,7 @@ import WinnerReveal from './WinnerReveal';
 import DailyMatchup from './DailyMatchup';
 import BracketBuilder from './BracketBuilder';
 
-export default function Brackets({ user, spotify, isPro }) {
+export default function Brackets({ user, isPro }) {
   const {
     brackets, createBracket, recordWinner, getBracket,
     weeklyState, recordWeeklyVote,
@@ -134,7 +134,6 @@ export default function Brackets({ user, spotify, isPro }) {
           totalRounds={totalRounds}
           matchupIndex={activeBracket.currentMatchupIndex}
           matchupsInRound={round.length}
-          spotify={spotify}
           onVote={handleVote}
           onClose={() => setScreen('tree')}
           onSeeBracket={() => setScreen('tree')}
@@ -187,7 +186,6 @@ export default function Brackets({ user, spotify, isPro }) {
         onVote={recordDailyVote}
         onClose={() => setScreen('landing')}
         onKeepGoing={() => { setScreen('landing'); buildPersonal(); }}
-        spotify={isPro ? spotify : null}
       />
     );
   }

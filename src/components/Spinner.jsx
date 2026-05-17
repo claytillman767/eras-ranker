@@ -1,6 +1,6 @@
 // Tiny inline loading spinner — used wherever the app shows a "loading" state.
-// Inherits color from the parent (currentColor) so it looks right on white,
-// purple, and Spotify-green backgrounds without any per-call overrides.
+// Inherits color from the parent (currentColor) so it looks right on white
+// and purple backgrounds without any per-call overrides.
 
 const SPIN_STYLE = `
 @keyframes eras-spin { to { transform: rotate(360deg); } }

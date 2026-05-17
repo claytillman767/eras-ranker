@@ -1,23 +1,19 @@
 import { useState } from 'react';
-import SpotifyBadge from './SpotifyBadge';
-import Spinner from './Spinner';
 import { SignInRequiredStep } from './Settings';
 
 // Shown ONCE on a user's first Vibe Check (gated by 'eras_vibecheck_intro_seen').
-// Teaches the Spotify integration so users understand why they'd want it,
-// and shows the full Pro perks list as the upsell hook.
+// Introduces the Vibe Check rating flow and shows the Pro perks list as the
+// upsell hook.
 //
 // CTA logic depends on user state:
-//   - signed-out / non-Pro:    "Unlock Pro"      + "Continue without sound"
-//                              Tapping Unlock without sign-in routes through a
-//                              "Sign in to continue" step (matches Settings ProModal).
-//   - Pro but not connected:   "Connect Spotify" + "Continue without sound"
-//   - Pro + connected:         suppressed by App — already enjoying the feature.
+//   - signed-out / non-Pro: "Unlock Pro" + "Maybe later". Tapping Unlock
+//     without sign-in routes through a "Sign in to continue" step (matches
+//     Settings ProModal).
+//   - Pro: no upgrade CTA — just "Maybe later" to continue.
 //
-// onContinue() is called whenever the user dismisses the screen (Skip, Continue
-// without sound, or after sign-in/connect redirects fire). Connect-Spotify and
-// Sign-in redirect off-page, so the flag is set before the redirect — when they
-// return, no second showing.
+// onContinue() is called whenever the user dismisses the screen (Skip, Maybe
+// later, or after a sign-in redirect fires). Sign-in redirects off-page, so
+// the flag is set before the redirect — when they return, no second showing.
 const FLAG_KEY = 'eras_vibecheck_intro_seen';
 
 export function markVibeCheckIntroSeen() {
@@ -31,7 +27,6 @@ export function hasSeenVibeCheckIntro() {
 export default function VibeCheckIntro({
   user,
   isPro,
-  spotify,
   unlockPro,
   signIn,
   onContinue,
@@ -43,18 +38,13 @@ export default function VibeCheckIntro({
     onContinue();
   }
 
-  function handleConnect() {
-    markVibeCheckIntroSeen();
-    spotify?.connect?.(); // redirects to Spotify OAuth
-  }
-
   function handleUnlock() {
     if (!user) {
       // Let the user commit to upgrading first, THEN ask them to sign in
       setStep('signin');
       return;
     }
-    unlockPro?.(); // mock for now; on success re-renders with Connect CTA
+    unlockPro?.();
   }
 
   function handleSignInRedirect() {
@@ -76,7 +66,7 @@ export default function VibeCheckIntro({
       <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '14px 20px' }}>
         <button
           onClick={dismiss}
-          aria-label="Skip Spotify intro"
+          aria-label="Skip intro"
           style={{
             background: 'none',
             border: 'none',
@@ -110,11 +100,6 @@ export default function VibeCheckIntro({
         </div>
       ) : (
       <>
-      {/* Body — outer scroll container; inner uses margin:auto for vertical
-          centering when there's room and natural top-aligned scrolling when
-          the content is taller than the viewport. justify-content: center
-          with overflow on the same element clips content above the scroll
-          origin, which was hiding the hero icons on small phones. */}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -134,27 +119,14 @@ export default function VibeCheckIntro({
         boxSizing: 'border-box',
         textAlign: 'center',
       }}>
-        {/* Hero — headphones + Spotify */}
+        {/* Hero */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 14,
           marginBottom: 24,
         }}>
           <span style={{ fontSize: 56 }}>🎧</span>
-          <div style={{
-            width: 56,
-            height: 56,
-            borderRadius: '50%',
-            background: '#ffffff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 14px rgba(0,0,0,0.1)',
-          }}>
-            <SpotifyBadge size={48} />
-          </div>
         </div>
 
         {/* Title */}
@@ -164,7 +136,7 @@ export default function VibeCheckIntro({
           color: '#111827',
           marginBottom: 10,
         }}>
-          Hear it. Rate it.
+          Vibe Check
         </div>
 
         {/* Description */}
@@ -175,7 +147,8 @@ export default function VibeCheckIntro({
           marginBottom: 16,
           maxWidth: 360,
         }}>
-          Hear each song before you rate it — so you can <b style={{ color: '#111827' }}>really hear it</b> before you score it.
+          Tap through a few quick questions per song and we'll turn your
+          answers into a score — the fastest way to rank a whole album.
         </div>
 
         {/* Everything Pro unlocks */}
@@ -199,41 +172,18 @@ export default function VibeCheckIntro({
             EVERYTHING PRO UNLOCKS
           </div>
 
-          {/* Pro perk list. Playback-dependent perks (Spotify-flagged below)
-              are hidden when the user is connected to Spotify with a free
-              account, since Pro alone can't unlock playback for them — only
-              a Spotify Premium upgrade can. We show them by default for
-              users who haven't connected yet (still possible they have
-              Premium) and for connected Premium users (perks are real). */}
           {[
             {
-              spotify: true,
-              icon: '🎵',
-              title: 'Songs autoplay while you rate',
-              desc: 'Each song starts automatically from a hand-picked moment as the screen opens.',
-            },
-            {
-              spotify: true,
-              icon: '⏩',
-              title: 'Really sit with each song',
-              desc: 'Tap to revisit the chorus, bridge, opening line, or closing line — so the rating you give matches the song you actually heard.',
-            },
-            {
-              spotify: false,
               icon: '📊',
               title: '8 extra rating categories',
               desc: 'Hook, Vocals, Cry Factor, Storytelling and more.',
             },
             {
-              spotify: false,
               icon: '✏️',
               title: 'Custom categories',
               desc: 'Add your own scoring dimensions and tune their weights.',
             },
-          ].filter(item => {
-            const knownNonPremium = spotify?.isConnected && !spotify?.isPremium;
-            return !(item.spotify && knownNonPremium);
-          }).map((item, i, arr) => (
+          ].map((item, i, arr) => (
             <div
               key={item.title}
               style={{
@@ -254,7 +204,7 @@ export default function VibeCheckIntro({
                 flexShrink: 0,
                 fontSize: 18,
               }}>
-                {item.spotify ? <SpotifyBadge size={24} /> : item.icon}
+                {item.icon}
               </div>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
@@ -266,28 +216,6 @@ export default function VibeCheckIntro({
               </div>
             </div>
           ))}
-
-          {/* Spotify connection note — adapts to what we know about the user's
-              Spotify account so the pitch never lies. */}
-          <div style={{
-            marginTop: 14,
-            paddingTop: 12,
-            borderTop: '0.5px solid #e9d5ff',
-            fontSize: 11,
-            color: '#6b7280',
-            lineHeight: 1.5,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-          }}>
-            <SpotifyBadge size={24} />
-            <span>
-              {spotify?.isConnected && !spotify?.isPremium
-                ? <>Your Spotify is free, so you'll see real album art everywhere. <b style={{ color: '#111827' }}>Spotify Premium</b> is needed for in-app playback (separate from Eras Ranker Pro).</>
-                : <>Connect Spotify free for real album art everywhere. In-app playback needs a <b style={{ color: '#111827' }}>Spotify Premium</b> account.</>
-              }
-            </span>
-          </div>
         </div>
       </div>
       </div>
@@ -323,38 +251,7 @@ export default function VibeCheckIntro({
           </button>
         )}
 
-        {isPro && !spotify?.isConnected && (
-          <button
-            onClick={handleConnect}
-            disabled={spotify?.isLoading}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 10,
-              width: '100%',
-              padding: '14px',
-              borderRadius: 12,
-              border: 'none',
-              background: spotify?.isLoading ? '#9ca3af' : '#1DB954',
-              color: '#ffffff',
-              fontSize: 15,
-              fontWeight: 700,
-              cursor: spotify?.isLoading ? 'default' : 'pointer',
-              boxShadow: spotify?.isLoading ? 'none' : '0 4px 12px rgba(29,185,84,0.3)',
-              marginBottom: 10,
-            }}
-          >
-            {spotify?.isLoading ? (
-              <Spinner size={20} />
-            ) : (
-              <SpotifyBadge variant="white" size={24} />
-            )}
-            {spotify?.isLoading ? 'Connecting to Spotify…' : 'Connect Spotify'}
-          </button>
-        )}
-
-        {/* Always show "Continue without sound" — user can opt out at any state */}
+        {/* Always show a neutral dismiss — user can opt out at any state */}
         <button
           onClick={dismiss}
           style={{
@@ -369,7 +266,7 @@ export default function VibeCheckIntro({
             cursor: 'pointer',
           }}
         >
-          Continue without sound
+          Maybe later
         </button>
       </div>
       </>

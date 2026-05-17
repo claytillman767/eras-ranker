@@ -39,13 +39,13 @@
 // their next session — the modal does NOT appear for them on the
 // initial rollout. The system starts auditing from this point forward.
 
-export const LEGAL_VERSION = '2026-05-12';
+export const LEGAL_VERSION = '2026-05-16';
 
 // Plain-English summary of what changed in the current LEGAL_VERSION.
 // Shown inside UpdatedTermsModal so users know what they're re-accepting.
 // Keep to 1–2 sentences. Set to null when there's nothing meaningful to
 // summarize (e.g. the initial release).
-export const LEGAL_VERSION_CHANGES_NOTE = null;
+export const LEGAL_VERSION_CHANGES_NOTE = 'We removed the optional Spotify connection from the app. We no longer connect to Spotify, store a Spotify login token in your browser, or share anything with Spotify. This change only reduces the data involved — nothing new is collected.';
 
 // Converts the ISO date string (YYYY-MM-DD) to a human-readable
 // "Month DD, YYYY" form for display at the top of /privacy and /terms.

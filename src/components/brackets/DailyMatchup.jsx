@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { getEraColors } from '../../constants/eraColors';
 import { ALL_ALBUMS } from '../../data/albums';
 import { getCommunityVotePercent, getCurrentWeekNumber } from '../../constants/bracketCategories';
-import SpotifyBadge from '../SpotifyBadge';
 
 const DAILY_STYLE = `
 @keyframes daily-slide-in {
@@ -16,7 +15,7 @@ const DAILY_STYLE = `
 }
 `;
 
-function DailySongCard({ song, onPick, chosen, isWinner, onPlayBridge, canPlayBridge }) {
+function DailySongCard({ song, onPick, chosen, isWinner }) {
   const colors = getEraColors(song.albumId);
   const album = ALL_ALBUMS.find(a => a.id === song.albumId);
   const textColor = song.albumId === 'rp' ? '#e5e5e5' : colors.text;
@@ -54,44 +53,19 @@ function DailySongCard({ song, onPick, chosen, isWinner, onPlayBridge, canPlayBr
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
-        {isWinner && <span style={{ fontSize: 16 }}>👑</span>}
-        {canPlayBridge && (
-          <button
-            onClick={e => { e.stopPropagation(); onPlayBridge(song, album); }}
-            aria-label="Play bridge"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 5,
-              background: 'rgba(255,255,255,0.25)',
-              border: 'none',
-              borderRadius: 20,
-              padding: '5px 10px',
-              fontSize: 11,
-              fontWeight: 600,
-              color: textColor,
-              cursor: 'pointer',
-              marginLeft: 'auto',
-            }}
-          >
-            <span style={{ fontSize: 9 }}>▶</span>
-            Bridge
-          </button>
-        )}
-      </div>
+      {isWinner && (
+        <div style={{ marginTop: 10 }}>
+          <span style={{ fontSize: 16 }}>👑</span>
+        </div>
+      )}
     </div>
   );
 }
 
-export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing, spotify }) {
+export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing }) {
   const [chosen, setChosen] = useState(null);
   const [communityPercent, setCommunityPercent] = useState(null);
   const [animKey, setAnimKey] = useState(0);
-
-  const isSpotifyConnected = !!(spotify?.isConnected);
-  const hasSpotify = !!(spotify?.isConnected && spotify?.playerReady);
-  const autoPlayedRef = useRef(false);
 
   if (!dailyState) return null;
 
@@ -99,30 +73,8 @@ export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing,
   const currentIndex = dailyState.currentIndex;
   const matchup = dailyState.done ? null : dailyState.matchups[currentIndex];
 
-  // Auto-play song1's bridge when each matchup loads.
-  useEffect(() => {
-    if (!matchup || !hasSpotify) return;
-    autoPlayedRef.current = false;
-  }, [currentIndex]);
-
-  useEffect(() => {
-    if (!matchup || !hasSpotify || autoPlayedRef.current) return;
-    autoPlayedRef.current = true;
-    const album = ALL_ALBUMS.find(a => a.id === matchup.song1.albumId);
-    spotify.playTrack(matchup.song1.albumId, matchup.song1.songIndex, matchup.song1.name, album?.name || '', 'bridge');
-  }, [hasSpotify, currentIndex, matchup]);
-
-  // Stop music when this screen unmounts.
-  useEffect(() => () => { spotify?.pause?.(); }, []);
-
   function handleClose() {
-    spotify?.pause?.();
     onClose();
-  }
-
-  function handlePlayBridge(song, album) {
-    if (!hasSpotify) return;
-    spotify.playTrack(song.albumId, song.songIndex, song.name, album?.name || '', 'bridge');
   }
 
   function handlePick(song) {
@@ -137,11 +89,6 @@ export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing,
       setChosen(null);
       setCommunityPercent(null);
       setAnimKey(k => k + 1);
-
-      // Auto-play next song's bridge after advancing (if not the last matchup).
-      if (!dailyState.done) {
-        autoPlayedRef.current = false;
-      }
     }, 1400);
   }
 
@@ -233,64 +180,17 @@ export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing,
               {remaining} matchup{remaining !== 1 ? 's' : ''} left today
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {isSpotifyConnected && (
-              <button
-                onClick={() => spotify?.togglePlay?.()}
-                aria-label={spotify?.isPlaying ? 'Pause' : 'Play'}
-                style={{
-                  width: 26, height: 26, borderRadius: 13,
-                  border: '1px solid #a855f7', background: '#f3e8ff',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', fontSize: 11, color: '#a855f7',
-                  padding: 0, lineHeight: 1,
-                }}
-              >{spotify?.isPlaying ? '⏸' : '▶'}</button>
-            )}
-            <button
-              onClick={handleClose}
-              style={{
-                width: 26, height: 26, borderRadius: 13,
-                border: '1px solid #111827', background: 'transparent',
-                cursor: 'pointer', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', fontSize: 12, color: '#111827',
-                padding: 0, lineHeight: 1,
-              }}
-            >✕</button>
-          </div>
+          <button
+            onClick={handleClose}
+            style={{
+              width: 26, height: 26, borderRadius: 13,
+              border: '1px solid #111827', background: 'transparent',
+              cursor: 'pointer', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', fontSize: 12, color: '#111827',
+              padding: 0, lineHeight: 1,
+            }}
+          >✕</button>
         </div>
-
-        {/* Spotify attribution strip — required when the screen plays Spotify
-            audio. White background only (Spotify-green logo branding rule). */}
-        {isSpotifyConnected && (
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            gap: 10, padding: '8px 16px',
-            background: '#ffffff',
-            borderBottom: '1px solid #f3f4f6',
-            flexShrink: 0,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-              <SpotifyBadge size={24} />
-              <span style={{ fontSize: 11, color: '#6b7280', letterSpacing: '0.04em' }}>
-                Powered by Spotify
-              </span>
-            </div>
-            <a
-              href={spotify?.currentSongName
-                ? `https://open.spotify.com/search/${encodeURIComponent('Taylor Swift ' + spotify.currentSongName)}`
-                : 'https://open.spotify.com'}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                fontSize: 11, color: '#6b7280',
-                textDecoration: 'none', whiteSpace: 'nowrap',
-              }}
-            >
-              Open in Spotify ↗
-            </a>
-          </div>
-        )}
 
         {/* Body */}
         <div style={{ flex: 1, padding: '12px 16px 24px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -318,8 +218,6 @@ export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing,
               onPick={handlePick}
               chosen={!!chosen}
               isWinner={song1IsWinner}
-              onPlayBridge={handlePlayBridge}
-              canPlayBridge={hasSpotify}
             />
             <div style={{ display: 'flex', alignItems: 'center', fontSize: 11, fontWeight: 700, color: '#9ca3af', flexShrink: 0 }}>VS</div>
             <DailySongCard
@@ -327,8 +225,6 @@ export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing,
               onPick={handlePick}
               chosen={!!chosen}
               isWinner={song2IsWinner}
-              onPlayBridge={handlePlayBridge}
-              canPlayBridge={hasSpotify}
             />
           </div>
 

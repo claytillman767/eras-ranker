@@ -10,20 +10,14 @@ import { SignInRequiredStep } from './Settings';
 // "Sign in to continue" step instead of replacing the button up-front.
 // This lets the user commit to upgrading before learning about the login
 // requirement, which felt friendlier than gating their decision on it.
-export default function PaywallCard({ onUnlock, user, signIn, spotify }) {
+export default function PaywallCard({ onUnlock, user, signIn }) {
   const [step, setStep] = useState('features');
   const [plan, setPlan] = useState('monthly'); // monthly is the lower-commitment default
 
-  // When the user is connected to Spotify with a free account, hide the
-  // playback-related perks because Pro alone can't unlock them — Premium is
-  // also required and we won't sell something the user can't use.
-  const knownNonPremium = spotify?.isConnected && !spotify?.isPremium;
   const features = [
-    { kind: 'playback', label: 'Songs autoplay through Spotify while you rate' },
-    { kind: 'playback', label: 'Really sit with each song — jump to any chorus, bridge, opening, or closing line' },
-    { kind: 'always',   label: '8 new categories to score' },
-    { kind: 'always',   label: 'Add your own custom categories' },
-  ].filter(f => !(f.kind === 'playback' && knownNonPremium));
+    '8 new categories to score',
+    'Add your own custom categories',
+  ];
 
   function handleUnlock() {
     if (!user) {
@@ -48,19 +42,14 @@ export default function PaywallCard({ onUnlock, user, signIn, spotify }) {
             <span style={{ fontSize: 15, fontWeight: 500, color: '#111827' }}>Unlock Pro</span>
           </div>
 
-          {/* Description — adapts to what we know about the user's Spotify
-              account so the lead never overpromises. */}
+          {/* Description */}
           <p style={{ fontSize: 13, color: '#4b5563', margin: '0 0 12px', lineHeight: 1.5 }}>
-            {knownNonPremium
-              ? 'Unlock extra categories and build your own custom scoring system.'
-              : 'Unlock extra categories, build your own custom scoring system, and have every song play while you rate.'}
+            Unlock extra categories and build your own custom scoring system.
           </p>
 
-          {/* Feature list — Spotify *connection* is free for everyone (album art).
-              The Pro playback perks only apply when the user has Spotify
-              Premium, so we hide them for users we know don't. */}
+          {/* Feature list */}
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {features.map(({ label: item }) => (
+            {features.map(item => (
               <li key={item} style={{ fontSize: 13, color: '#374151', display: 'flex', gap: 8 }}>
                 <span style={{ color: '#a855f7' }}>✓</span>
                 {item}

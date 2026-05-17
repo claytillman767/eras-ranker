@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 
-// Shown ONCE per device, after the Welcome tour and before the SpotifyIntro,
-// pitching Google sign-in as the natural way to keep ratings on every
-// device. Skip-able with a "Not now" button — the user can still sign in
-// later from the header avatar or Settings → Account.
+// Shown ONCE per device, right after the Welcome tour, pitching Google
+// sign-in as the natural way to keep ratings on every device. Skip-able
+// with a "Not now" button — the user can still sign in later from the
+// header avatar or Settings → Account.
 //
 // Auto-skips when a Google account is already connected (e.g. a returning
 // user signed in via the header avatar in a previous session). In that
