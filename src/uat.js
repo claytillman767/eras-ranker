@@ -22,10 +22,6 @@ const ONBOARDING_FLAG_KEYS = [
   'eras_vibecheck_intro_seen',
   'eras_sort_it_yourself_hint_seen',
   'eras_album_modes',
-  'eras_bridge_play_count',
-  'eras_bridge_autoplay_nudged',
-  'eras_spotify_connect_nudge_until',
-  'eras_spotify_connect_nudge_silenced',
 ];
 
 export function isUatMode() {

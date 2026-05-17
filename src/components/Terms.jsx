@@ -185,16 +185,6 @@ export default function Terms() {
           always cancel before it takes effect.
         </p>
 
-        <h3 style={h3Style}>6.5 Spotify Premium and Pro</h3>
-        <p style={pStyle}>
-          Some Pro features (in-app autoplay, jumping to specific moments
-          like the bridge) require a separate <strong>Spotify Premium</strong>{' '}
-          account. We don't sell Spotify Premium — that's a separate
-          service from Spotify. If you upgrade to Pro without Spotify
-          Premium, those particular features won't work for you and
-          we're not able to refund Pro on that basis.
-        </p>
-
         <h2 style={h2Style}>7. Account deletion and termination</h2>
         <p style={pStyle}>
           You can delete your account at any time from Settings → Delete
@@ -224,23 +214,18 @@ export default function Terms() {
         </p>
         <p style={pStyle}>
           Album titles, song titles, and artist names are factual
-          information used to describe the music being rated. Album
-          cover artwork is fetched from Spotify at the time you view it,
-          and is used in accordance with{' '}
-          <a href="https://developer.spotify.com/policy" target="_blank" rel="noopener noreferrer" style={linkStyle}>
-            Spotify's developer policy
-          </a>
-          . Song audio plays through the Spotify Web Playback SDK and
-          never touches our servers.
+          information used to describe the music being rated. The App
+          does not reproduce album cover artwork and does not play song
+          audio — albums are shown as simple colored tiles.
         </p>
         <p style={pStyle}>
           <strong>Not affiliated with Taylor Swift or her record labels.</strong>{' '}
           The Eras Ranker is an independent fan-made project. It is not
           affiliated with, endorsed by, sponsored by, or otherwise
           connected to Taylor Swift, TAS Rights Management, LLC, Republic
-          Records, UMG Recordings, Inc., Big Machine Label Group, or
-          Spotify AB. All trademarks and rights to the underlying music
-          belong to their respective owners.
+          Records, UMG Recordings, Inc., or Big Machine Label Group. All
+          trademarks and rights to the underlying music belong to their
+          respective owners.
         </p>
         <p style={pStyle}>
           The App does not display song lyrics in its current released
@@ -275,7 +260,7 @@ export default function Terms() {
         <ul style={ulStyle}>
           <li>The App will always be available or work without errors</li>
           <li>Your data will never be lost (we strongly encourage you to keep your own backups of anything you care about)</li>
-          <li>Third-party services we rely on (Google, Spotify, Lemon Squeezy, Vercel) will always be available</li>
+          <li>Third-party services we rely on (Google, Lemon Squeezy, Vercel) will always be available</li>
           <li>Any rating, ranking, or community result on the App is "accurate" — it's a personal opinion tool</li>
         </ul>
 

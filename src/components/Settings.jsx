@@ -5,8 +5,6 @@ import { ALL_ALBUMS, SONGS } from '../data/albums';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
 import { BIO_MAX_LENGTH } from '../utils/profanity';
 import CategoriesEditor from './CategoriesEditor';
-import SpotifyBadge from './SpotifyBadge';
-import Spinner from './Spinner';
 import ConfirmModal from './ConfirmModal';
 import DeleteAccountModal from './DeleteAccountModal';
 import { PlanPicker } from './PaywallCard';
@@ -14,7 +12,7 @@ import { isDevEmail, isUatMode, setUatMode, clearOnboardingFlags } from '../uat'
 
 // Settings tab — app-wide display and behaviour preferences.
 export default function Settings({
-  settings, updateSetting, spotify, isPro, unlockPro,
+  settings, updateSetting, isPro, unlockPro,
   customerPortalUrl, subscriptionStatus, subscriptionEndsAt, nextRenewalAt, subscriptionPlan,
   user, signIn, signOut,
   ratings, activeCategories, customCategories,
@@ -163,7 +161,6 @@ export default function Settings({
           onClose={() => setShowProModal(false)}
           user={user}
           signIn={signIn}
-          spotify={spotify}
         />
       )}
 
@@ -389,7 +386,6 @@ export default function Settings({
         isPro={isPro}
         unlockPro={unlockPro}
         signIn={signIn}
-        spotify={spotify}
         customerPortalUrl={customerPortalUrl}
         subscriptionStatus={subscriptionStatus}
         subscriptionEndsAt={subscriptionEndsAt}
@@ -404,192 +400,6 @@ export default function Settings({
           <PublicProfileSection profile={profile} />
         </>
       )}
-
-      {/* ── Spotify section ── */}
-      {/* Connection itself is FREE for everyone (gives real album art across
-          the app). Playback features (autoplay, bridge autoplay, volume) stay
-          gated behind Pro — the toggles still render so users can see what
-          they're missing, but they're disabled and tagged with a PRO badge. */}
-      <SectionHeader>Spotify</SectionHeader>
-
-      <div style={{
-        background: '#ffffff',
-        border: '0.5px solid #e5e7eb',
-        borderRadius: 12,
-        overflow: 'hidden',
-        marginBottom: 24,
-      }}>
-        {spotify?.isConnected ? (
-          <>
-            {/* Connected state — status text adapts to whether the connected
-                Spotify account is Premium (playback works) or free (album art
-                only). */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              padding: '14px 16px',
-              borderBottom: '0.5px solid #f3f4f6',
-            }}>
-              <SpotifyBadge variant="green" />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>
-                  Spotify connected
-                </div>
-                <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
-                  {!spotify.isPremium
-                    ? 'Album art only — Spotify Premium is needed for in-app playback.'
-                    : (isPro
-                      ? (spotify.playerReady ? 'Player ready' : 'Player loading…')
-                      : 'Real album art is showing across the app.')}
-                </div>
-              </div>
-              <button
-                onClick={spotify.disconnect}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: 8,
-                  border: '0.5px solid #e5e7eb',
-                  background: '#ffffff',
-                  fontSize: 12,
-                  color: '#6b7280',
-                  cursor: 'pointer',
-                }}
-              >
-                Disconnect
-              </button>
-            </div>
-
-            {/* Playback controls — only shown when the connected Spotify is
-                Premium (otherwise the toggles do nothing because Premium is
-                required for the Web Playback SDK). For non-Premium accounts
-                we surface a short note instead so the user knows why the
-                rows are gone. */}
-            {!spotify.isPremium ? (
-              <div style={{ padding: '14px 16px', fontSize: 12, color: '#6b7280', lineHeight: 1.5 }}>
-                Autoplay, bridge autoplay, and volume controls require a Spotify Premium account.{' '}
-                <a
-                  href="https://spotify.com/premium"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: '#374151', textDecoration: 'underline', fontWeight: 500 }}
-                >
-                  Try Spotify Premium →
-                </a>
-              </div>
-            ) : (
-              <>
-            <ProGatedRow
-              isPro={isPro}
-              onUpsell={() => setShowProModal(true)}
-              label="Autoplay songs"
-              description="Start playing each song automatically when it appears in the rating screen."
-              value={settings.spotifyAutoplay}
-              onChange={v => updateSetting('spotifyAutoplay', v)}
-            />
-            <div style={{ height: '0.5px', background: '#f3f4f6', margin: '0 16px' }} />
-            <ProGatedRow
-              isPro={isPro}
-              onUpsell={() => setShowProModal(true)}
-              label="Auto-play bridge"
-              description="Seek to the bridge automatically when the Bridge category appears."
-              value={settings.spotifyBridgeAutoplay ?? false}
-              onChange={v => updateSetting('spotifyBridgeAutoplay', v)}
-            />
-            <div style={{ height: '0.5px', background: '#f3f4f6', margin: '0 16px' }} />
-            {/* Volume slider — Pro only */}
-            <div style={{ padding: '14px 16px', opacity: isPro ? 1 : 0.5 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>Volume</div>
-                    {!isPro && <ProBadge />}
-                  </div>
-                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>In-app Spotify playback volume</div>
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#a855f7', minWidth: 36, textAlign: 'right' }}>
-                  {Math.round((settings.spotifyVolume ?? 0.8) * 100)}%
-                </span>
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.05}
-                value={settings.spotifyVolume ?? 0.8}
-                disabled={!isPro}
-                onChange={e => {
-                  const v = Number(e.target.value);
-                  updateSetting('spotifyVolume', v);
-                  spotify?.setVolume(v);
-                }}
-                style={{ width: '100%', accentColor: '#a855f7', cursor: isPro ? 'pointer' : 'not-allowed' }}
-              />
-            </div>
-              </>
-            )}
-          </>
-        ) : (
-          /* Not connected — anyone can connect */
-          <div style={{ padding: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-              <SpotifyBadge variant="green" />
-              <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>
-                Connect Spotify
-              </div>
-            </div>
-            <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.5, marginBottom: 14 }}>
-              Connect to see real album art everywhere in the app.
-              {!isPro && ' Pro lets songs play while you rate and lets you jump to any moment, so your rankings reflect what you actually heard.'}
-            </div>
-
-            {spotify?.error && (
-              <div style={{
-                fontSize: 12,
-                color: '#dc2626',
-                background: '#fef2f2',
-                border: '0.5px solid #fecaca',
-                borderRadius: 8,
-                padding: '8px 12px',
-                marginBottom: 12,
-              }}>
-                {spotify.error}
-              </div>
-            )}
-
-            <button
-              onClick={spotify?.connect}
-              disabled={spotify?.isLoading}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                width: '100%',
-                padding: '12px',
-                borderRadius: 10,
-                border: 'none',
-                background: spotify?.isLoading ? '#9ca3af' : '#1DB954',
-                color: '#ffffff',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: spotify?.isLoading ? 'default' : 'pointer',
-              }}
-            >
-              {spotify?.isLoading ? (
-                <Spinner size={18} />
-              ) : (
-                <SpotifyBadge variant="white" size={24} />
-              )}
-              {spotify?.isLoading ? 'Connecting to Spotify…' : 'Connect Spotify'}
-            </button>
-
-            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 10, textAlign: 'center' }}>
-              Free to connect · Spotify Premium required for in-app playback
-            </div>
-          </div>
-        )}
-      </div>
 
       {/* ── Rating Categories section ── */}
       <SectionHeader>Rating Categories</SectionHeader>
@@ -644,7 +454,6 @@ export default function Settings({
           getAlbumScore={getAlbumScore}
           user={user}
           signIn={signIn}
-          spotify={spotify}
         />
       )}
 
@@ -837,20 +646,13 @@ export default function Settings({
 //   step 'signin'   → "Sign in required" panel, shown after the user taps
 //                     Unlock Pro without being signed in (lets them make the
 //                     decision first, then explains the login requirement)
-function ProModal({ onUnlock, onClose, user, signIn, spotify }) {
+function ProModal({ onUnlock, onClose, user, signIn }) {
   const [step, setStep] = useState('features');
   const [plan, setPlan] = useState('monthly'); // monthly is the lower-commitment default
-  // Pro perks list. Note: connecting Spotify itself is FREE — Pro adds the
-  // in-app playback (autoplay + per-moment jumps). Playback perks are hidden
-  // when we already know the user's Spotify is non-Premium, since Pro alone
-  // cannot unlock playback for them — they'd need to upgrade Spotify too.
-  const knownNonPremium = spotify?.isConnected && !spotify?.isPremium;
   const features = [
-    { kind: 'spotify',  playback: true,  label: 'Songs autoplay while you rate', desc: 'Each song plays automatically through Spotify (Premium required)' },
-    { kind: 'emoji',    playback: true,  icon: '⏩', label: 'Really sit with each song', desc: 'Skip to the chorus, bridge, opening, or closing line — so the rating you give matches the song you actually heard' },
-    { kind: 'emoji',    playback: false, icon: '📊', label: '8 extra categories', desc: 'Hook, Vocals, Cry Factor, and more' },
-    { kind: 'emoji',    playback: false, icon: '✏️', label: 'Custom categories',  desc: 'Add your own scoring dimensions' },
-  ].filter(f => !(f.playback && knownNonPremium));
+    { icon: '📊', label: '8 extra categories', desc: 'Hook, Vocals, Cry Factor, and more' },
+    { icon: '✏️', label: 'Custom categories',  desc: 'Add your own scoring dimensions' },
+  ];
 
   function handleUnlock() {
     if (!user) {
@@ -908,17 +710,14 @@ function ProModal({ onUnlock, onClose, user, signIn, spotify }) {
                     width: 40,
                     height: 40,
                     borderRadius: 10,
-                    background: f.kind === 'spotify' ? '#ffffff' : '#f3e8ff',
-                    border: f.kind === 'spotify' ? '0.5px solid #e5e7eb' : 'none',
+                    background: '#f3e8ff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: 18,
                     flexShrink: 0,
                   }}>
-                    {f.kind === 'spotify'
-                      ? <SpotifyBadge variant="green" size={26} />
-                      : f.icon}
+                    {f.icon}
                   </div>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>{f.label}</div>
@@ -1388,26 +1187,17 @@ function ManageSubscriptionRow({ portalUrl, status, endsAt }) {
 //                      Unlock Pro button (mirrors ProModal's upgrade flow).
 //   3. Signed-out    → short pitch + Sign in with Google CTA, since Pro
 //                      requires identity (billing follows the account).
-//
-// Playback-only perks (autoplay, per-moment seeking) are hidden when the
-// user is connected to a free Spotify account — Pro alone can't unlock
-// playback for non-Premium Spotify users. Same guardrail as ProModal/PaywallCard.
 function MembershipSection({
-  user, isPro, unlockPro, signIn, spotify,
+  user, isPro, unlockPro, signIn,
   customerPortalUrl, subscriptionStatus, subscriptionEndsAt,
   nextRenewalAt, subscriptionPlan,
 }) {
   const [plan, setPlan] = useState(subscriptionPlan === 'annual' ? 'annual' : 'monthly');
 
-  // Pro perk catalogue. Filtered when the user has a free Spotify so we're
-  // not selling playback features Pro can't deliver to them.
-  const knownNonPremium = spotify?.isConnected && !spotify?.isPremium;
   const proPerks = [
-    { kind: 'spotify',  playback: true,  label: 'Songs autoplay while you rate', desc: 'Each song plays through Spotify (Premium required)' },
-    { kind: 'emoji',    playback: true,  icon: '⏩', label: 'Really sit with each song', desc: 'Skip to the chorus, bridge, opening, or closing line — so the rating you give matches the song you actually heard' },
-    { kind: 'emoji',    playback: false, icon: '📊', label: '8 extra categories', desc: 'Hook, Vocals, Cry Factor, and more' },
-    { kind: 'emoji',    playback: false, icon: '✏️', label: 'Custom categories',  desc: 'Add your own scoring dimensions' },
-  ].filter(p => !(p.playback && knownNonPremium));
+    { icon: '📊', label: '8 extra categories', desc: 'Hook, Vocals, Cry Factor, and more' },
+    { icon: '✏️', label: 'Custom categories',  desc: 'Add your own scoring dimensions' },
+  ];
 
   // STATE 3 — signed-out. Pro requires identity, so the only CTA is sign-in.
   if (!user) {
@@ -1655,17 +1445,14 @@ function PerkRow({ perk }) {
         width: 36,
         height: 36,
         borderRadius: 10,
-        background: perk.kind === 'spotify' ? '#ffffff' : '#f3e8ff',
-        border: perk.kind === 'spotify' ? '0.5px solid #e5e7eb' : 'none',
+        background: '#f3e8ff',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         fontSize: 16,
         flexShrink: 0,
       }}>
-        {perk.kind === 'spotify'
-          ? <SpotifyBadge variant="green" size={24} />
-          : perk.icon}
+        {perk.icon}
       </div>
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{perk.label}</div>
@@ -1793,86 +1580,6 @@ function UatToggle({ user, isPro }) {
         >
           {isPro ? 'Revoke Pro' : 'Not Pro'}
         </button>
-      </div>
-    </div>
-  );
-}
-
-// Small purple "PRO" pill — used inline next to setting labels that are
-// gated behind Pro. Tells the free user "this is a paid feature" without
-// hiding the row entirely.
-function ProBadge() {
-  return (
-    <span style={{
-      fontSize: 9,
-      fontWeight: 700,
-      color: '#a855f7',
-      background: '#f3e8ff',
-      padding: '2px 7px',
-      borderRadius: 99,
-      letterSpacing: '0.05em',
-    }}>
-      PRO
-    </span>
-  );
-}
-
-// SettingRow variant that renders the toggle disabled when isPro is false,
-// and instead routes taps on the row to the upgrade modal. Pro users see
-// the regular toggle behaviour.
-function ProGatedRow({ isPro, onUpsell, label, description, value, onChange }) {
-  if (isPro) {
-    return (
-      <SettingRow
-        label={label}
-        description={description}
-        value={value}
-        onChange={onChange}
-      />
-    );
-  }
-
-  return (
-    <div
-      onClick={onUpsell}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 14,
-        padding: '14px 16px',
-        cursor: 'pointer',
-        opacity: 0.65,
-      }}
-    >
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <span style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>{label}</span>
-          <ProBadge />
-        </div>
-        {description && (
-          <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, lineHeight: 1.4 }}>
-            {description}
-          </div>
-        )}
-      </div>
-      <div style={{
-        width: 44,
-        height: 26,
-        borderRadius: 13,
-        background: '#d1d5db',
-        position: 'relative',
-        flexShrink: 0,
-      }}>
-        <div style={{
-          position: 'absolute',
-          top: 3,
-          left: 3,
-          width: 20,
-          height: 20,
-          borderRadius: '50%',
-          background: '#ffffff',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-        }} />
       </div>
     </div>
   );

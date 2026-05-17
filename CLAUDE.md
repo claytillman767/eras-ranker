@@ -1,31 +1,43 @@
 # The Eras Ranker — Claude Context
 
+> **Spotify integration removed (v0.16.0, 2026-05-16).** Spotify closed Web
+> API access to individual developers — Extended Quota Mode now requires a
+> registered organization with ≥250k monthly active users, and development
+> mode was cut to 5 manually-whitelisted users. Neither path can serve a
+> one-person commercial product, so the entire integration (Web Playback
+> SDK, OAuth, album art, autoplay, Play Bridge, the category-times pipeline)
+> was deleted. **The full pre-removal code is preserved on GitHub at the
+> annotated tag `spotify-integration-v0.15.2`** (commit `76fd0e0`) —
+> `git checkout spotify-integration-v0.15.2` or browse it on GitHub if it's
+> ever needed for reference. Album art across the app now falls back to the
+> emoji + era-color tiles. Pro and the funnel were narrowed accordingly
+> (see below). **Do not reintroduce Spotify** unless the product becomes a
+> 250k-MAU registered org. If you see surviving Spotify copy anywhere, it's
+> stale — flag/remove it.
+
 ## User
 Not a developer. Use plain, simple language — no jargon.
 
 ## App intent
 This is a **commercial product**, not a hobby or fan project. Treat every decision — licensing, architecture, legal risk, monetization, scalability — accordingly. Do not assume small scale or low stakes.
 
-## Conversion goals — the four key activities
+## Conversion goals — the three key activities
 
-Every user-facing decision should be evaluated against these four conversion goals, in this order. Each step builds on the previous one — completing one makes the next one a natural offer.
+Every user-facing decision should be evaluated against these three conversion goals, in this order. Each step builds on the previous one — completing one makes the next one a natural offer.
 
 1. **Account login (Google sign-in)** — the backbone. Required for cross-device sync, Pro billing, and identity. Pushed via the dedicated GoogleLoginPromo screen that appears right after the Welcome tour for anyone not yet signed in, with "Sign in with Google" as the primary CTA and "Not now" as the bypass.
-2. **Spotify connection (free for everyone)** — gives real album art across the app and is the natural runway toward Pro playback. Connecting is FREE; no Pro required. Pushed via the SpotifyIntro screen (shown once for signed-in users after the GoogleLoginPromo) and the Settings → Spotify section.
-3. **Pro upgrade ($4.99/mo or $46.71/yr)** — the revenue. Pro adds in-app autoplay, per-moment seeking (chorus / bridge / opening / closing line), 8 extra rating categories, and custom categories. CSV export is FREE for everyone (data portability) — Settings → Data → Download CSV. Pushed softly via the 30-song AutoplayNudge for connected free users, the VibeCheckIntro on first Vibe Check, and the PaywallCard in Categories.
-4. **Sharing to social media** — viral growth. The shareable card unlocks once a user fully ranks at least one album (RankingCard / AlbumCompleteCard).
+2. **Pro upgrade ($4.99/mo or $46.71/yr)** — the revenue. Pro adds 8 extra rating categories and custom categories. CSV export is FREE for everyone (data portability) — Settings → Data → Download CSV. Pushed softly via the VibeCheckIntro on first Vibe Check and the PaywallCard in Categories. **Pro's perks were narrowed when Spotify was removed (in-app autoplay + per-moment seeking are gone). Repositioning/repricing Pro is an open decision — don't invent new Pro copy beyond the two real perks until the user decides.**
+3. **Sharing to social media** — viral growth. The shareable card unlocks once a user fully ranks at least one album (RankingCard / AlbumCompleteCard).
 
-**Stance the app takes:** the natural path is *Login → Connect Spotify → Pro → Share*. Any other path is an "avoidance" — always allowed, but never framed as the obvious thing to do. Skip buttons exist, but they sit in secondary positioning (smaller, lower contrast, farther from the primary CTA).
+**Stance the app takes:** the natural path is *Login → Pro → Share*. Any other path is an "avoidance" — always allowed, but never framed as the obvious thing to do. Skip buttons exist, but they sit in secondary positioning (smaller, lower contrast, farther from the primary CTA).
 
-**Canonical first-time flow:** Welcome tour → GoogleLoginPromo → (if signed in) SpotifyIntro → Home. Anonymous users can browse the whole app; signing in is a soft ask, never forced.
+**Canonical first-time flow:** Welcome tour → GoogleLoginPromo → Home. Anonymous users can browse the whole app; signing in is a soft ask, never forced.
 
 ## When you change Pro benefits
 
 Inconsistent Pro copy across screens is a credibility hit on a paid product, so any change that adds, removes, renames, reprices, or shifts the scope of a Pro perk needs a cross-surface audit before it ships.
 
-**After implementing a Pro change, invoke the `pro-funnel-auditor` subagent** to verify copy consistency across every Pro-mentioning surface. The subagent owns the canonical file list and the Pro/Spotify boundary rules — it will return a prioritized fix list, then the main agent makes the edits.
-
-Same applies to Spotify-tier changes (free vs. Premium): playback-only Pro perks (autoplay, per-moment seeking) MUST be hidden when `spotify?.isConnected && !spotify?.isPremium`, since Pro alone can't unlock playback for free Spotify accounts. The auditor enforces this rule.
+**After implementing a Pro change, invoke the `pro-funnel-auditor` subagent** to verify copy consistency across every Pro-mentioning surface. The subagent owns the canonical file list and the Pro boundary rules — it will return a prioritized fix list, then the main agent makes the edits.
 
 ## When you change the Privacy Policy or Terms of Service
 
@@ -48,36 +60,31 @@ How the acceptance system works:
 
 ## Acting as a user-flow consultant
 
-When a change touches **any of the four conversion goals**, don't just implement what was asked — proactively consult on funnel impact. Specifically, ask yourself (and surface concerns to the user *before* implementing if any answer is no):
+When a change touches **any of the three conversion goals**, don't just implement what was asked — proactively consult on funnel impact. Specifically, ask yourself (and surface concerns to the user *before* implementing if any answer is no):
 
-- **Does this nudge the user toward the next conversion step, or away?** A change that helps Spotify connection but accidentally makes Pro upgrade harder is a net loss.
+- **Does this nudge the user toward the next conversion step, or away?** A change that helps sign-in but accidentally makes Pro upgrade harder is a net loss.
 - **Does the natural path still feel natural after this change?** Each step should be the obvious thing to do. The skip/decline option should feel like opting out, never the default.
 - **Are other surfaces in the app still consistent with this change?** Run the `pro-funnel-auditor` subagent after implementation to catch drift. If a paywall is loosened or tightened, every surface that references that boundary needs to align.
 - **Is there a sharing moment we're underusing?** Album-complete cards, rankings cards, and the public profile are all viral surfaces. When someone hits a milestone (e.g. first fully-rated album), is the share path obvious?
-- **Does this respect the order of the funnel?** Don't ask a user to upgrade Pro before they've signed in; don't push Spotify before they've signed in; don't ask them to share before they have something worth sharing.
+- **Does this respect the order of the funnel?** Don't ask a user to upgrade Pro before they've signed in; don't ask them to share before they have something worth sharing.
 
 ### How to format consultant notes
 
-Every consultant concern must lead with the conversion goal it affects, in **bold ALL CAPS**, so the user can scan the funnel impact at a glance. The four labels:
+Every consultant concern must lead with the conversion goal it affects, in **bold ALL CAPS**, so the user can scan the funnel impact at a glance. The three labels:
 
 - **LOGIN FUNNEL** — Google sign-in
-- **SPOTIFY FUNNEL** — Spotify connection (free)
 - **PRO FUNNEL** — Pro subscription
 - **SHARING FUNNEL** — social-media share moments
 
 Format every concern as a short bullet beginning with the impact, then a sentence or two of detail. Examples:
 
-- *"**Major impact: this reduces PRO FUNNEL.** The Welcome tour says 'songs play with Pro' but doesn't make Pro feel desirable — it reads as a footnote, not a feature pitch."*
+- *"**Major impact: this reduces PRO FUNNEL.** The Welcome tour mentions Pro but doesn't make it feel desirable — it reads as a footnote, not a feature pitch."*
 - *"**Minor impact on SHARING FUNNEL.** Album completion is currently the only share trigger. A user who's rated 8 of 13 songs has no obvious way to share progress."*
-- *"**Cross-funnel risk (LOGIN + SPOTIFY).** Password-bypass users skip SpotifyIntro entirely, so they get a weaker Spotify push than Google-signed-in users."*
+- *"**Cross-funnel risk (LOGIN + PRO).** A user who taps Unlock Pro before signing in hits a sign-in wall mid-decision, which can lose the upgrade."*
 
 Use **Major impact** when a primary funnel step is meaningfully harder/easier; **Minor impact** for nudges and edge cases; **Cross-funnel risk** when the change affects two or more conversion goals at once.
 
 Mention these considerations in your response *before* writing code, as a brief consultant note. The user is non-technical and explicitly relies on Claude to flag flow problems they might miss. Don't assume — surface the trade-off and let them decide.
-
-## Design rules
-- **Music lifecycle:** Any screen that plays music owns the full start-to-stop. Music begins when the screen opens (or a phase starts) and stops when the screen closes or unmounts. Never leave audio playing with no way to control it.
-- **Play/pause always visible:** Whenever audio is playing or has played on the current screen, a play/pause button must be visible without scrolling — typically pinned in the header. This rule applies to every screen that uses Spotify playback: Matchup, DailyMatchup, and any future screens that call `playTrack`.
 
 ## Claude Design folder (reference only — not part of the app)
 The top-level `Claude Design/` folder holds UI design handoffs produced by a separate AI design tool. It is **not part of the running app** — nothing in `src/` imports from it, and Vite never builds it.
@@ -134,8 +141,8 @@ src/
   main.jsx                 — entry point; wraps <App> in <ErrorBoundary>; registers service worker
   App.jsx                  — root; 5 tabs: Home, Albums, Brackets, Rankings, Settings
                              Categories is now a section inside Settings (not its own tab)
-                             Passes user/signIn/signOut to Settings; passes isPro ? spotify.albumArt : null to grid/songlist
-                             First-time flow: Welcome → GoogleLoginPromo (if signed out) → SpotifyIntro (if signed in) → Home
+                             Passes user/signIn/signOut to Settings
+                             First-time flow: Welcome → GoogleLoginPromo (if signed out) → Home
                              Hand-rolled URL routing pre-empts the tab UI: /privacy → PrivacyPolicy,
                                /terms → Terms, /u/{uid} → ProfileView. Updates from popstate events.
                              Updated-terms gate: useTermsAcceptance(user) compares the user's stored
@@ -162,12 +169,6 @@ src/
                              bypass the gate (used for auto-skip logic, score weighting, and
                              the "Best Bridge" bracket eligibility filter).
                              To re-enable lyrics: flip the constant to `true` and redeploy.
-    spotifyStartTimes.js   — Developer-controlled Spotify playback start positions (NOT user-facing)
-                             Key: "albumId_songIndex", Value: milliseconds into the track
-                             Songs not listed start from 0. Edit this file to set per-song start points.
-    spotifyBridgeTimes.js  — DO NOT edit by hand; regenerate: python find_bridge_times.py
-                             Bridge section start positions in ms, keyed by "albumId_songIndex"
-                             Used by playTrack() when screen='bridge'
     legalVersion.js        — Single source of truth for the current legal-text version (YYYY-MM-DD).
                              Bump LEGAL_VERSION on material Privacy Policy / Terms changes; set
                              LEGAL_VERSION_CHANGES_NOTE to a short summary shown in the re-accept
@@ -181,22 +182,6 @@ src/
     usePro.js              — accepts user param; reads/writes localStorage + Firestore (pro field)
     useManualOrder.js      — accepts user param; reads/writes localStorage + Firestore (manualOrder field)
     useAlbumModes.js       — accepts user param; reads/writes localStorage + Firestore (albumModes field)
-    useSpotify.js          — Spotify Web Playback SDK integration (Pro-only)
-                             PKCE OAuth flow; token storage in localStorage; SDK script loaded dynamically
-                             Track URIs found via Spotify Search API + cached in localStorage 'eras_spotify_tracks'
-                             Album art URLs cached in localStorage 'eras_spotify_album_art' (albumId → image URL)
-                             On connect: proactively fetches art for all 12 albums via Search API
-                             searchTrackUri() returns { uri, imageUrl } — art also captured as side effect of playTrack()
-                             ALBUM ART MATCHING: searchTrackUri uses exact → prefix → loose album name matching
-                               (exact = full cleaned name match; avoids picking acoustic/deluxe editions over originals)
-                               If wrong art appears for an album, disconnect + reconnect Spotify to clear the cache
-                             disconnect() clears BOTH the art cache and track URI cache so reconnecting re-fetches fresh
-                             playTrack(albumId, songIndex, songName, albumName, screen)
-                               screen='shuffle' → uses SPOTIFY_START_TIMES; screen='bridge' → uses SPOTIFY_BRIDGE_TIMES
-                             Exposes: isConnected, isLoading, playerReady, isPlaying, currentSongName, albumArt,
-                               error, connect, disconnect, playTrack, pause, resume, togglePlay
-                             connect() redirects to Spotify OAuth; callback detected on app load via ?code=&state=eras_spotify
-                             Requires VITE_SPOTIFY_CLIENT_ID env var; redirect URIs must be registered in Spotify dashboard
     useBrackets.js         — all bracket state: personal brackets, weekly community bracket, daily matchup
                              localStorage keys: 'eras_brackets', 'eras_weekly_bracket', 'eras_daily_bracket'
                              weeklyState synced to Firestore field 'weeklyBracket' on users/{uid}
@@ -209,8 +194,7 @@ src/
                              FIRESTORE SYNC GUARD: on login, Firestore weeklyBracket only overwrites local state
                                if Firestore has MORE votes than local (prevents stale cloud read from reverting votes).
     useSettings.js         — app-wide settings; localStorage 'eras_settings' + Firestore sync
-                             DEFAULTS: { showCategoryBars: true, spotifyAutoplay: true }
-                             Note: Spotify start time is NOT in settings — it's developer-set in spotifyStartTimes.js
+                             DEFAULTS: { showCategoryBars: true, confirmQuickScoreExit: true }
     useTermsAcceptance.js  — Watches the signed-in user's termsAcceptedVersion via onSnapshot.
                              Returns { needsAcceptance, acceptTerms, loading }.
                              needsAcceptance true ⇒ App.jsx renders UpdatedTermsModal.
@@ -240,22 +224,17 @@ src/
                              Tied to identity (signed-in only) so we can follow up if needed.
                              Goes away naturally when the beta gate is removed at launch (or can be
                              gated behind a different flag at that point).
-    AlbumGrid / AlbumCard  — album picker with score badges; AlbumCard accepts spotifyArtUrl — shows real
-                             cover art image when provided, falls back to emoji/color otherwise
+    AlbumGrid / AlbumCard  — album picker with score badges; AlbumCard renders the
+                             emoji + era-color tile (no album art images)
     AlbumModeModal.jsx     — bottom-sheet shown on first album visit; "Vibe Check" (auto-starts QuickScore)
                              or "Sort It Yourself"; choice saved via useAlbumModes
     VibeCheckIntro.jsx     — full-screen overlay shown ONCE on user's first Vibe Check
-                             (gated by 'eras_vibecheck_intro_seen'). Teaches the Spotify
-                             integration; uses "Play Bridge" as a Pro upsell hook.
-                             CTAs adapt to user state: signed-out → "Sign in to unlock Pro";
-                             signed-in non-Pro → "Unlock Pro"; Pro non-connected → "Connect Spotify".
-                             Pro + Spotify-connected users skip this screen entirely.
-    SpotifyBadge.jsx       — Spotify logo SVG in the three approved color variants
-                             ('green' on white, 'black' on light, 'white' on dark/green).
-                             Default size 22; pass size={24}+ for new code (CLAUDE.md min).
+                             (gated by 'eras_vibecheck_intro_seen'). Introduces the Vibe
+                             Check rating flow and shows the Pro perk list as the upsell.
+                             CTAs adapt to user state: signed-out / non-Pro → "Unlock Pro"
+                             (tapping without sign-in routes through a "Sign in" step);
+                             Pro → just "Maybe later". No Spotify content.
     SongList.jsx           — song list for one album; owns drag, QuickScore, AlbumCompleteCard state
-                             receives spotify, spotifyAutoplay, spotifyAlbumArt, onGoToSpotifySettings props
-                             spotifyAlbumArt passed to AlbumHero; spotify/spotifyAutoplay passed to QuickScore
     SongRow.jsx            — drag handle (⠿) + position # + title + score
     RatingPanel.jsx        — full star breakdown per category (currently unused in main flow)
     QuickScore.jsx         — full-screen rapid scoring overlay
@@ -263,24 +242,11 @@ src/
                              LyricScroller shown above stars on the Lyrics category question
                              ShuffleScreen: Play=5★, Skip=1★ for replay; lyrics float in BG
                              Bridge category auto-skipped for songs with no bridge lyrics
-                             On Bridge category: shows bridge lyrics quote + "Play Bridge" button
-                               (Spotify logo pill button, only visible when connected + playerReady)
-                               Tapping "Play Bridge" calls playTrack(..., 'bridge') to seek to bridge timestamp
-                               Bridge does NOT auto-seek — it is always manual via the button
-                             SpotifyMiniPlayer rendered inline in place of song title when Spotify is connected
-                               Falls back to song title text when not connected
+                             On Bridge category: shows bridge lyrics quote (text only, no playback)
+                             Song title shown as plain text at the top of each question
                              Top bar: song counter (center) + Exit button (right); spacer on left
                              Below stars: matching pill buttons — "← Back" (fades when on first step) + "Skip →"
                              Back navigates to previous category (or previous song's last category)
-                             Autoplays song on Spotify (shuffle timestamp) when songPos changes
-                             Pauses Spotify on unmount
-    SpotifyMiniPlayer.jsx  — compact playback bar; white background (Spotify branding compliant)
-                             Accepts optional `style` prop to override outer container styles
-                             Connected: Spotify logo + song name + "Powered by Spotify" + purple play/pause
-                               + "Open in Spotify" ↗ link
-                             Not connected: prompts user to connect (links to Settings)
-                             Spotify branding rules enforced: green logo on white bg only, min 24px, no green on controls
-                             Used inline in QuickScore at the song title position (maxWidth: 300 to match lyrics width)
     StarRating.jsx         — reusable star input; size='sm'|'md'|'lg'; readonly prop
     Rankings.jsx           — top songs / top albums leaderboard + RankingCard at bottom
     RankingCard.jsx        — shareable card button (Rankings tab); also exports drawCard()
@@ -288,12 +254,12 @@ src/
     Categories.jsx         — Pro unlock + category toggles + weight sliders + custom creator
     ScoreBar.jsx           — visual score bar used in Rankings
     PaywallCard.jsx        — Pro upgrade prompt (used in Categories)
-    Settings.jsx           — Sections: Account, Display, Spotify, Rating Categories, Data, Disclaimer
-                             Rating Categories section renders the full Categories component inline
-                             Account: shows avatar/name/email/sign-out when logged in; sign-in prompt when not
-                             Display: category bars toggle
-                             Spotify: Pro-gated connect/disconnect + autoplay toggle
-                             Props: settings, updateSetting, spotify, isPro, unlockPro, user, signIn, signOut
+    Settings.jsx           — Sections: Membership, Public profile, Rating Categories,
+                             Preferences, Data, Disclaimer
+                             Rating Categories section renders the Categories editor inline
+                             Membership: Pro status / plan picker / Unlock Pro / Manage subscription
+                             Account info: avatar/name/email/sign-out when logged in
+                             Props: settings, updateSetting, isPro, unlockPro, user, signIn, signOut
 ```
 
 ## Key data patterns
@@ -330,49 +296,28 @@ src/
   no user, tapping it routes through a shared "Sign in to continue" step (Back arrow → returns).
 - Extra category weights rescaled so all active categories always sum to 100
 - Weight overrides stored per-category in `eras_category_weights`; reset clears that key
-- Pro gates: extra categories, custom categories, Categories tab paywall UI, **in-app Spotify playback (autoplay + Play Bridge)**
-- **Free for everyone:** all 5 default categories, default-category weight sliders, on/off toggles, weight reset banner, **Spotify connection (album art across the app)**
-
-### Spotify Premium awareness
-- `useSpotify` calls Spotify's `/me` endpoint after OAuth and on app load,
-  caching the result in `localStorage['eras_spotify_product']` and exposing
-  `spotifyProduct` (`'premium' | 'free' | 'open' | null`) and a derived
-  `isPremium` boolean on the spotify object.
-- The Web Playback SDK is **only** initialized for Premium accounts —
-  free accounts would otherwise hit an `authentication_error` and end
-  up disconnected, breaking album art for them. Album art works via
-  Spotify's Search API for any account.
-- Pro pitch surfaces (PaywallCard, VibeCheckIntro, Settings ProModal,
-  AutoplayNudge) MUST hide playback-only perks when
-  `spotify?.isConnected && !spotify?.isPremium` — otherwise we're
-  selling a feature Pro alone can't unlock for that user. The same
-  rule applies to any new Pro perk that depends on Spotify playback.
-- Settings → Spotify shows "Album art only" status for non-Premium
-  accounts and hides the autoplay/bridge/volume controls (they
-  don't work without Premium).
+- Pro gates: extra categories, custom categories, Categories tab paywall UI
+- **Free for everyone:** all 5 default categories, default-category weight sliders, on/off toggles, weight reset banner, CSV export
 
 ## QuickScore flow
 - Covers full viewport (`position: fixed, inset: 0, zIndex: 1000`)
 - Per song: **ShuffleScreen first** (replay category, Play/Skip buttons + floating lyrics BG),
   then star questions for remaining categories in order
 - On Lyrics category: `LyricScroller` appears above stars (scrollable, 110px box)
-- On Bridge category: bridge lyrics shown as inline italic quote; "Play Bridge" Spotify button below lyrics
+- On Bridge category: bridge lyrics shown as an inline italic quote (text only — no playback)
 - Star labels (calibration phrases) defined in `STAR_LABELS` map inside QuickScore.jsx
 - Completion: animated DoneFlash auto-closes after 2s
-- Props: `songs`, `albumId`, `albumName`, `albumIcon`, `activeCategories`, `ratings`, `onRate`, `onClose`, `initialSongPos`,
-  `spotify`, `spotifyAutoplay`, `onGoToSpotifySettings`
-- Spotify shuffle start position comes from `SPOTIFY_START_TIMES` in `spotifyStartTimes.js`
-- Spotify bridge start position comes from `SPOTIFY_BRIDGE_TIMES` in `spotifyBridgeTimes.js`
-- Both are looked up inside `playTrack()` via the `screen` param — not passed as props
+- Props: `songs`, `albumId`, `albumName`, `albumIcon`, `activeCategories`, `ratings`, `onRate`, `onClose`, `initialSongPos`, `isPro`, `confirmExit`, `getCompositeScore`
 
 ## Lyrics scripts (Python)
 - `parse_bridges.py` → `src/data/bridgeLyrics.js` (bridge sections only)
 - `parse_snippets.py` → `src/data/snippetLyrics.js` (best section per song)
-- `find_bridge_times.py` → `src/data/spotifyBridgeTimes.js` (bridge start positions in ms)
-  - Queries lrclib.net for synced LRC lyrics; fuzzy-matches bridge text to find timestamp
-  - 0.3s sleep between requests; ~160 songs matched; 1 miss (fe_6 Breathe — no synced lyrics on lrclib)
 - Source file: `taylor_swift_lyrics.txt` (Genius-sourced, sections labelled [Verse], [Chorus], [Bridge] etc.)
 - Run scripts from the project root after editing the lyrics file
+- (The synced-lyrics / category-times scripts — `find_bridge_times.py`,
+  `find_category_times.py`, `fetch_synced_lyrics.py` — were deleted with the
+  Spotify integration. `bridgeLyrics.js` / `snippetLyrics.js` remain: they
+  feed the text-only lyrics display and the "Best Bridge" bracket filter.)
 
 ## Authentication & Firestore
 
@@ -391,8 +336,7 @@ All user data lives in a single Firestore document: `users/{uid}`
 | `pro` | `{ isPro, enabledExtras: [], customCategories: [], categoryWeights: {} }` |
 | `manualOrder` | `{ albumId: [songIndex, ...] }` |
 | `albumModes` | `{ albumId: 'score' \| 'manual' }` |
-| `spotifyConnected` | `bool` — true when this user currently has Spotify linked |
-| `spotifyLastConnectedAt` | server timestamp — set on each connect (not cleared on disconnect) |
+| `spotifyConnected` / `spotifyLastConnectedAt` | DEPRECATED — written by the removed Spotify integration. No longer set on new sessions; safe to ignore. Old docs may still carry stale values. |
 | `lastActiveAt` | server timestamp — bumped each session start |
 | `sessionCount` | integer — increments by 1 each session start |
 | `totalRatings` | integer — count of unique songs rated (any category) |
@@ -535,11 +479,11 @@ Live under **Settings → Account → Delete my account**. Implemented entirely 
 - **Config keys:** stored in `.env` as `VITE_FIREBASE_*` variables
 
 ## Service worker (`public/sw.js`)
-- Cache name: `eras-ranker-v3` (bump version to force cache clear on all devices after major deploys)
+- Cache name: `eras-ranker-v4` (bump version to force cache clear on all devices after major deploys)
 - Navigation requests (`mode === 'navigate'`): **network first**, falls back to cached index.html only if offline
   — this ensures users always get the latest `index.html` after a Vercel deploy without needing hard refresh
 - Static assets (same-origin JS/CSS/images): cache first, fall back to network
-- Cross-origin requests (Firebase, Spotify, lrclib, etc.): not intercepted — go straight to network
+- Cross-origin requests (Firebase, Google APIs, etc.): not intercepted — go straight to network
 
 ## AlbumCompleteCard / RankingCard
 - AlbumCompleteCard: shown once per session when album transitions incomplete → fully ranked
@@ -554,10 +498,9 @@ Live under **Settings → Account → Delete my account**. Implemented entirely 
 - **`.env`** contains (all gitignored, never commit):
   - `GENIUS_API_TOKEN` — Python lyrics scripts only, not needed at runtime
   - `VITE_FIREBASE_*` — Firebase config keys
-  - `VITE_SPOTIFY_CLIENT_ID` — Spotify OAuth client ID
 - **`.claude/settings.local.json`** is gitignored — do not commit it
 - **Vercel build settings:** Framework = Vite, Build = `npm run build`, Output = `dist`, Root Directory = (blank/repo root)
-- **Vercel environment variables:** must mirror all `VITE_*` values from `.env`. **Note:** the now-removed `VITE_BETA_PASSWORD` env var can be deleted from Vercel any time — nothing reads it anymore.
+- **Vercel environment variables:** must mirror all `VITE_*` values from `.env`. **Note:** the now-removed `VITE_BETA_PASSWORD` and `VITE_SPOTIFY_CLIENT_ID` env vars can be deleted from Vercel any time — nothing reads them anymore (Spotify integration removed in v0.16.0).
 
 ### Shipping flow — push, merge, deploy in one go
 The user wants every finished change pushed live without waiting for a
@@ -638,92 +581,21 @@ is ship.
 1. Install Git and Node.js
 2. `git clone https://github.com/claytillman767/eras-ranker`
 3. `cd eras-ranker && npm install`
-4. Create `.env` manually — paste in the Genius API token AND all `VITE_FIREBASE_*` keys (find them in Firebase console → Project settings → Your apps), plus `VITE_SPOTIFY_CLIENT_ID`
+4. Create `.env` manually — paste in the Genius API token AND all `VITE_FIREBASE_*` keys (find them in Firebase console → Project settings → Your apps)
 5. `npm run dev` to start
 
 ---
 
-## Category Picks Pipeline
-**Purpose:** for each song × each rating/bracket category, pick the single best moment so Spotify playback seeks to the right place AND the bracket builder knows which songs actually fit a category. Outputs two parallel datasets:
+## Category Picks Pipeline — REMOVED (v0.16.0)
 
-- **`SPOTIFY_CATEGORY_TIMES`** — millisecond start positions per song × category (used by `playTrack()`)
-- **`CATEGORY_FIT_SCORES`** — 0–100 fitness scores per song × category (used by the bracket builder to filter eligible songs — e.g. exclude Anti-Hero from the "Most Romantic" bracket)
-
-### Files
-```
-fetch_synced_lyrics.py             — Stage 1 script (run once per new song)
-find_category_times.py             — Stage 2 script (resolves picks → ms / JS)
-src/data/syncedLyricsFull.json     — full synced lyrics with section labels + per-line ms (Stage 1 output)
-src/data/categoryTimesAudit.json   — every pick: line + score + reasoning + reject/override flags (SOURCE OF TRUTH)
-src/data/spotifyCategoryTimes.js   — generated JS the app imports (DO NOT edit by hand)
-src/dev/AuditReview.jsx            — dev-only review UI (see below)
-```
-
-### Stages
-**Stage 1 — Fetch synced lyrics.** `python fetch_synced_lyrics.py` queries lrclib.net for every song and produces `syncedLyricsFull.json` — sections + line-by-line ms timestamps. Run when new songs are added (e.g. a new album drops).
-
-**Stage 2 — Pick the best moment per category.** For each song × lyric-based category, Claude (in-conversation OR via API) picks the single line that best captures that quality and assigns a 0–100 fit score. Picks land in `categoryTimesAudit.json`. `find_category_times.py` then resolves picks → millisecond timestamps and writes `spotifyCategoryTimes.js`.
-
-**Stage 3 — Audio-based categories (deferred, NOT BUILT).** "Best Vocal Performance", "Best Production", "Hype/Energy", "Catchiest Hook" need audio analysis. Default heuristic for now: use the bridge timestamp if available, else the first chorus.
-
-### Categories
-**Lyric-based (Stage 2 picks):**
-- `most-romantic` `most-devastating` `cry-factor` `best-storytelling` `best-lyrics`
-
-**Structural (auto-derived from section data — no Claude needed):**
-- `best-opening-line` — first synced line of the song
-- `best-closing-line` — last synced line
-- `best-chorus` / `hook` — first `[Chorus]` section's `startMs`
-- `bridge` — already in `SPOTIFY_BRIDGE_TIMES` (separate file)
-
-### Dev UI: review and reject picks
-With `npm run dev` running, visit `http://localhost:5173/?dev=audit`. **Only renders in dev mode** — never in the Vercel production build (gated on `import.meta.env.DEV` + dynamic import).
-
-Per-pick controls:
-- **✗ Reject** — flags the pick as bad. The regenerator outputs `null` for that song × category, so it's excluded from brackets and falls back to shuffle for playback.
-- **✏️ Override** — opens a scrollable list of every synced line in the song; click to use that line instead of the auto-pick.
-- **Save changes** — writes the updated audit JSON back to disk via a dev-only Vite middleware (`POST /__dev/audit/save`). The endpoint is registered with `apply: 'serve'` so it doesn't exist in production builds.
-
-### Audit JSON schema
-```json
-{
-  "rd_4": {
-    "song": "All Too Well",
-    "album": "Red (Taylor's Version)",
-    "picks": {
-      "most-romantic": {
-        "line": "Autumn leaves falling down like pieces into place",
-        "score": 60,
-        "reasoning": "Has tender memories but the song is fundamentally about loss.",
-        "rejected": false,
-        "manualLine": null
-      }
-    },
-    "resolved": { /* auto-filled by find_category_times.py with ms + section + flags */ }
-  }
-}
-```
-- `score: 0` is the convention for "this category genuinely doesn't apply" (paired with `line: null`)
-- `rejected: true` → JS output gets `null` for this entry (developer-rejected)
-- `manualLine: "..."` → overrides the auto-picked line; ms is resolved against this instead
-
-### Re-runs and resumability
-- `find_category_times.py` skips songs already in the audit (no rework, no API spend)
-- `python find_category_times.py --summary` prints coverage at a glance
-- **API key is optional** — without `ANTHROPIC_API_KEY`, the script just resolves cached picks and writes JS (skips uncached songs but doesn't error)
-- To redo one song: delete that key from `categoryTimesAudit.json`, then re-pick (in-conversation or via API)
-- To redo everything: delete `categoryTimesAudit.json`
-
-### Adding picks (the in-conversation flow)
-1. Tell Claude which song(s) to pick — e.g. "do album `tv`"
-2. Claude reads the synced lyrics for those songs, makes picks (line + score + reasoning), and appends them to `categoryTimesAudit.json`
-3. You open the dev UI to review, reject, or override
-4. After Save, run `python find_category_times.py` to regenerate `spotifyCategoryTimes.js`
-
-### Adding a new category later
-1. Add the category id + prompt to `LYRIC_CATEGORIES` in `find_category_times.py`
-2. Loop through the audit and add the new category's pick to each entry (in-conversation, via API, or by hand)
-3. Re-run the script
+This whole pipeline (`fetch_synced_lyrics.py`, `find_category_times.py`,
+`syncedLyricsFull.json`, `categoryTimesAudit.json`, `spotifyCategoryTimes.js`,
+`src/dev/AuditReview.jsx`, and the dev-only audit Vite middleware) existed to
+feed Spotify per-moment playback. It also exported a `CATEGORY_FIT_SCORES`
+dataset intended for future bracket-eligibility filtering, but that was never
+wired to a live consumer. All of it was deleted with the Spotify integration.
+The full code is preserved at the git tag `spotify-integration-v0.15.2` if a
+category-fit-score feature is ever revived without Spotify.
 
 ---
 
@@ -812,74 +684,18 @@ LS has a full test mode with test cards. Run all of:
 
 **Custom checkout domain (future enhancement, not required for launch).** Lemon Squeezy supports pointing checkout at `checkout.erasranker.com` instead of the default `erasranker.lemonsqueezy.com` via Settings → Domains. Slightly higher trust at the moment of payment because users see your domain on the card-entry screen. Setup is a CNAME record (added in Cloudflare DNS once Email Routing is set up). Skip for v1 — the LS-branded checkout works fine, and it can be flipped on any time later without code changes.
 
-### ~~Song Previews in Rating Flow~~ ✅ BUILT via Spotify Web Playback SDK
-Pro users can connect their Spotify Premium account (Settings → Spotify) to hear each song play
-automatically while rating. See `useSpotify.js` and `SpotifyMiniPlayer.jsx`.
+### ~~Song Previews in Rating Flow~~ — REMOVED (v0.16.0)
+Built on the Spotify Web Playback SDK, then removed when Spotify closed Web
+API access to individual developers. Code preserved at git tag
+`spotify-integration-v0.15.2`. There is no in-app song playback anymore;
+do not pitch it. Reviving it would require Spotify reopening developer
+access (it hasn't) or a different audio provider entirely.
 
-**Key technical notes:**
-- Uses **Spotify Web Playback SDK** + PKCE OAuth — plays full songs on the user's own Spotify account
-- Taylor Swift preview URLs are gone from the API, but full playback via SDK works fine
-- Track URIs found at runtime via Spotify Search API, cached in localStorage `eras_spotify_tracks`
-- Spotify **developer quota:** free tier supports up to 25 users. To go beyond 25 users, must apply
-  for **Extended Quota Mode** at developer.spotify.com — requires app description, use case, screenshots
-- **Spotify branding rules enforced in UI:** green logo only on white backgrounds, min 24px, Spotify
-  green (#1DB954) reserved for logo only (not used on play/pause controls), "Open in Spotify" link
-  provides required attribution link-back, "Powered by Spotify" attribution text shown
-
-## Spotify start times (developer-controlled)
-Per-song playback start positions are set in `src/data/spotifyStartTimes.js` — developer-only, not user-facing.
-
-**Shuffle screen start** (`screen='shuffle'`): edit `spotifyStartTimes.js`  
-**Bridge section start** (`screen='bridge'`): edit `spotifyBridgeTimes.js` or regenerate via `find_bridge_times.py`
-
-Both files use key `"albumId_songIndex"`, value = milliseconds. Songs without an entry start at 0.
-
-Example (`spotifyStartTimes.js`):
-```js
-export const SPOTIFY_START_TIMES = {
-  fe_2: 28000,  // Cruel Summer — skip to 0:28
-  tv_0: 15000,  // The 1 — skip 15s intro
-};
-```
-
-Do **not** add a user-facing setting for either file. Both are intentionally developer-controlled.
-
-**What's built:**
-- OAuth connect/disconnect in Settings tab (Pro-gated)
-- Autoplay in QuickScore — song plays on each new song (shuffle start position)
-- "Play Bridge" button in QuickScore bridge category — manual seek to bridge timestamp
-- Developer-controlled per-song start positions for both shuffle and bridge screens
-- Album cover art shown in album grid and album hero for connected Pro users
-- SpotifyMiniPlayer shown inline at song title position in QuickScore (maxWidth 300px, matches lyrics width)
-
-**Remaining Spotify work:**
-- Apply for Extended Quota Mode before user count exceeds 25
-- Consider adding a progress bar to the mini player with a bridge marker pin
-- Playlist creation — let Pro users export their top-rated songs as a Spotify playlist
-
-### Synchronized Lyrics Display (future — needs licensing decision first)
-
-Displaying time-synced lyrics (line-by-line highlighted as the song plays) is technically feasible using the existing Spotify integration. The playback position is already available from the SDK's `player_state_changed` event (`state.position` in ms).
-
-**Why it's on hold:** Displaying lyrics in a commercial app requires a licensing agreement. Two options evaluated:
-
-#### Option A — lrclib.net (free, currently used for bridge timestamps)
-- Already integrated via `find_bridge_times.py` — returns LRC format with per-line timestamps
-- Could be used client-side at runtime with no extra API key
-- **Legal risk:** Community-sourced, no commercial license. Acceptable gray area at small scale but not defensible long-term for a commercial product.
-
-#### Option B — Musixmatch (licensed, industry standard)
-- Used by Spotify, Apple Music, Amazon Music, YouTube Music
-- Returns time-synced lyrics via `track.subtitle.get` endpoint
-- Requires **"Grow" plan at $199/month** — includes 2,000 lyrics calls/day
-- **Call budget math:**
-  - Without caching: ~133 full album rating sessions/day (15 songs × 133 = ~2k calls)
-  - With localStorage caching: ~10 completely new users fully onboarded/day; returning users cost $0
-  - Sustainable once Pro revenue covers the $199/month baseline
-- **App Store certificate included** — but this covers mobile apps; confirm web app coverage before signing
-- Requires a new `VITE_MUSIXMATCH_KEY` env var in `.env` and Vercel
-
-**Recommendation:** Use lrclib at small scale, switch to Musixmatch when ready to monetize seriously. Do not build the UI until the licensing path is decided.
+### ~~Synchronized Lyrics Display~~ — moot for now
+This idea depended on reading playback position from the Spotify SDK, which
+no longer exists. The licensing concern (lrclib = no commercial license,
+Musixmatch = $199/mo) is unchanged, but there is no player to sync against,
+so this is parked indefinitely unless a new audio provider is added.
 
 ### Bracket Feature — Architecture Notes
 
@@ -906,15 +722,10 @@ Firestore's `setDoc` throws **synchronously** when data contains nested arrays. 
 
 **Do not build this until the bracket design is finalized** — schema and security rules are easy to add once the UX is stable.
 
-#### Spotify playback in bracket matchup cards
-**Current state:** The MatchupScreen (`src/components/brackets/MatchupScreen.jsx`) shows era-colored song cards with lyric snippets, but does not play audio. Placeholder comments mark where Spotify calls would go.
-
-**What needs to be built:**
-- Pass `spotify` prop from `Brackets.jsx` → `MatchupScreen.jsx`
-- On each new matchup, call `spotify.playTrack(albumId, songIndex, songName, albumName, 'shuffle')` to auto-play the currently focused song (or both songs briefly)
-- Show a `SpotifyMiniPlayer` inline in the matchup card for whichever song is highlighted
-- For "Best Bridge" category, use `screen='bridge'` to seek to bridge timestamp
-- Gate behind `isPro` check — non-Pro users see cards without audio
+#### ~~Spotify playback in bracket matchup cards~~ — moot (Spotify removed v0.16.0)
+The matchup cards are now text-only (era colors + lyric snippets) by design.
+There is no audio anywhere in the app. Skip this idea unless a non-Spotify
+audio provider is ever added.
 
 #### Bracket completion-rate tracking
 **Current state:** `useBrackets.js` tracks bracket state (rounds, matchups, votes) but does not record bracket lifecycle events on the user's Firestore doc, so we can't tell how many users start a bracket vs. abandon mid-tournament.
@@ -973,7 +784,6 @@ A separate, lower-stakes channel from the user-facing notifications above. Goal:
 - **Account-deletion partial failures.** When [DeleteAccountModal](src/components/DeleteAccountModal.jsx) gets past Firestore deletes (steps 2–3) but `deleteUser()` (step 4) fails, the user ends up with an orphan Firebase auth record and no Firestore data. We need to detect these and clean them up. Cheapest detection: each session start, check whether `users/{uid}` exists for the signed-in user — if missing AND `signedUpAt` was previously written, log a `deletionOrphan` flag somewhere the daily job can find. Daily email lists any uids in that state so the developer can manually delete the auth record from the Firebase console.
 - **Webhook drift.** Once Lemon Squeezy is live: any user where `users/{uid}.isPro === true` but their LS subscription is `cancelled`/`expired`. Means the webhook missed an event.
 - **Profanity filter false-positives or new patterns.** Bio attempts that were rejected but look benign — the developer reviews and adjusts the wordlist if a pattern keeps tripping real users up.
-- **Spotify Extended Quota threshold.** Once user count crosses 20, the email warns that the 25-user free-tier ceiling is approaching.
 
 **Implementation sketch (not built yet):**
 - Vercel Cron job runs once daily, hits `/api/daily-health-check`.
@@ -986,9 +796,9 @@ A separate, lower-stakes channel from the user-facing notifications above. Goal:
 
 **Approach chosen: Trusted Web Activity (TWA) wrapper.** Generated with Bubblewrap or PWABuilder. The Android binary is a one-screen shell that opens the live PWA fullscreen with no browser chrome. Every web deploy to Vercel updates the Android app instantly — no Play Store resubmission needed for code changes. This is the same approach Google uses for its own PWA-backed Play Store apps and works because the app is already a compliant PWA (manifest.json + service worker + HTTPS + responsive design).
 
-**Why not React Native or a full rewrite:** ~2 months of work to rebuild what already exists, no real user-facing benefit, doubles ongoing maintenance. Only worth doing if the TWA wrapper proves unable to host Spotify playback (see decision #2 below).
+**Why not React Native or a full rewrite:** ~2 months of work to rebuild what already exists, no real user-facing benefit, doubles ongoing maintenance. (The old "only worth it if the TWA can't host Spotify playback" caveat is moot — there is no Spotify playback anymore.)
 
-#### Two big decisions that must be settled before any building starts
+#### One big decision that must be settled before any building starts
 
 **Decision 1 — How to handle Pro subscriptions inside the Android app. PRO FUNNEL: major impact.**
 
@@ -1001,14 +811,7 @@ Three real options, none of them locked in yet:
 
 Recommendation in the conversation was **Option A** for a paid product, but the user has not formally chosen. Settle this before Phase 2.
 
-**Decision 2 — Does Spotify Web Playback SDK work inside the TWA wrapper?**
-
-The SDK is built for desktop browsers, uses Widevine DRM, and requires Spotify Premium. Inside a TWA it runs through Chrome on Android, so it *should* work — but Spotify themselves recommend their native Android SDK for mobile apps, and DRM-protected playback in webview-style wrappers is the exact kind of thing that works on desktop and breaks on mobile.
-
-This is the biggest unknown in the plan. The cheapest test is to stand up a one-hour PWABuilder TWA pointing at the live site, sideload it onto a real Android phone, and try the autoplay + Play Bridge buttons. The outcome dictates the fallback:
-- **Works cleanly** → ship the wrapper as-is.
-- **Works but flaky** → hide the autoplay/per-moment-seeking on Android only (degrade to album-art-only, same path as the existing non-Premium experience). PRO FUNNEL: minor impact — the non-playback Pro perks (extra categories, custom categories) survive.
-- **Doesn't work at all** → switch the Android build to Spotify's native Android SDK (2–3 weeks of real work) OR ship Android as a free-tier-style experience and keep Pro playback web-only.
+**~~Decision 2 — Does Spotify Web Playback SDK work inside the TWA wrapper?~~ — RESOLVED MOOT (Spotify removed v0.16.0).** There is no Spotify playback to test in the wrapper anymore. This was previously called the biggest unknown in the Android plan; it no longer exists, which simplifies the launch (no audio/DRM-in-webview risk). Everything below that referenced "Spotify playback in the wrapper," "autoplay + Play Bridge testing," or a "fallback to Spotify's native Android SDK" can be ignored.
 
 Do NOT commit to a launch date until this test has been run.
 
@@ -1027,7 +830,6 @@ Do NOT commit to a launch date until this test has been run.
 - Host `assetlinks.json` at `https://erasranker.com/.well-known/assetlinks.json` so Chrome verifies the Android app owns the domain and shows the PWA fullscreen with no browser address bar.
 - Test on real Android devices — at minimum one current phone, ideally one older. Specifically verify:
   - Google sign-in via `signInWithRedirect` (the redirect can open an external browser tab inside a wrapper and break the flow — known TWA gotcha; fix is to use `signInWithPopup` on Android, or detect the wrapper and adjust).
-  - Spotify autoplay + Play Bridge (Decision 2 above).
   - Service worker caching after a Vercel deploy.
   - The hardware back button (default TWA behavior closes the whole app instead of going back one screen — fixable via the wrapper config).
   - Lemon Squeezy checkout overlay (must be replaced with Google Play Billing flow on Android per Decision 1).
@@ -1046,7 +848,7 @@ Do NOT commit to a launch date until this test has been run.
 - Short description, 80 chars max — shown in search results.
 - Full description, up to 4000 chars — landing page copy.
 - Content rating questionnaire (answered in Play Console).
-- Data Safety form — declare every piece of data collected (Google account, ratings, Spotify connection, payment info via Play Billing, etc.) and where it goes. MUST match the privacy policy exactly — Google rejects on mismatches.
+- Data Safety form — declare every piece of data collected (Google account, ratings, payment info via Play Billing, etc.) and where it goes. MUST match the privacy policy exactly — Google rejects on mismatches.
 - Category: Music & Audio.
 
 **Phase 4 — Closed test + production review (~2–3 weeks of mostly waiting).**
@@ -1056,11 +858,11 @@ Do NOT commit to a launch date until this test has been run.
 
 #### Realistic total timeline
 
-About **7–8 weeks from kickoff to live in the Play Store** at a steady part-time pace, assuming no major Phase 1 testing surprises and one rejection cycle. Add ~1 week if Decision 1 = Option A (Play Billing integration). Add 2–3 weeks if Decision 2 forces a fallback to Spotify's native Android SDK.
+About **7–8 weeks from kickoff to live in the Play Store** at a steady part-time pace, assuming no major Phase 1 testing surprises and one rejection cycle. Add ~1 week if Decision 1 = Option A (Play Billing integration). (The old "+2–3 weeks if Spotify playback needs a native Android SDK fallback" risk is gone — Spotify removed in v0.16.0.)
 
 #### Risks and unknowns to revisit before starting
 
-1. **Spotify playback in the wrapper is the largest unknown.** Decision 2 above. One afternoon of testing settles it.
+1. ~~**Spotify playback in the wrapper.**~~ No longer a risk — Spotify removed in v0.16.0. This used to be the single biggest unknown in the Android plan; its removal is a net simplification.
 2. **The Play Billing tax is a real revenue hit on Android-originated Pro subs.** Decision 1 above. Pricing may need a second look — e.g. raising the Android-side price slightly to absorb the tax, or making the annual tier cheaper than monthly on Android specifically to push users toward the lower-fee bucket.
 3. **Trademark review.** Probably fine, not guaranteed.
 4. **14-day closed test wait is hard-locked** for new developer accounts.
@@ -1069,8 +871,7 @@ About **7–8 weeks from kickoff to live in the Play Store** at a steady part-ti
 
 #### Conversion-funnel implications
 
-- **LOGIN FUNNEL:** Play Store install gives a small lift — users who installed an app are measurably more likely to sign in than users who hit a website. The Welcome → GoogleLoginPromo → SpotifyIntro flow stays unchanged.
-- **SPOTIFY FUNNEL:** depends entirely on Decision 2. If playback works, no change. If it doesn't, the SpotifyIntro pitch needs an Android-specific variant ("album art everywhere" instead of "and hear your songs play").
+- **LOGIN FUNNEL:** Play Store install gives a small lift — users who installed an app are measurably more likely to sign in than users who hit a website. The Welcome → GoogleLoginPromo → Home flow stays unchanged.
 - **PRO FUNNEL:** Decision 1 directly governs this. Option A preserves the funnel with a tax. Option B noticeably weakens it (every upgrade ask now requires leaving the app). Option C punts it entirely.
 - **SHARING FUNNEL:** Android share sheet is generally better than the iOS web share sheet, so RankingCard / AlbumCompleteCard shares should perform at least as well, possibly better, than the web equivalent.
 
@@ -1118,9 +919,8 @@ About **7–8 weeks from kickoff to live in the Play Store** at a steady part-ti
 
 **What to do:**
 1. Subscribe to iubenda.com.
-2. Run their wizard with the data inventory documented in the v0.3.0 conversation (Google identity fields, ratings, brackets, Pro state, Spotify tokens stored locally, public profile data, launch waitlist, planned Lemon Squeezy fields).
-3. Add 5 hand-written paragraphs in iubenda's custom-text fields:
-   - Spotify integration (token stored locally only, never on our servers)
+2. Run their wizard with the current data inventory (Google identity fields, ratings, brackets, Pro state, public profile data, launch waitlist, planned Lemon Squeezy fields). NOTE: the v0.3.0 inventory listed "Spotify tokens stored locally" — that no longer applies, Spotify was removed in v0.16.0; do not include it.
+3. Add hand-written paragraphs in iubenda's custom-text fields:
    - Public profile (anyone-with-link sharing, how to turn off)
    - Lyric data (sourced from public databases, not collected from users)
    - Pro subscription (Lemon Squeezy handles billing, we never see card data)

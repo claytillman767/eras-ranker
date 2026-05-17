@@ -14,7 +14,7 @@ import { DEFAULT_CATEGORIES } from '../data/categories';
 //   3. Vibe Check (star rating mechanics)
 //   4. Sort It Yourself (drag-reorder mechanics)
 //   5. Your rankings grow (animated rate-then-place demo)
-export default function Welcome({ onClose, spotifyAlbumArt }) {
+export default function Welcome({ onClose }) {
   const [step, setStep] = useState(0);
   const touchStartX = useRef(null);
 
@@ -127,7 +127,7 @@ export default function Welcome({ onClose, spotifyAlbumArt }) {
           animation: 'welcome-slide-in 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) both',
         }}
       >
-        {step === 0 && <SlideWelcome spotifyAlbumArt={spotifyAlbumArt} />}
+        {step === 0 && <SlideWelcome />}
         {step === 1 && <SlideModes onAdvance={next} />}
         {step === 2 && <SlideVibeCheck />}
         {step === 3 && <SlideManual />}
@@ -287,7 +287,7 @@ function SparkleLayer() {
 // A slow carousel that rotates through every album, with the album name
 // shown beneath the icon — so it's immediately clear that the colored
 // tiles users see throughout the app each represent one Taylor Swift era.
-function SlideWelcome({ spotifyAlbumArt }) {
+function SlideWelcome() {
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
@@ -302,14 +302,6 @@ function SlideWelcome({ spotifyAlbumArt }) {
   const prevAlbum = ALBUMS[(idx - 1 + ALBUMS.length) % ALBUMS.length];
   const currAlbum = ALBUMS[idx];
   const nextAlbum = ALBUMS[(idx + 1) % ALBUMS.length];
-
-  // Pull a real cover image from Spotify when available — otherwise fall
-  // back to the colored emoji tile.
-  const artFor = id => spotifyAlbumArt?.[id] ?? null;
-
-  // True if any cover in the carousel is currently rendered as Spotify art.
-  // Only when this is true do we render the Spotify attribution caption.
-  const hasAnySpotifyArt = !!(artFor(prevAlbum.id) || artFor(currAlbum.id) || artFor(nextAlbum.id));
 
   return (
     <div style={{ textAlign: 'center', width: '100%' }}>
@@ -335,23 +327,10 @@ function SlideWelcome({ spotifyAlbumArt }) {
         height: 130,
         margin: '0 auto 12px',
       }}>
-        <CarouselSide album={prevAlbum} side="left" artUrl={artFor(prevAlbum.id)} />
-        <CarouselCenter album={currAlbum} artUrl={artFor(currAlbum.id)} />
-        <CarouselSide album={nextAlbum} side="right" artUrl={artFor(nextAlbum.id)} />
+        <CarouselSide album={prevAlbum} side="left" />
+        <CarouselCenter album={currAlbum} />
+        <CarouselSide album={nextAlbum} side="right" />
       </div>
-
-      {/* Spotify attribution — required wherever Spotify-sourced art appears.
-          Only shown when at least one carousel slot is using a real cover. */}
-      {hasAnySpotifyArt && (
-        <div style={{
-          fontSize: 10,
-          color: '#9ca3af',
-          letterSpacing: '0.02em',
-          marginBottom: 8,
-        }}>
-          Album art from <span style={{ fontWeight: 600, color: '#6b7280' }}>Spotify</span>
-        </div>
-      )}
 
       {/* Album name caption — fades + nudges up on each rotation so it's
           clearly tied to the icon above */}
@@ -377,7 +356,7 @@ function SlideWelcome({ spotifyAlbumArt }) {
   );
 }
 
-function CarouselCenter({ album, artUrl }) {
+function CarouselCenter({ album }) {
   return (
     <div
       key={`c-${album.id}`}
@@ -403,20 +382,12 @@ function CarouselCenter({ album, artUrl }) {
         animation: 'welcome-carousel-center 0.6s cubic-bezier(0.2, 0.8, 0.3, 1.1) both',
       }}
     >
-      {artUrl ? (
-        <img
-          src={artUrl}
-          alt={album.name}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        />
-      ) : (
-        album.icon
-      )}
+      {album.icon}
     </div>
   );
 }
 
-function CarouselSide({ album, side, artUrl }) {
+function CarouselSide({ album, side }) {
   return (
     <div
       key={`${side}-${album.id}`}
@@ -441,15 +412,7 @@ function CarouselSide({ album, side, artUrl }) {
         animation: 'welcome-carousel-side 0.55s ease-out both',
       }}
     >
-      {artUrl ? (
-        <img
-          src={artUrl}
-          alt=""
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        />
-      ) : (
-        album.icon
-      )}
+      {album.icon}
     </div>
   );
 }
@@ -472,10 +435,6 @@ function SlideModes({ onAdvance }) {
           icon="🎧"
           title="Vibe Check"
           desc="Tap through quick questions to score each song."
-          // Pro upsell line gets its own visual weight — purple pill + line so
-          // the user can scan that there's a paid version of this experience
-          // without re-reading the description.
-          proLine="With Pro: songs play while you rate, and you can jump to any chorus, bridge, or line."
           delay="0s"
           onTap={onAdvance}
         />

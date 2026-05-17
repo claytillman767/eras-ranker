@@ -80,20 +80,17 @@ if (typeof window !== 'undefined' && !document.getElementById('lemon-js')) {
   document.head.appendChild(s);
 }
 
-// Dev-only: visiting /?dev=audit during `npm run dev` opens the category-pick
-// review UI instead of the main app. /?dev=cards opens the shareable card
-// preview. The query check is gated on import.meta.env.DEV so the dev
-// components (and their data imports) are tree-shaken out of production.
+// Dev-only: visiting /?dev=cards during `npm run dev` opens the shareable
+// card preview instead of the main app. The query check is gated on
+// import.meta.env.DEV so the dev components are tree-shaken out of
+// production.
 const devMode = import.meta.env.DEV
   ? new URLSearchParams(window.location.search).get('dev')
   : null;
 
 async function render() {
   let Root = App;
-  if (devMode === 'audit') {
-    const mod = await import('./dev/AuditReview.jsx');
-    Root = mod.default;
-  } else if (devMode === 'cards') {
+  if (devMode === 'cards') {
     const mod = await import('./dev/CardPreview.jsx');
     Root = mod.default;
   }

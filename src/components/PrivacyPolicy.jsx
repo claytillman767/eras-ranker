@@ -80,32 +80,7 @@ export default function PrivacyPolicy() {
           <li>Where you originally came from when you first visited the App (the referring website, if any, and any "ref" parameter in the URL)</li>
         </ul>
 
-        <h3 style={h3Style}>2.3 Spotify connection (optional)</h3>
-        <p style={pStyle}>
-          Connecting Spotify is optional and free for everyone. If you
-          connect it, here's exactly what happens to your data:
-        </p>
-        <ul style={ulStyle}>
-          <li>
-            Your Spotify access token is stored <strong>only in your
-            browser's local storage</strong>. It is never sent to our
-            servers and we never see it.
-          </li>
-          <li>
-            We do save a small flag on your account that says "Spotify is
-            currently connected" so the App can show the right options. We
-            do not save your Spotify username, email, library, listening
-            history, or playlists.
-          </li>
-          <li>
-            We call the Spotify API directly from your browser to fetch
-            album cover art and (for Spotify Premium users with Pro) to
-            play songs. Those calls happen between your browser and
-            Spotify; our servers are not in the middle.
-          </li>
-        </ul>
-
-        <h3 style={h3Style}>2.4 Pro subscription and billing</h3>
+        <h3 style={h3Style}>2.3 Pro subscription and billing</h3>
         <p style={pStyle}>
           If you upgrade to Pro, payment is handled by{' '}
           <strong>Lemon Squeezy</strong>, an independent payment processor.
@@ -126,7 +101,7 @@ export default function PrivacyPolicy() {
           {' '}covering how they handle the payment side.
         </p>
 
-        <h3 style={h3Style}>2.5 Public profile (only if you turn it on)</h3>
+        <h3 style={h3Style}>2.4 Public profile (only if you turn it on)</h3>
         <p style={pStyle}>
           Every account starts with the public profile turned <strong>off</strong>.
           If you turn it on in Settings → Public profile, the App publishes a
@@ -136,7 +111,7 @@ export default function PrivacyPolicy() {
           immediately hides it again.
         </p>
 
-        <h3 style={h3Style}>2.6 Feedback submissions</h3>
+        <h3 style={h3Style}>2.5 Feedback submissions</h3>
         <p style={pStyle}>
           If you send us feedback through the in-app feedback button, we
           save your message along with: your name, email, account ID, the
@@ -145,7 +120,7 @@ export default function PrivacyPolicy() {
           to follow up if needed and to fix bugs you describe.
         </p>
 
-        <h3 style={h3Style}>2.7 Technical information, analytics, and error monitoring</h3>
+        <h3 style={h3Style}>2.6 Technical information, analytics, and error monitoring</h3>
         <p style={pStyle}>
           Like every website, basic technical information passes through
           our hosting provider when you visit the App — your IP address,
@@ -174,12 +149,11 @@ export default function PrivacyPolicy() {
           providers we currently use are listed in section 4 below.
         </p>
 
-        <h3 style={h3Style}>2.8 What we don't collect</h3>
+        <h3 style={h3Style}>2.7 What we don't collect</h3>
         <ul style={ulStyle}>
           <li>We don't run advertising or marketing trackers.</li>
           <li>We don't sell your data to anyone, ever.</li>
           <li>We don't collect your contacts, location, microphone, or camera.</li>
-          <li>We don't read your Spotify playlists or listening history.</li>
         </ul>
 
         <h2 style={h2Style}>3. How we use your data</h2>
@@ -190,7 +164,6 @@ export default function PrivacyPolicy() {
           <li>Remember your ratings and keep them synced across your devices</li>
           <li>Let you sign in and recognize you when you come back</li>
           <li>Charge for Pro subscriptions and unlock Pro features for paying users</li>
-          <li>Show album art and play songs through Spotify (when you've connected it)</li>
           <li>Show your public profile to people you share the link with (only if you turn it on)</li>
           <li>Reply to your feedback and fix problems you report</li>
           <li>Power optional in-app features that analyze or summarize your ratings (see below)</li>
@@ -249,13 +222,6 @@ export default function PrivacyPolicy() {
               Lemon Squeezy's privacy policy
             </a>
           </li>
-          <li>
-            <strong>Spotify</strong> — provides album art and (for Premium
-            accounts) song playback when you connect your Spotify account.{' '}
-            <a href="https://www.spotify.com/legal/privacy-policy/" target="_blank" rel="noopener noreferrer" style={linkStyle}>
-              Spotify's privacy policy
-            </a>
-          </li>
         </ul>
         <p style={pStyle}>
           We may also share your data if we have to — for example, in
@@ -304,8 +270,7 @@ export default function PrivacyPolicy() {
             a JSON file of your ratings and account information.
           </li>
           <li>
-            <strong>Withdraw your consent.</strong> You can disconnect
-            Spotify at any time in Settings → Spotify. You can cancel Pro
+            <strong>Withdraw your consent.</strong> You can cancel Pro
             at any time from the customer portal linked in Settings →
             Account.
           </li>
@@ -336,7 +301,7 @@ export default function PrivacyPolicy() {
           work offline. We use a small number of cookies for things like
           keeping you signed in (set by Google as part of the sign-in
           flow) and, where applicable, by the analytics and
-          error-monitoring tools described in section 2.7. We do not use
+          error-monitoring tools described in section 2.6. We do not use
           advertising cookies, and we do not use cookies to track you
           across other websites.
         </p>

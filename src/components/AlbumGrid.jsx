@@ -1,5 +1,4 @@
 import AlbumCard from './AlbumCard';
-import SpotifyAttribution from './SpotifyAttribution';
 import { ALBUMS, OTHER_ALBUM } from '../data/albums';
 
 const gridStyle = {
@@ -8,16 +7,9 @@ const gridStyle = {
   gap: 10,
 };
 
-export default function AlbumGrid({ onSelectAlbum, selectedAlbumId, getAlbumScore, getRatedCount, activeCategories, albumArt, albumSpotifyIds }) {
-  const hasArt = !!albumArt && Object.keys(albumArt).length > 0;
+export default function AlbumGrid({ onSelectAlbum, selectedAlbumId, getAlbumScore, getRatedCount, activeCategories }) {
   return (
     <div style={{ padding: '12px 0' }}>
-      {/* Spotify attribution — required wherever we show Spotify-sourced art.
-          Hidden entirely when no covers have been fetched (free / offline). */}
-      <SpotifyAttribution
-        visible={hasArt}
-        style={{ marginBottom: 8, paddingRight: 4 }}
-      />
       <div style={gridStyle}>
         {ALBUMS.map(album => (
           <AlbumCard
@@ -27,8 +19,6 @@ export default function AlbumGrid({ onSelectAlbum, selectedAlbumId, getAlbumScor
             albumScore={getAlbumScore(album.id, activeCategories)}
             isSelected={album.id === selectedAlbumId}
             onClick={() => onSelectAlbum(album.id)}
-            spotifyArtUrl={albumArt?.[album.id] ?? null}
-            spotifyAlbumId={albumSpotifyIds?.[album.id] ?? null}
           />
         ))}
       </div>

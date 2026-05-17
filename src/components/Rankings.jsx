@@ -2,12 +2,11 @@ import { useState } from 'react';
 import ScoreBar from './ScoreBar';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
 import RankingCard from './RankingCard';
-import SpotifyAttribution from './SpotifyAttribution';
 
 // Rankings tab — shows top songs or top albums sorted by composite score.
 // onSelectAlbum is optional; when provided, album rows in the Albums view
 // become tappable and route the user into that album's song list.
-export default function Rankings({ getCompositeScore, getAlbumScore, activeCategories, ratings, spotifyAlbumArt, onSelectAlbum }) {
+export default function Rankings({ getCompositeScore, getAlbumScore, activeCategories, ratings, onSelectAlbum }) {
   const [view, setView] = useState('songs'); // 'songs' | 'albums'
 
   // Build full songs list: every rated song across all albums, sorted desc.
@@ -108,17 +107,8 @@ export default function Rankings({ getCompositeScore, getAlbumScore, activeCateg
         </div>
       ))}
 
-      {/* Spotify attribution — only when viewing albums and at least one cover is available */}
-      {view === 'albums' && (
-        <SpotifyAttribution
-          visible={!!spotifyAlbumArt && Object.keys(spotifyAlbumArt).length > 0}
-          style={{ marginBottom: 6 }}
-        />
-      )}
-
       {/* Albums leaderboard — rows are tappable and route into the album */}
       {view === 'albums' && topAlbums.map((album, i) => {
-        const artUrl = spotifyAlbumArt?.[album.id];
         const tappable = !!onSelectAlbum;
         return (
           <div
@@ -145,12 +135,12 @@ export default function Rankings({ getCompositeScore, getAlbumScore, activeCateg
             <span style={{ fontSize: i < 3 ? 16 : 12, color: '#9ca3af', width: 28, textAlign: 'center' }}>
               {rankIcon(i)}
             </span>
-            {/* Album art tile (Spotify art when connected, color/emoji otherwise) */}
+            {/* Album art tile (color/emoji) */}
             <div style={{
               width: 36,
               height: 36,
               borderRadius: 6,
-              background: artUrl ? '#000' : album.color,
+              background: album.color,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -158,15 +148,7 @@ export default function Rankings({ getCompositeScore, getAlbumScore, activeCateg
               flexShrink: 0,
               overflow: 'hidden',
             }}>
-              {artUrl ? (
-                <img
-                  src={artUrl}
-                  alt={album.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
-              ) : (
-                album.icon
-              )}
+              {album.icon}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 500, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

@@ -2,7 +2,6 @@
 // Sections: signed-out backup warning, catalog progress hero, continue card,
 // daily prompt, and an album checklist sorted by user state.
 import { ALBUMS, ALL_ALBUMS, SONGS } from '../data/albums';
-import SpotifyAttribution from './SpotifyAttribution';
 
 // Google "G" SVG — same one used in App.jsx
 function GoogleIcon() {
@@ -60,8 +59,6 @@ export default function Home({
   onContinueRating,
   onSelectAlbum,
   onGoToAlbums,
-  spotifyAlbumArt,
-  spotifyAlbumIds,
 }) {
   // ── Computed totals ──────────────────────────────────────────────
   const totalSongs = ALL_ALBUMS.reduce((sum, a) => sum + (SONGS[a.id]?.length || 0), 0);
@@ -458,12 +455,6 @@ export default function Home({
           </div>
         </div>
 
-        {/* Spotify attribution — only shown when album art is being displayed */}
-        <SpotifyAttribution
-          visible={!!spotifyAlbumArt && Object.keys(spotifyAlbumArt).length > 0}
-          style={{ marginBottom: 8 }}
-        />
-
         {sortedAlbums.slice(0, 6).map(album => {
           const total = SONGS[album.id]?.length || 0;
           const rated = getRatedCount(album.id);
@@ -489,7 +480,7 @@ export default function Home({
                 width: 40,
                 height: 40,
                 borderRadius: 8,
-                background: spotifyAlbumArt?.[album.id] ? '#000' : album.color,
+                background: album.color,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -498,15 +489,7 @@ export default function Home({
                 position: 'relative',
                 overflow: 'hidden',
               }}>
-                {spotifyAlbumArt?.[album.id] ? (
-                  <img
-                    src={spotifyAlbumArt[album.id]}
-                    alt={album.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                  />
-                ) : (
-                  album.icon
-                )}
+                {album.icon}
                 {done && (
                   <div style={{
                     position: 'absolute',
@@ -555,27 +538,6 @@ export default function Home({
                 </div>
               </div>
 
-              {/* Open in Spotify — per-row link-back required when art is from Spotify */}
-              {spotifyAlbumIds?.[album.id] && (
-                <a
-                  href={`https://open.spotify.com/album/${spotifyAlbumIds[album.id]}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={e => e.stopPropagation()}
-                  aria-label={`Open ${album.name} on Spotify`}
-                  title="Open in Spotify"
-                  style={{
-                    flexShrink: 0,
-                    width: 22, height: 22,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: '#9ca3af',
-                    fontSize: 13,
-                    textDecoration: 'none',
-                  }}
-                >
-                  ↗
-                </a>
-              )}
             </div>
           );
         })}

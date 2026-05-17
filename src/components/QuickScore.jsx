@@ -1,21 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { getBridgeLyrics, getSnippetLyrics, hasBridge } from '../data/lyricsAccess';
 import { DEFAULT_CATEGORIES } from '../data/categories';
-import SpotifyMiniPlayer from './SpotifyMiniPlayer';
-import SpotifyBadge from './SpotifyBadge';
-import SpotifyJumpRow from './SpotifyJumpRow';
-import AutoplayNudge, { hasSeenAutoplayNudge, markAutoplayNudgeSeen } from './AutoplayNudge';
 import { getAlbumTheme } from '../themes/albumThemes';
 
 // IDs of the 5 default categories. Used to enforce "every song is rated on
 // the same baseline" — Skip is hidden on these so the score is comparable.
 const DEFAULT_CAT_IDS = new Set(DEFAULT_CATEGORIES.map(c => c.id));
-
-// Threshold for the soft autoplay Pro upsell. Anchored at 30 — the trigger
-// fires the next time we transition between songs once totalRatings ≥ this,
-// which lets a vibe-check session finish naturally and pushes the actual
-// nudge into the 25–35-song window depending on how many songs are in flight.
-const AUTOPLAY_NUDGE_THRESHOLD = 30;
 
 // Calibration phrases for each category × star level (index 0 = ★1).
 // Goal: make ★1–★2 feel like valid, honest ratings — not insults.
@@ -3072,15 +3062,7 @@ function YesNoPicker({ currentRating, onRate }) {
 // ratings       — raw ratings object from useRatings
 // onRate(songIndex, catId, val) — saves a rating
 // onClose       — dismisses the overlay
-// spotify            — object from useSpotify (optional; omit to disable Spotify features)
-// spotifyAutoplay    — boolean; when true, song plays automatically on each advance
-// spotifyBridgeAutoplay — boolean; when true, bridge plays automatically when Bridge category appears
 // confirmExit        — boolean; when true, shows confirmation dialog before closing
-// onGoToSpotifySettings — callback to navigate the user to the Settings tab
-// updateSetting      — updateSetting function from useSettings (for bridge autoplay suggestion)
-const BRIDGE_PLAY_COUNT_KEY = 'eras_bridge_play_count';
-const BRIDGE_AUTOPLAY_NUDGE_KEY = 'eras_bridge_autoplay_nudged';
-
 export default function QuickScore({
   songs,
   albumId,
@@ -3091,46 +3073,18 @@ export default function QuickScore({
   onRate,
   onClose,
   initialSongPos = 0,
-  spotify,
-  // Pro-only playback gate — autoplay, mini player, and Play Bridge button all
-  // depend on this. Free users with Spotify connected still get album art
-  // through useSpotify, but the rating screen treats them like any other
-  // non-playback user.
   isPro = false,
-  spotifyAutoplay = true,
-  spotifyBridgeAutoplay = false,
   confirmExit = true,
-  onGoToSpotifySettings,
-  updateSetting,
   // Optional — used by the registry-driven All-done card to compute live
   // top-3 from the latest ratings. Falls back to whatever score is on
   // songs[i] when not provided.
   getCompositeScore,
 }) {
-  // Set true for the rest of the session when the user taps "Try it" on the
-  // 30-song Pro upsell. Acts as a one-session bypass on the isPro gate so
-  // the next songs autoplay as a free taste of the Pro experience.
-  const [demoAutoplay, setDemoAutoplay] = useState(false);
-  // The 30-song upsell modal — set to a deferred-advance object when we want
-  // to interrupt the song-to-song transition with the nudge.
-  const [pendingNudgeAdvance, setPendingNudgeAdvance] = useState(null);
-
-  // Playback features (mini player, autoplay, jump-to-moment, Play Bridge)
-  // require BOTH Pro AND Spotify Premium. Pre-existing gate only checked
-  // Pro, which let a Pro + Spotify-Free user see the mini player and pills
-  // even though the SDK never inits for free Spotify (the playerReady check
-  // contained most of the harm, but the marketing boundary was wrong).
-  // `?? true` keeps the optimistic default when Premium status hasn't been
-  // fetched yet OR the user isn't connected to Spotify at all — same shape
-  // as the `knownNonPremium` filter used on Pro pitch surfaces.
-  const playbackEnabled = (isPro || demoAutoplay) && (spotify?.isPremium ?? true);
   const [songPos, setSongPos] = useState(initialSongPos);
   const [catPos, setCatPos] = useState(0);
   const [done, setDone] = useState(false);
   const [showTrees, setShowTrees] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [showBridgeSuggestion, setShowBridgeSuggestion] = useState(false);
-  const [bridgeSuggestionToggle, setBridgeSuggestionToggle] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
   const pendingRef = useRef(null);
 
@@ -3150,41 +3104,9 @@ export default function QuickScore({
 
   const isSingleSong = songs.length === 1;
 
-  // ── Spotify autoplay: start playing from shuffle timestamp on new song ───
-  // Gated on playbackEnabled so free users (who can connect Spotify for album
-  // art) don't get autoplay unless they're Pro or in a one-time "Try it" demo.
-  useEffect(() => {
-    if (!playbackEnabled) return;
-    if (!spotify?.isConnected || !spotify?.playerReady || !spotifyAutoplay) return;
-    const song = songs[songPos];
-    if (!song) return;
-    spotify.playTrack(albumId, song.index, song.name, albumName, 'shuffle');
-  }, [songPos, spotify?.playerReady, playbackEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
-
-
-  // ── Bridge autoplay: seek to bridge timestamp when Bridge category appears ─
-  // Gated on hasBridge (data-only) so the lyrics display kill switch can't
-  // silently disable bridge playback. Previously this used showBridgeLyrics,
-  // which is false whenever LYRICS_DISPLAY_ENABLED is off — meaning autoplay
-  // never fired and the manual button was also hidden, leaving users stuck.
-  useEffect(() => {
-    if (!playbackEnabled) return;
-    if (
-      currentCat?.id === 'bridge' &&
-      spotifyBridgeAutoplay &&
-      spotify?.isConnected &&
-      spotify?.playerReady &&
-      currentSong &&
-      hasBridge(albumId, currentSong.index)
-    ) {
-      spotify.playTrack(albumId, currentSong.index, currentSong.name, albumName, 'bridge');
-    }
-  }, [songPos, catPos, playbackEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Pause when QuickScore closes ─────────────────────────────────────────
+  // ── Clear any pending hold-and-flash timeout when QuickScore closes ──────
   useEffect(() => {
     return () => {
-      spotify?.pause?.();
       if (advanceTimeoutRef.current) clearTimeout(advanceTimeoutRef.current);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -3250,22 +3172,6 @@ export default function QuickScore({
   // Whether the current question is the bridge category
   const showBridgeLyrics = currentCat?.id === 'bridge' && bridgeLyrics;
 
-  // Whether to show the Play Bridge button. Computed from data-only checks
-  // (hasBridge, spotify state) so the lyrics display kill switch can hide
-  // the on-screen lyrics without also hiding the seek-to-bridge feature.
-  // Always shown when the song actually has a bridge and Spotify is ready —
-  // even if bridge-autoplay is on, the user can use this to replay the
-  // bridge or rescue a missed autoplay.
-  const songHasBridge = currentSong
-    ? hasBridge(albumId, currentSong.index)
-    : false;
-  const showPlayBridge =
-    currentCat?.id === 'bridge' &&
-    songHasBridge &&
-    spotify?.isConnected &&
-    spotify?.playerReady &&
-    playbackEnabled;
-
   const isFirstStep = songPos === 0 && catPos === 0;
 
   function goBack() {
@@ -3298,55 +3204,18 @@ export default function QuickScore({
   function advance() {
     const nextCat = catPos + 1;
     let next;
-    let isNextSong = false;
     if (nextCat < currentSong.cats.length) {
       next = { catPos: nextCat };
     } else {
       const nextSong = songPos + 1;
       if (nextSong < songsWithCats.length) {
         next = { songPos: nextSong, catPos: 0 };
-        isNextSong = true;
       } else {
         next = { done: true };
       }
     }
 
-    // Soft Pro upsell: only fires between songs (not between categories,
-    // not on the very last song), only for Spotify-connected Premium-but-
-    // not-Pro users who haven't seen the prompt yet, once they've crossed
-    // the threshold. Non-Premium Spotify users are excluded — Pro alone
-    // can't unlock autoplay for them, so the upsell would be misleading.
-    // Counting Object.keys(ratings).length matches how useUserStats tracks
-    // unique songs rated.
-    if (
-      isNextSong &&
-      !isPro &&
-      !demoAutoplay &&
-      spotify?.isConnected &&
-      spotify?.isPremium &&
-      !hasSeenAutoplayNudge() &&
-      Object.keys(ratings).length >= AUTOPLAY_NUDGE_THRESHOLD
-    ) {
-      setPendingNudgeAdvance(next);
-      return;
-    }
-
     performAdvance(next);
-  }
-
-  function handleTryAutoplay() {
-    markAutoplayNudgeSeen();
-    setDemoAutoplay(true);
-    const next = pendingNudgeAdvance;
-    setPendingNudgeAdvance(null);
-    if (next) performAdvance(next);
-  }
-
-  function handleNudgeLater() {
-    markAutoplayNudgeSeen();
-    const next = pendingNudgeAdvance;
-    setPendingNudgeAdvance(null);
-    if (next) performAdvance(next);
   }
 
   function handleRate(val) {
@@ -3684,65 +3553,30 @@ export default function QuickScore({
             {albumIcon} {albumName}
           </div>
 
-          {/* Song name / Spotify mini player. Free Spotify-connected users get
-              album art across the app, but the inline mini player implies
-              playback control — gated on playbackEnabled so they see the plain
-              song title here instead of a non-functional player.
-              The jump row directly under the mini player surfaces "jump to a
-              moment" pills (opening line / chorus / closing line) for the
-              current song — also Pro + Premium gated via playbackEnabled. */}
-          {spotify?.isConnected && playbackEnabled ? (
-            <>
-              <SpotifyMiniPlayer
-                isConnected={!!spotify?.isConnected}
-                playerReady={!!spotify?.playerReady}
-                isPlaying={!!spotify?.isPlaying}
-                songName={currentSong?.name}
-                trackUri={spotify?.currentTrackUri}
-                onTogglePlay={spotify?.togglePlay}
-                onGoToSettings={onGoToSpotifySettings}
-                style={{ margin: '0 0 12px', width: '100%', maxWidth: 300 }}
-              />
-              {spotify?.playerReady && currentSong && (
-                <SpotifyJumpRow
-                  albumId={albumId}
-                  songIndex={currentSong.index}
-                  onPlay={(categoryKey) => spotify.playTrack(
-                    albumId,
-                    currentSong.index,
-                    currentSong.name,
-                    albumName,
-                    categoryKey
-                  )}
-                  style={{ marginBottom: currentCat?.id === 'lyrics' ? 12 : 24 }}
-                />
-              )}
-            </>
-          ) : (
-            <div style={{
-              fontSize: 22,
-              fontWeight: isTPDTheme ? 800 : 700,
-              color: albumTheme?.textTuning?.songTitle
-                || (isReputationTheme
-                  ? '#ffffff'
-                  : isEvermoreTheme
-                    ? '#fef3c7'
-                    : isShowgirlTheme
-                      ? '#fffbeb'
-                      : isDarkTheme
-                        ? '#f3f4f6'
-                        : '#111827'),
-              lineHeight: 1.3,
-              marginBottom: currentCat?.id === 'lyrics' ? 16 : 32,
-              maxWidth: 320,
-              textShadow: isDarkTheme ? '0 1px 8px rgba(0,0,0,0.45)' : 'none',
-              fontFamily: isTPDTheme
-                ? "'Georgia', 'Garamond', serif"
-                : 'inherit',
-            }}>
-              {currentSong?.name}
-            </div>
-          )}
+          {/* Song name */}
+          <div style={{
+            fontSize: 22,
+            fontWeight: isTPDTheme ? 800 : 700,
+            color: albumTheme?.textTuning?.songTitle
+              || (isReputationTheme
+                ? '#ffffff'
+                : isEvermoreTheme
+                  ? '#fef3c7'
+                  : isShowgirlTheme
+                    ? '#fffbeb'
+                    : isDarkTheme
+                      ? '#f3f4f6'
+                      : '#111827'),
+            lineHeight: 1.3,
+            marginBottom: currentCat?.id === 'lyrics' ? 16 : 32,
+            maxWidth: 320,
+            textShadow: isDarkTheme ? '0 1px 8px rgba(0,0,0,0.45)' : 'none',
+            fontFamily: isTPDTheme
+              ? "'Georgia', 'Garamond', serif"
+              : 'inherit',
+          }}>
+            {currentSong?.name}
+          </div>
 
           {/* Category label — colors per theme.
               Night (Midnights): brand purple washes out → lavender + light grey.
@@ -3829,59 +3663,19 @@ export default function QuickScore({
             <LyricScroller key={`${songPos}`} lyrics={snippetLyrics} />
           )}
 
-          {/* Bridge lyrics quote — gated on the lyrics display kill switch.
-              Rendered independently of the Play Bridge button below so the
-              button still appears when on-screen lyrics are disabled. */}
+          {/* Bridge lyrics quote — gated on the lyrics display kill switch. */}
           {showBridgeLyrics && (
             <div style={{
               fontSize: 12,
               color: '#a78bfa',
               fontStyle: 'italic',
-              marginBottom: showPlayBridge ? 14 : 28,
+              marginBottom: 28,
               maxWidth: 300,
               lineHeight: 1.7,
               whiteSpace: 'pre-line',
             }}>
               "{bridgeLyrics}"
             </div>
-          )}
-
-          {/* Play Bridge button — visible whenever Spotify is connected on
-              the bridge category. Independent of LYRICS_DISPLAY_ENABLED so
-              hiding lyric text never hides the seek-to-bridge feature. */}
-          {showPlayBridge && (
-            <button
-              onClick={() => {
-                spotify.playTrack(albumId, currentSong.index, currentSong.name, albumName, 'bridge');
-                const prev = Number(localStorage.getItem(BRIDGE_PLAY_COUNT_KEY) || 0);
-                const next = prev + 1;
-                localStorage.setItem(BRIDGE_PLAY_COUNT_KEY, String(next));
-                const alreadyNudged = localStorage.getItem(BRIDGE_AUTOPLAY_NUDGE_KEY) === 'true';
-                if (next === 11 && !alreadyNudged) {
-                  localStorage.setItem(BRIDGE_AUTOPLAY_NUDGE_KEY, 'true');
-                  setShowBridgeSuggestion(true);
-                }
-              }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '9px 18px',
-                background: '#ffffff',
-                border: '1px solid #e5e7eb',
-                borderRadius: 24,
-                fontSize: 13,
-                fontWeight: 600,
-                color: '#111827',
-                cursor: 'pointer',
-                marginBottom: 28,
-                boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-              }}
-            >
-              {/* Spotify logo — green on white per branding guidelines */}
-              <SpotifyBadge size={24} />
-              Play Bridge
-            </button>
           )}
 
           {/* Stars or Yes/No depending on category type. Wrapped in a
@@ -4043,99 +3837,6 @@ export default function QuickScore({
         </div>
       )}
 
-      {/* ── 30-song Pro upsell — pops between songs once eligibility is met ── */}
-      {pendingNudgeAdvance && (
-        <AutoplayNudge
-          onTryIt={handleTryAutoplay}
-          onLater={handleNudgeLater}
-        />
-      )}
-
-      {/* ── Bridge autoplay suggestion (shown on 11th manual bridge play) ── */}
-      {showBridgeSuggestion && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.5)',
-          zIndex: 1100,
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'center',
-        }}>
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '20px 20px 0 0',
-            padding: '24px 24px 40px',
-            width: '100%',
-            maxWidth: 480,
-          }}>
-            <div style={{ fontSize: 17, fontWeight: 700, color: '#111827', marginBottom: 6 }}>
-              You love the bridge!
-            </div>
-            <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 20 }}>
-              You've played bridge sections 10+ times. Want the bridge to start playing automatically when you reach that category?
-            </div>
-
-            {/* Toggle */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              background: '#f9fafb',
-              borderRadius: 12,
-              padding: '14px 16px',
-              marginBottom: 20,
-            }}>
-              <span style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>Auto-play bridge</span>
-              <div
-                onClick={() => setBridgeSuggestionToggle(v => !v)}
-                style={{
-                  width: 44,
-                  height: 26,
-                  borderRadius: 13,
-                  background: bridgeSuggestionToggle ? '#a855f7' : '#d1d5db',
-                  position: 'relative',
-                  cursor: 'pointer',
-                  flexShrink: 0,
-                  transition: 'background 0.2s',
-                }}
-              >
-                <div style={{
-                  position: 'absolute',
-                  top: 3,
-                  left: bridgeSuggestionToggle ? 21 : 3,
-                  width: 20,
-                  height: 20,
-                  borderRadius: '50%',
-                  background: '#ffffff',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                  transition: 'left 0.2s',
-                }} />
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                if (updateSetting) updateSetting('spotifyBridgeAutoplay', bridgeSuggestionToggle);
-                setShowBridgeSuggestion(false);
-              }}
-              style={{
-                width: '100%',
-                padding: '13px',
-                borderRadius: 12,
-                border: 'none',
-                background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
-                color: '#ffffff',
-                fontSize: 15,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              Save preference
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

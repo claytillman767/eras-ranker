@@ -6,9 +6,6 @@ const STORAGE_KEY = 'eras_settings';
 
 const DEFAULTS = {
   showCategoryBars:       true,   // show the mini score-bar breakdown on song rows
-  spotifyAutoplay:        true,   // automatically start Spotify playback when a new song appears in QuickScore
-  spotifyBridgeAutoplay:  false,  // auto-seek to bridge timestamp when the Bridge category appears
-  spotifyVolume:          0.8,    // Spotify player volume (0–1)
   confirmQuickScoreExit:  true,   // ask for confirmation before closing QuickScore mid-session
 };
 

@@ -9,8 +9,6 @@ export default function AlbumHero({
   getRatedCount,
   activeCategories,
   onBack,
-  spotifyArtUrl,
-  spotifyAlbumId,
   isLover,
 }) {
   const album = ALL_ALBUMS.find(a => a.id === albumId);
@@ -57,35 +55,20 @@ export default function AlbumHero({
 
       {/* Album identity row */}
       <div style={{ display: 'flex', gap: 14, alignItems: 'center', marginBottom: 14 }}>
-        {spotifyArtUrl ? (
-          <img
-            src={spotifyArtUrl}
-            alt={album.name}
-            style={{
-              width: 76,
-              height: 76,
-              borderRadius: 8,
-              objectFit: 'cover',
-              flexShrink: 0,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-            }}
-          />
-        ) : (
-          <div style={{
-            width: 76,
-            height: 76,
-            borderRadius: 14,
-            background: album.color,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 38,
-            flexShrink: 0,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-          }}>
-            {album.icon}
-          </div>
-        )}
+        <div style={{
+          width: 76,
+          height: 76,
+          borderRadius: 14,
+          background: album.color,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 38,
+          flexShrink: 0,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        }}>
+          {album.icon}
+        </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 18, fontWeight: 600, color: '#111827', lineHeight: 1.15 }}>
             {album.name}
@@ -105,38 +88,6 @@ export default function AlbumHero({
               <span style={{ fontSize: 13, fontStyle: 'italic', color: '#9ca3af' }}>not yet scored</span>
             )}
           </div>
-          {/* Spotify attribution + link-back — required wherever Spotify-sourced
-              album art is displayed. Only rendered when we actually have a
-              Spotify-sourced cover; falls back to nothing when the user is
-              free/offline and we're showing the colored emoji tile instead. */}
-          {spotifyArtUrl && (
-            <div style={{
-              marginTop: 6,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              fontSize: 10,
-              color: '#9ca3af',
-              letterSpacing: '0.02em',
-            }}>
-              <span>Album art from</span>
-              <span style={{ fontWeight: 600, color: '#6b7280' }}>Spotify</span>
-              {spotifyAlbumId && (
-                <a
-                  href={`https://open.spotify.com/album/${spotifyAlbumId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: '#6b7280',
-                    textDecoration: 'underline',
-                    fontWeight: 500,
-                  }}
-                >
-                  Open ↗
-                </a>
-              )}
-            </div>
-          )}
         </div>
       </div>
 

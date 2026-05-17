@@ -4,10 +4,10 @@
 //     This ensures a fresh index.html after every Vercel deploy without
 //     requiring a hard refresh.
 //   - Static assets (same-origin JS/CSS/images): cache first for speed.
-//   - Cross-origin requests (Firebase, Google APIs, Spotify, lrclib, etc.):
+//   - Cross-origin requests (Firebase, Google APIs, etc.):
 //     not intercepted at all — always go straight to the network.
 
-const CACHE_NAME = 'eras-ranker-v3';
+const CACHE_NAME = 'eras-ranker-v4';
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -35,7 +35,7 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   // Don't intercept cross-origin requests (Firebase auth, Google APIs,
-  // Spotify, lrclib, Firestore, etc.). Let them go straight to the network.
+  // Firestore, etc.). Let them go straight to the network.
   if (!event.request.url.startsWith(self.location.origin)) return;
 
   // Navigation requests: always try the network first so new deployments
