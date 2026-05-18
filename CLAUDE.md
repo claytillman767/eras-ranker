@@ -63,14 +63,42 @@ The Lemon Squeezy billing backend already EXISTS (`api/lemon-webhook.js`, `api/c
 4. Tip-jar surface (external "buy me a coffee" link is simplest; gate behind a config constant so it hides when unset).
 5. Legal: privacy policy + terms must cover Lemon Squeezy as payment processor → MATERIAL change → bump `LEGAL_VERSION` + re-accept modal fires.
 
-**User-blocked critical path (not code — these gate the launch):**
-- Lemon Squeezy account + a one-time $3.99 product (needs business identity: legal name, address, tax info).
-- Privacy-policy-for-payments decision (iubenda route per pre-launch checklist, or updated in-app text).
-- Trivia fact-check (pre-launch checklist).
+**Lemon Squeezy — DONE (configured 2026-05-18, LIVE mode).** Set up directly
+in production (no test mode — user accepted the risk since the live site has
+no real users yet). One-time $3.99 product created. Checkout UUID
+`62bcc9ae-0138-42f8-97fe-2c096e666543` → goes in env `VITE_LEMON_SQUEEZY_UNLOCK_UUID`.
+Reused the existing webhook (`erasranker.com/api/lemon-webhook`) with
+`order_created` + `order_refunded` enabled; the signing secret was **rotated**
+(the old one leaked in a setup screenshot) → the new value goes in env
+`LEMON_SQUEEZY_WEBHOOK_SECRET`. API key captured → env `LEMON_SQUEEZY_API_KEY`.
 
-**If the LS account or legal slips:** ship **free app + tip jar publicly on day 7** (zero billing/legal-on-payments risk) and add the $3.99 unlock as a ~3-day fast-follow. This is the de-risked version of the same plan, not a failure.
+**§11 advance-email decision — RESOLVED (Option B, 2026-05-18).** The
+subscription→one-time legal change is material, but the 14-day advance email
+to signed-in users is **intentionally skipped for THIS change** because there
+are **zero existing signed-in users on the prior terms** — nobody is owed
+notice. The in-app re-accept modal + the useUserStats grandfather write are
+sufficient (new post-deploy users just accept the current version on signup;
+no spurious modal). This is a per-change call for a pre-launch product — it
+does NOT relax the general rule: future material changes with a real user
+base still owe the §11 email.
 
-**Status:** Decision recorded + shipped to main 2026-05-18. The code conversion (webhook one-time, repricing, bracket gating, tip jar) is being done on the feature branch but intentionally **NOT merged to main** until the LS one-time product exists, it is tested end-to-end, legal is updated, and the user has reviewed — a half-migrated billing model must not go live on the commercial site.
+**Remaining gates before go-live (still NOT merged to main):**
+1. User reviews branch `52390b4` + decides brackets-in-launch (`BRACKETS_ENABLED`
+   is currently false → launch unlock is categories-only unless flipped).
+2. Legal sign-off on the DRAFT Terms/Privacy rewrite (binding doc, commercial
+   product — ideally a lawyer glance).
+3. Set Vercel env: `VITE_LEMON_SQUEEZY_UNLOCK_UUID`,
+   `LEMON_SQUEEZY_WEBHOOK_SECRET` (rotated value), `LEMON_SQUEEZY_API_KEY`;
+   confirm `FIREBASE_SERVICE_ACCOUNT_B64` is already present (webhook can't
+   write the unlock to Firestore without it). `VITE_*` is baked at build →
+   must redeploy after setting.
+4. Merge branch → deploy.
+5. One real $3.99 purchase + self-refund to verify checkout → webhook →
+   Firestore → UI unlock end-to-end.
+
+**Still NOT merged to main** until 1–2 are cleared — a half-migrated billing
+model must not go live on the commercial site. (The old "if LS/legal slips,
+launch free + tip jar" fallback still stands if 1–2 stall.)
 
 ---
 
