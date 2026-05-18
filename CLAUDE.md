@@ -26,12 +26,53 @@ This is a **commercial product**, not a hobby or fan project. Treat every decisi
 Every user-facing decision should be evaluated against these three conversion goals, in this order. Each step builds on the previous one — completing one makes the next one a natural offer.
 
 1. **Account login (Google sign-in)** — the backbone. Required for cross-device sync, Pro billing, and identity. Pushed via the dedicated GoogleLoginPromo screen that appears right after the Welcome tour for anyone not yet signed in, with "Sign in with Google" as the primary CTA and "Not now" as the bypass.
-2. **Pro upgrade ($4.99/mo or $46.71/yr)** — the revenue. Pro adds 8 extra rating categories and custom categories. CSV export is FREE for everyone (data portability) — Settings → Data → Download CSV. Pushed softly via the VibeCheckIntro on first Vibe Check and the PaywallCard in Categories. **Pro's perks were narrowed when Spotify was removed (in-app autoplay + per-moment seeking are gone). Repositioning/repricing Pro is an open decision — don't invent new Pro copy beyond the two real perks until the user decides.**
+2. **The unlock ($3.99 one-time — DECIDED)** — the revenue. The one-time unlock adds the 8 extra rating categories, custom categories, and build-your-own personal brackets. CSV export is FREE for everyone (data portability) — Settings → Data → Download CSV. Community weekly/daily brackets are FREE forever (they feed the engagement flywheel — never gate them). Pushed softly via the VibeCheckIntro on first Vibe Check and the PaywallCard in Categories. **The model is a ONE-TIME UNLOCK, not a subscription — see "## Revenue & launch model" below for the full decision, tier split, and 7-day launch plan. Do not propose a subscription or gate community bracket voting.**
 3. **Sharing to social media** — viral growth. The shareable card unlocks once a user fully ranks at least one album (RankingCard / AlbumCompleteCard).
 
 **Stance the app takes:** the natural path is *Login → Pro → Share*. Any other path is an "avoidance" — always allowed, but never framed as the obvious thing to do. Skip buttons exist, but they sit in secondary positioning (smaller, lower contrast, farther from the primary CTA).
 
 **Canonical first-time flow:** Welcome tour → GoogleLoginPromo → Home. Anonymous users can browse the whole app; signing in is a soft ask, never forced.
+
+## Revenue & launch model (DECIDED — 2026-05-18)
+
+This SUPERSEDES the older "Payment provider — Lemon Squeezy plan" decisions further down (which assumed a subscription). Rationale also in auto-memory `project_monetization_strategy.md`.
+
+**The decision:**
+- **One-time unlock, NOT a subscription. $3.99 one time.** Reasons: bursty usage (rank albums over a weekend, then quiet), one-person shop avoiding ongoing-service obligation, terrible sub-$1 recurring economics. Post-Spotify Pro is too thin to sustain a recurring charge. **Do NOT re-propose a subscription.**
+- **Tip jar = "buy me a coffee" only** — a goodwill/learning gesture, NOT a revenue strategy. Phase-1 revenue is ≈$0 by design.
+- **Community weekly + daily brackets stay FREE forever.** They are the engagement/data flywheel ("Fan's Picks"). Gating participation — even cheaply — strangles the thing that makes it valuable. Only *personal/custom* brackets are paid.
+- **No pay-what-you-want slider** (floor-anchors to ~$3, contaminates the price signal, adds checkout friction). Flat price + an optional "add a coffee" top-up is the chosen shape.
+
+**Free vs. $3.99 one-time unlock — the tier split:**
+
+| Free forever | Behind the $3.99 unlock |
+|---|---|
+| All 5 default rating categories, Vibe Check | The 8 extra rating categories |
+| Community weekly bracket + daily matchup | Custom categories |
+| Rankings, basic shareable card, public profile, CSV export | Build-your-own personal brackets |
+| "Buy me a coffee" tip jar | Premium era-themed share cards (planned) |
+
+**Eras DNA / Taste Profile** is the planned headline Phase-2 paid feature. Hard constraint: ZERO ongoing per-user cost (a one-time purchase funds it) — 100% client-side from already-loaded ratings, NO AI/LLM (templated copy keyed to computed buckets), no extra DB reads, Canvas share card. Baseline = a hand-curated, blended "fan consensus" (0–100/song, refreshed 1–2×/yr, labelled as the app's OWN number — NOT Spotify/Billboard branded). Community bracket votes "seed-and-grow" into that baseline over time. NOT in the 7-day launch.
+
+**7-day WEB launch plan (web only — NOT Google Play):**
+The Lemon Squeezy billing backend already EXISTS (`api/lemon-webhook.js`, `api/cancel-subscription.js`, `lib/firebase-admin.js`, `lib/lemon-squeezy.js`, `usePro.js` with a live `onSnapshot`) but is shaped for a *subscription*. Launch work is reshaping it to one-time + tiering + repricing, NOT greenfield billing.
+
+1. Webhook: handle `order_created` (grant) + `order_refunded` (revoke); keep existing subscription handling intact (additive, reversible).
+2. Reprice every Pro surface to "$3.99 — one-time": `PaywallCard.jsx` (drop the Monthly/Annual PlanPicker), `VibeCheckIntro.jsx`, Settings membership/ProModal. Then run the `pro-funnel-auditor` subagent.
+3. Gate personal-bracket creation (`createBracket` in `Brackets.jsx`/`BracketBuilder.jsx`) behind `isPro`; leave weekly/daily untouched.
+4. Tip-jar surface (external "buy me a coffee" link is simplest; gate behind a config constant so it hides when unset).
+5. Legal: privacy policy + terms must cover Lemon Squeezy as payment processor → MATERIAL change → bump `LEGAL_VERSION` + re-accept modal fires.
+
+**User-blocked critical path (not code — these gate the launch):**
+- Lemon Squeezy account + a one-time $3.99 product (needs business identity: legal name, address, tax info).
+- Privacy-policy-for-payments decision (iubenda route per pre-launch checklist, or updated in-app text).
+- Trivia fact-check (pre-launch checklist).
+
+**If the LS account or legal slips:** ship **free app + tip jar publicly on day 7** (zero billing/legal-on-payments risk) and add the $3.99 unlock as a ~3-day fast-follow. This is the de-risked version of the same plan, not a failure.
+
+**Status:** Decision recorded + shipped to main 2026-05-18. The code conversion (webhook one-time, repricing, bracket gating, tip jar) is being done on the feature branch but intentionally **NOT merged to main** until the LS one-time product exists, it is tested end-to-end, legal is updated, and the user has reviewed — a half-migrated billing model must not go live on the commercial site.
+
+---
 
 ## When you change Pro benefits
 
@@ -617,16 +658,16 @@ category-fit-score feature is ever revived without Spotify.
 Google sign-in is live. Ratings, Pro settings, manual order, and album modes all sync to Firestore. See the **Authentication & Firestore** section above for full details.
 Remaining future work in this area: real billing — see "Payment provider — Lemon Squeezy plan" below.
 
-### Payment provider — Lemon Squeezy plan (deferred — DO NOT begin without explicit user instruction)
+### Payment provider — Lemon Squeezy (SUPERSEDED by "## Revenue & launch model" above)
+
+**STATUS (2026-05-18): the billing backend is BUILT** — the "deferred / DO NOT begin" framing this section used to carry is stale. It is subscription-shaped and being converted to a **one-time $3.99 unlock** per the Revenue & launch model section near the top of this file. The infra detail below (HMAC verification, Firebase Admin SDK wiring, env vars, test-mode steps) is still accurate and useful — but ignore the subscription / $4.99 *decisions*; the model is now a one-time unlock.
 
 **Provider chosen:** Lemon Squeezy. We evaluated Stripe vs Lemon Squeezy and picked LS because it's a Merchant of Record (handles VAT, EU OSS, US state sales tax for us — Stripe is not), the ~0.7% fee premium is a fair trade for not maintaining tax registrations across 30+ jurisdictions as a one-person shop, and migrating LS → Stripe later is possible if we ever outgrow it.
 
-**Decisions locked in:**
-- **Launch as subscription** (NOT one-time → subscription later — that path forces every existing one-time customer to re-subscribe and loses 5–15% of them)
-- **Price: $4.99 / month**
-- **Annual option:** TBD (likely add later — common discount is ~2 months free, e.g. $49/yr)
-- **Free trial:** TBD
-- **Plan rename ("Pro" → something else):** TBD — user is considering it
+**Decisions (UPDATED 2026-05-18 — "## Revenue & launch model" above is authoritative):**
+- ~~Launch as subscription~~ → **REVERSED. One-time unlock, $3.99.** The old subscription rationale assumed the richer Spotify-era Pro, which no longer exists.
+- Annual / free-trial / plan-rename — not applicable to a one-time unlock.
+- Provider is still Lemon Squeezy (the Merchant-of-Record reasoning above still holds for one-time orders).
 
 **Phase 1 — Lemon Squeezy account setup** (~30 min, no code)
 1. Sign up at lemonsqueezy.com → create a Store
