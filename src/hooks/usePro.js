@@ -7,19 +7,17 @@ import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
 // Hardcoded because it rarely changes and avoids a new env var per store.
 const LS_STORE_SLUG = 'erasranker';
 
-// Variant checkout UUIDs come from Vercel env vars so we can swap them
-// without code changes (e.g. switching from test to live mode flips both
-// UUIDs at once). When either env var is missing, unlockPro falls back to
-// the mock-grant path so local dev still works for testing other features.
+// One-time $3.99 unlock — a single Lemon Squeezy checkout UUID, set in
+// Vercel once the LS one-time product exists. Until then LS_WIRED is false
+// and unlockPro no-ops, so the rest of the app works in local/dev.
 //
-// IMPORTANT: these are the CHECKOUT UUIDs (e.g. 0c29fa1b-03ef-…) shown in
-// LS dashboard → Products → Share, NOT the internal numeric variant IDs.
-// LS's checkout URLs are `/checkout/buy/{uuid}`; numeric variant IDs 404
-// at `/buy/{id}`. Env var names kept as VARIANT_ID for backwards
-// compatibility with the existing Vercel config.
-const LS_VARIANT_MONTHLY = import.meta.env.VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY;
-const LS_VARIANT_ANNUAL  = import.meta.env.VITE_LEMON_SQUEEZY_VARIANT_ID_ANNUAL;
-const LS_WIRED = !!(LS_VARIANT_MONTHLY && LS_VARIANT_ANNUAL);
+// IMPORTANT: this is the CHECKOUT UUID (e.g. 0c29fa1b-03ef-…) shown in
+// LS dashboard → Products → Share → "Checkout link", NOT the internal
+// numeric variant id. LS checkout URLs are `/checkout/buy/{uuid}`;
+// numeric ids 404. Test mode and live mode have DIFFERENT UUIDs — swap
+// this one env var when flipping the store between modes.
+const LS_UNLOCK_UUID = import.meta.env.VITE_LEMON_SQUEEZY_UNLOCK_UUID;
+const LS_WIRED = !!LS_UNLOCK_UUID;
 
 // How long to keep the "Processing your payment…" banner up after the
 // LS overlay closes before giving up and clearing the in-flight state.
@@ -185,21 +183,20 @@ export function usePro(user) {
   // The client never writes isPro itself — Firestore rules block it. Comped
   // accounts (developers, beta testers) get Pro by setting `isPro: true`
   // directly on the user doc from the Firebase console.
-  const unlockPro = useCallback((plan = 'monthly') => {
+  const unlockPro = useCallback(() => {
     if (!user || !db) return false;
     if (!LS_WIRED) {
       console.warn('unlockPro: Lemon Squeezy variant env vars not set; cannot open checkout');
       return false;
     }
 
-    const variantUuid = plan === 'annual' ? LS_VARIANT_ANNUAL : LS_VARIANT_MONTHLY;
     const params = new URLSearchParams();
     params.set('checkout[custom][uid]', user.uid);
     if (user.email) params.set('checkout[email]', user.email);
     // Path must be `/checkout/buy/{uuid}` — `/buy/{id}` returns 404 for
     // most stores. UUID is the share-panel checkout UUID, not the
     // numeric variant ID.
-    const checkoutUrl = `https://${LS_STORE_SLUG}.lemonsqueezy.com/checkout/buy/${variantUuid}?${params.toString()}`;
+    const checkoutUrl = `https://${LS_STORE_SLUG}.lemonsqueezy.com/checkout/buy/${LS_UNLOCK_UUID}?${params.toString()}`;
 
     // Mark in-flight and arm the failsafe so the banner doesn't hang forever
     // if the user closes the overlay without paying. The success path clears

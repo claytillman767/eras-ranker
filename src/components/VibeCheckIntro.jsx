@@ -247,7 +247,7 @@ export default function VibeCheckIntro({
               marginBottom: 10,
             }}
           >
-            ⭐ Unlock Pro
+            ⭐ Unlock — $3.99 one time
           </button>
         )}
 

@@ -80,18 +80,16 @@ export default function PrivacyPolicy() {
           <li>Where you originally came from when you first visited the App (the referring website, if any, and any "ref" parameter in the URL)</li>
         </ul>
 
-        <h3 style={h3Style}>2.3 Pro subscription and billing</h3>
+        <h3 style={h3Style}>2.3 Pro unlock and billing</h3>
         <p style={pStyle}>
-          If you upgrade to Pro, payment is handled by{' '}
+          If you buy the one-time Pro unlock, payment is handled by{' '}
           <strong>Lemon Squeezy</strong>, an independent payment processor.
           We never see or store your full credit card number. From Lemon
           Squeezy's webhook, we receive and store:
         </p>
         <ul style={ulStyle}>
-          <li>Your Lemon Squeezy customer ID and subscription ID</li>
-          <li>Your subscription status (active, cancelled, past due, etc.) and the plan you're on (monthly or annual)</li>
-          <li>The current billing period end date and, if you've cancelled, when access ends</li>
-          <li>A one-time customer-portal URL that lets you manage your subscription</li>
+          <li>Your Lemon Squeezy customer ID and the order ID for your purchase</li>
+          <li>Whether the unlock was paid (and, if a payment is later refunded, that it was reversed)</li>
         </ul>
         <p style={pStyle}>
           Lemon Squeezy has its own privacy policy at{' '}
@@ -163,7 +161,7 @@ export default function PrivacyPolicy() {
         <ul style={ulStyle}>
           <li>Remember your ratings and keep them synced across your devices</li>
           <li>Let you sign in and recognize you when you come back</li>
-          <li>Charge for Pro subscriptions and unlock Pro features for paying users</li>
+          <li>Take the one-time Pro payment and unlock Pro features for buyers</li>
           <li>Show your public profile to people you share the link with (only if you turn it on)</li>
           <li>Reply to your feedback and fix problems you report</li>
           <li>Power optional in-app features that analyze or summarize your ratings (see below)</li>
@@ -216,8 +214,8 @@ export default function PrivacyPolicy() {
             </a>
           </li>
           <li>
-            <strong>Lemon Squeezy</strong> — processes Pro subscription
-            payments.{' '}
+            <strong>Lemon Squeezy</strong> — processes the one-time Pro
+            payment.{' '}
             <a href="https://www.lemonsqueezy.com/privacy" target="_blank" rel="noopener noreferrer" style={linkStyle}>
               Lemon Squeezy's privacy policy
             </a>
@@ -259,20 +257,21 @@ export default function PrivacyPolicy() {
           </li>
           <li>
             <strong>Delete your data.</strong> Open Settings → Delete my
-            account inside the App. This cancels any active Pro
-            subscription, removes your public profile (if any), deletes
-            your account record from our database, and signs you out
-            permanently. Once deleted, your data cannot be recovered. You
-            can also email us if you prefer.
+            account inside the App. This removes your public profile (if
+            any), deletes your account record from our database, and signs
+            you out permanently. The one-time Pro unlock is tied to the
+            account and ends with it. Once deleted, your data cannot be
+            recovered. You can also email us if you prefer.
           </li>
           <li>
             <strong>Export your data.</strong> Email us and we'll send you
             a JSON file of your ratings and account information.
           </li>
           <li>
-            <strong>Withdraw your consent.</strong> You can cancel Pro
-            at any time from the customer portal linked in Settings →
-            Account.
+            <strong>Withdraw your consent.</strong> The Pro unlock is a
+            one-time purchase with no recurring billing, so there is
+            nothing to cancel. You can delete your account at any time
+            from Settings → Delete my account.
           </li>
         </ul>
         <p style={pStyle}>

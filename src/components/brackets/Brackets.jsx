@@ -68,13 +68,17 @@ export default function Brackets({ user, isPro }) {
   }
 
   // Open the BracketBuilder picker (category → scope → size).
+  // Building your OWN bracket is part of the one-time unlock. Community
+  // weekly + daily brackets stay free (they feed the engagement flywheel).
   function buildPersonal() {
+    if (!isPro) { setScreen('locked'); return; }
     setScreen('builder');
   }
 
   // Called when the builder confirms — actually creates the bracket and
   // routes into the matchup flow.
   function handleBuilderStart(categoryId, scope, size) {
+    if (!isPro) { setScreen('locked'); return; }
     const id = createBracket(categoryId, scope, size);
     if (id) {
       setActiveBracketId(id);
@@ -109,6 +113,10 @@ export default function Brackets({ user, isPro }) {
   }
 
   // ── Routes ─────────────────────────────────────────────────────────────────
+
+  if (screen === 'locked') {
+    return <BracketLocked onClose={backToLanding} />;
+  }
 
   if (screen === 'builder') {
     return (
@@ -205,5 +213,54 @@ export default function Brackets({ user, isPro }) {
       onOpenDaily={() => setScreen('daily')}
       onOpenCrowned={openCrowned}
     />
+  );
+}
+
+// Shown when a non-unlocked user tries to BUILD their own bracket.
+// Community weekly + daily brackets are never gated — only the
+// build-your-own flow lives behind the one-time unlock.
+function BracketLocked({ onClose }) {
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: '#ffffff',
+      zIndex: 1000,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '0 28px',
+      textAlign: 'center',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    }}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>🏆</div>
+      <div style={{ fontSize: 22, fontWeight: 700, color: '#111827', marginBottom: 10 }}>
+        Build-your-own brackets are part of the unlock
+      </div>
+      <div style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6, maxWidth: 340, marginBottom: 24 }}>
+        Make your own custom tournament from any songs you like with the
+        one-time $3.99 unlock. The weekly community bracket and daily
+        matchup stay free — keep voting on those any time.
+      </div>
+      <button
+        onClick={onClose}
+        style={{
+          padding: '12px 28px',
+          borderRadius: 12,
+          border: '0.5px solid #d1d5db',
+          background: '#ffffff',
+          color: '#4b5563',
+          fontSize: 14,
+          fontWeight: 600,
+          cursor: 'pointer',
+        }}
+      >
+        Back
+      </button>
+      <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 16, lineHeight: 1.5, maxWidth: 320 }}>
+        Unlock anytime in Settings → Membership.
+      </div>
+    </div>
   );
 }

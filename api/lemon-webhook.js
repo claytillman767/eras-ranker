@@ -97,7 +97,31 @@ export default async function handler(req, res) {
   const userRef = db.collection('users').doc(uid);
 
   try {
-    if (ENABLE_EVENTS.has(eventName)) {
+    if (eventName === 'order_created') {
+      // One-time $3.99 unlock. LS fires `order_created` for non-subscription
+      // products. There is no renewal or cancellation — grant Pro for good.
+      // data.id is the ORDER id here (not a subscription id).
+      await userRef.set(
+        {
+          isPro: true,
+          proSource: 'lemonsqueezy',
+          orderId: subscriptionId ?? null,
+          proUpdatedAt: FieldValue.serverTimestamp(),
+          proLastEvent: eventName,
+        },
+        { merge: true }
+      );
+    } else if (eventName === 'order_refunded') {
+      // Refunded one-time unlock — revoke access.
+      await userRef.set(
+        {
+          isPro: false,
+          proUpdatedAt: FieldValue.serverTimestamp(),
+          proLastEvent: eventName,
+        },
+        { merge: true }
+      );
+    } else if (ENABLE_EVENTS.has(eventName)) {
       await userRef.set(
         {
           isPro: true,

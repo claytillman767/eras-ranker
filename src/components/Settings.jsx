@@ -4,10 +4,10 @@ import { db } from '../firebase';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
 import { BIO_MAX_LENGTH } from '../utils/profanity';
+import { TIP_JAR_URL } from '../data/tipJar';
 import CategoriesEditor from './CategoriesEditor';
 import ConfirmModal from './ConfirmModal';
 import DeleteAccountModal from './DeleteAccountModal';
-import { PlanPicker } from './PaywallCard';
 import { isDevEmail, isUatMode, setUatMode, clearOnboardingFlags } from '../uat';
 
 // Settings tab — app-wide display and behaviour preferences.
@@ -128,8 +128,8 @@ export default function Settings({
     URL.revokeObjectURL(url);
   }
 
-  function handleUnlockPro(plan) {
-    unlockPro(plan);
+  function handleUnlockPro() {
+    unlockPro();
     setShowProModal(false);
   }
 
@@ -393,6 +393,25 @@ export default function Settings({
         subscriptionPlan={subscriptionPlan}
       />
 
+      {/* Tip jar — pure goodwill, hidden until a URL is configured. */}
+      {TIP_JAR_URL && (
+        <a
+          href={TIP_JAR_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'block',
+            textAlign: 'center',
+            fontSize: 12,
+            color: '#6b7280',
+            textDecoration: 'none',
+            margin: '-8px 0 24px',
+          }}
+        >
+          ☕ Enjoying the app? Buy me a coffee
+        </a>
+      )}
+
       {/* ── Public profile section ── */}
       {user && profile && (
         <>
@@ -648,7 +667,6 @@ export default function Settings({
 //                     decision first, then explains the login requirement)
 function ProModal({ onUnlock, onClose, user, signIn }) {
   const [step, setStep] = useState('features');
-  const [plan, setPlan] = useState('monthly'); // monthly is the lower-commitment default
   const features = [
     { icon: '📊', label: '8 extra categories', desc: 'Hook, Vocals, Cry Factor, and more' },
     { icon: '✏️', label: 'Custom categories',  desc: 'Add your own scoring dimensions' },
@@ -659,7 +677,7 @@ function ProModal({ onUnlock, onClose, user, signIn }) {
       setStep('signin');
       return;
     }
-    onUnlock(plan);
+    onUnlock();
   }
 
   return (
@@ -699,7 +717,7 @@ function ProModal({ onUnlock, onClose, user, signIn }) {
               </div>
             </div>
             <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 20, lineHeight: 1.5 }}>
-              $4.99/month, or save 22% with an annual plan. Cancel anytime.
+              A one-time $3.99 unlock — yours forever, no subscription.
             </div>
 
             {/* Feature list */}
@@ -727,11 +745,6 @@ function ProModal({ onUnlock, onClose, user, signIn }) {
               ))}
             </div>
 
-            {/* Plan picker — choose monthly or annual */}
-            <div style={{ marginBottom: 20 }}>
-              <PlanPicker plan={plan} onChange={setPlan} />
-            </div>
-
             {/* Unlock — always tappable. If not signed in, transitions to the
                 sign-in step instead of immediately calling onUnlock. */}
             <button
@@ -750,9 +763,7 @@ function ProModal({ onUnlock, onClose, user, signIn }) {
                 marginBottom: 12,
               }}
             >
-              {plan === 'annual'
-                ? 'Subscribe — $46.71/year'
-                : 'Subscribe — $4.99/month'}
+              Unlock — $3.99 one time
             </button>
 
             <button
@@ -1104,81 +1115,6 @@ function SectionHeader({ children }) {
   );
 }
 
-// Pro subscription summary row inside the Account card. Opens the LS
-// customer portal in a new tab — that's where users cancel, update card
-// details, download invoices, etc. We don't host that UI ourselves; LS
-// provides one portal URL per subscription and stores it on users/{uid}
-// via the webhook.
-//
-// When the user has cancelled but still has access until period end,
-// `status === 'cancelled'` and we surface a "Cancels on {date}" line so
-// they know exactly when access ends and aren't surprised.
-function ManageSubscriptionRow({ portalUrl, status, endsAt }) {
-  const isCancelled = status === 'cancelled';
-
-  // endsAt is an ISO string from the LS webhook (or null). Format as a
-  // friendly date — defensive about bad input so a typo or missing field
-  // never crashes the Account card.
-  let endsAtLabel = null;
-  if (isCancelled && endsAt) {
-    const d = new Date(endsAt);
-    if (!Number.isNaN(d.getTime())) {
-      endsAtLabel = d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-    }
-  }
-
-  return (
-    <a
-      href={portalUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 10,
-        width: '100%',
-        padding: '10px 12px',
-        borderRadius: 10,
-        border: '0.5px solid #e9d5ff',
-        background: '#faf5ff',
-        textDecoration: 'none',
-        marginBottom: 8,
-      }}
-    >
-      <div style={{ minWidth: 0 }}>
-        <div style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: '#7c3aed',
-          marginBottom: 2,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-        }}>
-          <span>Manage subscription</span>
-          <span style={{
-            fontSize: 9,
-            fontWeight: 700,
-            letterSpacing: '0.08em',
-            background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
-            color: '#ffffff',
-            padding: '2px 6px',
-            borderRadius: 8,
-            textTransform: 'uppercase',
-          }}>Pro</span>
-        </div>
-        <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4 }}>
-          {isCancelled && endsAtLabel
-            ? `Cancels on ${endsAtLabel}. Update card or restart anytime.`
-            : 'Update payment, view invoices, or cancel anytime.'}
-        </div>
-      </div>
-      <span style={{ fontSize: 14, color: '#a855f7', flexShrink: 0 }}>↗</span>
-    </a>
-  );
-}
-
 // Membership section — the dedicated home for Pro status / upgrade in
 // Settings. Three states:
 //   1. Pro user      → status pill (Active / Cancels on X / Past due),
@@ -1192,8 +1128,6 @@ function MembershipSection({
   customerPortalUrl, subscriptionStatus, subscriptionEndsAt,
   nextRenewalAt, subscriptionPlan,
 }) {
-  const [plan, setPlan] = useState(subscriptionPlan === 'annual' ? 'annual' : 'monthly');
-
   const proPerks = [
     { icon: '📊', label: '8 extra categories', desc: 'Hook, Vocals, Cry Factor, and more' },
     { icon: '✏️', label: 'Custom categories',  desc: 'Add your own scoring dimensions' },
@@ -1244,45 +1178,10 @@ function MembershipSection({
 
   // STATE 1 — Pro. Show status pill, plan/renewal info, perks, manage button.
   if (isPro) {
-    const isCancelled = subscriptionStatus === 'cancelled';
-    const isPastDue = subscriptionStatus === 'past_due';
-
-    // Pretty date for the relevant "next thing happens on" line.
-    function fmtDate(iso) {
-      if (!iso) return null;
-      const d = new Date(iso);
-      return Number.isNaN(d.getTime())
-        ? null
-        : d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-    }
-    const renewLabel = fmtDate(nextRenewalAt);
-    const endsLabel = fmtDate(subscriptionEndsAt);
-
-    // Status pill style/label depends on subscription state.
-    const pill = isCancelled
-      ? { bg: '#fef3c7', border: '#fde68a', color: '#92400e', text: 'Cancelling' }
-      : isPastDue
-        ? { bg: '#fee2e2', border: '#fecaca', color: '#b91c1c', text: 'Payment failed' }
-        : { bg: '#dcfce7', border: '#bbf7d0', color: '#166534', text: 'Active' };
-
-    // Plan label — we only know monthly vs annual if the webhook stored it.
-    const planLabel = subscriptionPlan === 'annual'
-      ? 'Annual — $46.71/year'
-      : subscriptionPlan === 'monthly'
-        ? 'Monthly — $4.99/month'
-        : 'Pro membership';
-
-    // Subline under the plan — explains when the next billing event happens.
-    let subline;
-    if (isCancelled && endsLabel) {
-      subline = `Access ends ${endsLabel}. Restart anytime from the portal.`;
-    } else if (isPastDue) {
-      subline = 'Last payment failed — update your card to keep Pro active.';
-    } else if (renewLabel) {
-      subline = `Renews on ${renewLabel}`;
-    } else {
-      subline = 'Thanks for supporting the app.';
-    }
+    // One-time unlock — nothing to renew, cancel, or manage.
+    const pill = { bg: '#dcfce7', border: '#bbf7d0', color: '#166534', text: 'Unlocked' };
+    const planLabel = 'Unlocked — $3.99 one time';
+    const subline = 'Yours forever. Thanks for supporting the app.';
 
     return (
       <div style={{
@@ -1347,25 +1246,15 @@ function MembershipSection({
           </div>
         </div>
 
-        {/* Manage subscription button — links to LS customer portal. */}
-        <div style={{ padding: '12px' }}>
-          {customerPortalUrl ? (
-            <ManageSubscriptionRow
-              portalUrl={customerPortalUrl}
-              status={subscriptionStatus}
-              endsAt={subscriptionEndsAt}
-            />
-          ) : (
-            <div style={{
-              fontSize: 11,
-              color: '#6b7280',
-              padding: '8px 12px',
-              textAlign: 'center',
-              lineHeight: 1.4,
-            }}>
-              Subscription details are syncing. The manage link will appear here in a moment.
-            </div>
-          )}
+        {/* One-time unlock — no billing portal, nothing to manage. */}
+        <div style={{
+          padding: '14px 16px',
+          fontSize: 11,
+          color: '#6b7280',
+          textAlign: 'center',
+          lineHeight: 1.4,
+        }}>
+          One-time purchase — there's nothing to manage or cancel.
         </div>
       </div>
     );
@@ -1387,7 +1276,7 @@ function MembershipSection({
           </div>
         </div>
         <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>
-          Upgrade to Pro for $4.99/month, or save 22% with the annual plan. Cancel anytime.
+          A one-time $3.99 unlock — yours forever, no subscription.
         </div>
       </div>
 
@@ -1411,11 +1300,8 @@ function MembershipSection({
       </div>
 
       <div style={{ padding: '14px 16px 16px' }}>
-        <div style={{ marginBottom: 14 }}>
-          <PlanPicker plan={plan} onChange={setPlan} />
-        </div>
         <button
-          onClick={() => unlockPro(plan)}
+          onClick={() => unlockPro()}
           style={{
             width: '100%',
             padding: '13px',
@@ -1429,7 +1315,7 @@ function MembershipSection({
             boxShadow: '0 4px 16px rgba(168,85,247,0.30)',
           }}
         >
-          {plan === 'annual' ? 'Subscribe — $46.71/year' : 'Subscribe — $4.99/month'}
+          Unlock — $3.99 one time
         </button>
       </div>
     </div>
