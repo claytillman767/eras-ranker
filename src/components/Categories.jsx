@@ -3,23 +3,39 @@ import PaywallCard from './PaywallCard';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
 import { CUSTOM_CAT_LIMIT } from '../hooks/usePro';
 
-// Slider that controls a category's raw priority weight (1–50).
-// Shows the resulting normalized % next to the label.
+// Slider that controls a category's raw priority weight on a 1–100 scale.
+// As you drag, both the raw priority and the resulting normalized %
+// update live, so you can preview the rebalancing in real time.
 function WeightSlider({ catId, rawWeight, normalizedPct, onChange }) {
   return (
     <div style={{ marginTop: 8 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
         <span style={{ fontSize: 11, color: '#9ca3af' }}>Weight</span>
-        <span style={{ fontSize: 12, fontWeight: 500, color: '#a855f7' }}>{normalizedPct}% of score</span>
+        <span style={{ fontSize: 12, color: '#6b7280' }}>
+          <span style={{ fontWeight: 600, color: '#7c3aed' }}>{rawWeight}</span>
+          <span style={{ margin: '0 6px', color: '#d1d5db' }}>·</span>
+          <span style={{ fontWeight: 500, color: '#a855f7' }}>{normalizedPct}% of score</span>
+        </span>
       </div>
       <input
         type="range"
         min={1}
-        max={50}
+        max={100}
         value={rawWeight}
         onChange={e => onChange(catId, Number(e.target.value))}
-        style={{ width: '100%', accentColor: '#a855f7', cursor: 'pointer' }}
+        onInput={e => onChange(catId, Number(e.target.value))}
+        style={{ width: '100%', accentColor: '#a855f7', cursor: 'pointer', display: 'block' }}
       />
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginTop: 2,
+        fontSize: 10,
+        color: '#d1d5db',
+      }}>
+        <span>1</span>
+        <span>100</span>
+      </div>
     </div>
   );
 }

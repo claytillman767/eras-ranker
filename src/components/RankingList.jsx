@@ -27,12 +27,20 @@ function rankIcon(i) {
 
 // Expanded panel under a song row — shows users exactly how the 0–100
 // score was built from the category stars they gave. The average is
-// recomputed here from the rows so what's shown always adds up.
+// recomputed here from ONLY the rated rows so what's shown always adds
+// up to the displayed score. Unrated categories are still listed (grayed
+// out) so users can see what they haven't rated yet.
 function ScoreBreakdown({ song }) {
-  const cats = song.categories || [];
+  const cats = (song.categories || []);
+  // Backward compatibility: older mirrored docs don't carry `rated`. Treat
+  // any row that has stars > 0 as rated; missing flag → derive from stars.
+  const normalized = cats.map(c => ({ ...c, rated: c.rated ?? c.stars > 0 }));
+  const rated = normalized.filter(c => c.rated);
+  const unrated = normalized.filter(c => !c.rated);
+
   let num = 0;
   let den = 0;
-  for (const c of cats) {
+  for (const c of rated) {
     num += c.stars * c.weight;
     den += c.weight;
   }
@@ -56,7 +64,8 @@ function ScoreBreakdown({ song }) {
         HOW THIS SCORE IS BUILT
       </div>
 
-      {cats.map(c => (
+      {/* Rated categories — these are what built the score */}
+      {rated.map(c => (
         <div key={c.id} style={{
           display: 'flex',
           alignItems: 'center',
@@ -73,7 +82,34 @@ function ScoreBreakdown({ song }) {
         </div>
       ))}
 
-      <div style={{ borderTop: '0.5px solid #e9d5ff', margin: '8px 0', paddingTop: 8 }}>
+      {/* Unrated categories — listed so users see what they didn't rate */}
+      {unrated.length > 0 && (
+        <div style={{ marginTop: 8, paddingTop: 8, borderTop: '0.5px dashed #e9d5ff' }}>
+          <div style={{ fontSize: 10, fontWeight: 600, color: '#9ca3af', marginBottom: 4, letterSpacing: '0.03em' }}>
+            NOT RATED — DOESN'T COUNT TOWARD THE SCORE
+          </div>
+          {unrated.map(c => (
+            <div key={c.id} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '3px 0',
+              opacity: 0.55,
+            }}>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 12, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {c.label}
+              </span>
+              <span style={{ fontSize: 11, color: '#9ca3af', fontStyle: 'italic' }}>not rated</span>
+              <span style={{ width: 56, textAlign: 'right', fontSize: 11, color: '#9ca3af' }}>
+                weight {c.weight}%
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* The math */}
+      <div style={{ borderTop: '0.5px solid #e9d5ff', margin: '8px 0 0', paddingTop: 8 }}>
         <div style={{ fontSize: 12, color: '#374151', marginBottom: 3 }}>
           Weighted average of your stars: <strong>{avg.toFixed(2)}</strong> out of 5
         </div>

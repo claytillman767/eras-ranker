@@ -16,6 +16,25 @@ Newest entries go at the top.
 
 ---
 
+## 0.19.1 — 2026-05-18
+
+### Changed
+- **Score breakdown now shows every active category**, not just the ones
+  you rated. Any category you haven't rated yet appears in a "Not rated
+  — doesn't count toward the score" section, so it's obvious what's
+  contributing to the score and what isn't.
+- **Category weight sliders go up to 100** (instead of 50) and now show
+  your raw priority value (1–100) right next to the resulting "% of
+  score" — both numbers update live as you drag.
+
+### Fixed
+- **Public profile now stays in sync as you rate.** A subtle bug caused
+  the auto-sync timer to keep resetting on every render, so the profile
+  often stuck on the snapshot from when you first turned it on. Renames
+  and re-ratings now flow through to the shared link as intended.
+
+---
+
 ## 0.19.0 — 2026-05-18
 
 ### Added

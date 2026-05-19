@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useRatings } from './hooks/useRatings';
 import { usePro } from './hooks/usePro';
@@ -129,7 +129,11 @@ export default function App() {
     getActiveCategories,
   } = usePro(user);
 
-  const activeCategories = getActiveCategories();
+  // Memoize so downstream consumers (useProfile's auto-mirror, Rankings,
+  // etc.) get a stable array reference unless category settings change.
+  // Without this, every render produces a new array and the profile
+  // auto-mirror debounce timer keeps resetting and never fires.
+  const activeCategories = useMemo(() => getActiveCategories(), [getActiveCategories]);
 
   const { getManualOrder, moveUp, moveDown, reorder, setOrder } = useManualOrder(user);
   const { getAlbumMode, setAlbumMode } = useAlbumModes(user);

@@ -146,10 +146,12 @@ export function useRatings(user) {
 
   // Canonical scoring computation for one song. Returns the full breakdown
   // so the UI can show users exactly how the 0–100 number is built:
-  //   { score, rows: [{ id, label, stars, weight }] }
-  // rows are ONLY the categories that contributed (a star value > 0), with
-  // their effective weights, so the displayed math always sums to `score`.
-  // Returns null if nothing has been rated.
+  //   { score, rows: [{ id, label, stars, weight, rated }] }
+  // rows include EVERY active category for the song (with stars=0 for
+  // unrated ones and rated:false), so the breakdown panel can show users
+  // what the score is built from AND what they haven't rated yet. Only
+  // rows where rated:true are summed into the score itself.
+  // Returns null if not a single category has been rated.
   //
   // Formula: sum(stars * weight) / sum(weight for rated cats only) → 1–5,
   // then /5 * 100 → 0–100.
@@ -177,12 +179,13 @@ export function useRatings(user) {
     let denominator = 0;
 
     for (const cat of effectiveCategories) {
-      const stars = songRatings[cat.id];
-      if (stars && stars > 0) {
+      const stars = songRatings[cat.id] || 0;
+      const rated = stars > 0;
+      if (rated) {
         numerator += stars * cat.weight;
         denominator += cat.weight;
-        rows.push({ id: cat.id, label: cat.name, stars, weight: cat.weight });
       }
+      rows.push({ id: cat.id, label: cat.name, stars, weight: cat.weight, rated });
     }
 
     if (denominator === 0) return null;
