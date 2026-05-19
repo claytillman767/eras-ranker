@@ -104,22 +104,28 @@ earlier lawyer-review hold**. Merged to main (merge `ca909f0`, release
 updated. The one-time $3.99 model, brackets, tip jar, and the rewritten
 legal text are LIVE on erasranker.com.
 
-**Remaining (post-ship, operator actions — not code):**
-1. Do one real $3.99 purchase + self-refund to verify checkout → webhook
-   → Firestore → UI unlock end-to-end. This is the ONLY part not yet
-   proven in production. If it fails, check: LS webhook delivery log,
-   Vercel logs for `/api/lemon-webhook`, that the signing secret matches
-   the rotated value, and that `FIREBASE_SERVICE_ACCOUNT_B64` is set.
-2. Delete the now-dead `VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY/_ANNUAL`
-   Vercel env vars.
-3. §11 email stays waived (Option B — no prior users).
-
-**Recommended follow-up (deferred, not a blocker):** the BracketLocked
-screen has no inline "Unlock — $3.99" CTA — a user at the highest-intent
-moment only gets a "Back" button. Adding the unlock CTA there (needs
-unlockPro/signIn/user plumbed into Brackets, mirroring PaywallCard's
-sign-in-routing pattern) is a real PRO FUNNEL improvement for the next
-pass.
+**PENDING TODOs (post-v0.17.0 — none block the live site; it is already shipped):**
+1. **[Operator] Verify the money flow in production.** Do one real $3.99
+   purchase + self-refund: confirm checkout → webhook → Firestore → the UI
+   flips to unlocked within a second or two, then refund in the Lemon
+   Squeezy dashboard and confirm access is removed. This is the ONLY part
+   not yet proven in production. If it fails, check in order: LS webhook
+   delivery log → Vercel logs for `/api/lemon-webhook` → the signing secret
+   matches the rotated value → `FIREBASE_SERVICE_ACCOUNT_B64` is set.
+2. **[Operator] Delete dead Vercel env vars**
+   `VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY` and `_ANNUAL` — nothing reads
+   them anymore.
+3. **[Dev — deferred, real PRO FUNNEL win] Add an inline "Unlock — $3.99"
+   CTA to the BracketLocked screen** (`src/components/brackets/Brackets.jsx`).
+   Today a non-unlocked user who taps "build a bracket" only gets a "Back"
+   button at the highest-intent moment — a wasted conversion. Needs
+   `unlockPro`/`signIn`/`user` plumbed into `Brackets` (App.jsx passes only
+   `user`/`isPro` today), mirroring PaywallCard's sign-in-routing pattern.
+4. **[Dev — future, only on explicit instruction] Phase 2 not started:**
+   Eras DNA / Taste Profile (the headline ~$6.99 paid feature) + the
+   community "Fan's Picks" baseline — see the "Eras DNA" notes above.
+5. **§11 advance-email stays waived** for this change (Option B — no prior
+   users). No action; recorded so it is not re-flagged as an open gap.
 
 ---
 
