@@ -54,11 +54,12 @@ export default function DeleteAccountModal({ user, isPro, signOut, onClose }) {
       //
       //    Skipped entirely when:
       //    - the user isn't Pro (common case), or
-      //    - Lemon Squeezy isn't fully wired yet (no variant-ID env var
-      //      present means we're still on the mock unlock path, so there's
-      //      no real subscription to cancel — and the API endpoint may
-      //      not be deployed either).
-      const lsWired = !!import.meta.env.VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY;
+      //    - Lemon Squeezy isn't configured yet (no unlock checkout UUID
+      //      present). The one-time model has no subscription anyway, so
+      //      /api/cancel-subscription is idempotent and a safe no-op; we
+      //      still call it to clean up any legacy subscription record from
+      //      the old model.
+      const lsWired = !!import.meta.env.VITE_LEMON_SQUEEZY_UNLOCK_UUID;
       if (isPro && lsWired) {
         const idToken = await user.getIdToken();
         const res = await fetch('/api/cancel-subscription', {
@@ -208,8 +209,9 @@ function ExplainStep({ isPro, onContinue, onCancel }) {
         <li>Your account on every device you've signed into</li>
         {isPro && (
           <li>
-            <b>Your Pro subscription</b> — cancelled immediately, with no
-            refund for unused time. Sign up again to re-subscribe.
+            <b>Your Pro unlock</b> — the one-time unlock is tied to this
+            account and can't be transferred. You'd need to buy it again
+            on a new account.
           </li>
         )}
       </ul>

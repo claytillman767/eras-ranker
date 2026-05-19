@@ -183,6 +183,11 @@ export default function VibeCheckIntro({
               title: 'Custom categories',
               desc: 'Add your own scoring dimensions and tune their weights.',
             },
+            {
+              icon: '🏆',
+              title: 'Custom brackets',
+              desc: 'Build your own bracket tournament from any songs.',
+            },
           ].map((item, i, arr) => (
             <div
               key={item.title}
@@ -247,7 +252,7 @@ export default function VibeCheckIntro({
               marginBottom: 10,
             }}
           >
-            ⭐ Unlock Pro
+            ⭐ Unlock — $3.99 one time
           </button>
         )}
 

@@ -222,7 +222,7 @@ export default function GoogleLoginPromo({ user, signIn, onContinue }) {
           lineHeight: 1.6,
         }}>
           You can sign in any time from Settings → Account.
-          Pro (extra categories, custom scoring, and more) needs a signed-in account.
+          Pro (extra categories, custom categories + custom brackets) needs a signed-in account.
         </div>
       </div>
     </div>

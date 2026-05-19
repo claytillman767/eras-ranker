@@ -16,6 +16,24 @@ Newest entries go at the top.
 
 ---
 
+## 0.17.0 — 2026-05-18
+
+### Changed
+- **Pro is now a one-time $3.99 unlock instead of a subscription.** Pay once
+  and it's yours for good — no monthly or yearly charge, nothing to renew,
+  and nothing to cancel.
+- **Terms of Service and Privacy Policy updated** to match one-time billing.
+  Signed-in users will be asked to re-accept on their next visit.
+
+### Added
+- **Brackets are here.** Vote in the free weekly community bracket and the
+  daily matchup any time. Building your own custom bracket from any songs
+  you choose is part of the Pro unlock.
+- **"Buy me a coffee"** support link in Settings for anyone who wants to
+  chip in — completely optional, no perks attached.
+
+---
+
 ## 0.16.0 — 2026-05-16
 
 ### Removed

@@ -29,9 +29,10 @@ export default function Terms() {
           <strong>The short version.</strong> By using The Eras Ranker, you
           agree to these terms. You need to be at least 13 years old. Be
           decent to other people in anything you make public. Pro is a
-          recurring subscription you can cancel any time, but past payments
-          aren't refunded. The App is a fan-made project — Taylor Swift
-          and her record labels have no involvement.
+          one-time $3.99 unlock — no subscription, nothing to cancel; past
+          payments aren't refunded except as described in Section 6. The
+          App is a fan-made project — Taylor Swift and her record labels
+          have no involvement.
         </div>
 
         <h2 style={h2Style}>1. Agreement</h2>
@@ -74,8 +75,7 @@ export default function Terms() {
         </p>
         <p style={pStyle}>
           You can delete your account at any time from Settings → Delete
-          my account. Deletion is permanent and cancels any active Pro
-          subscription.
+          my account. Deletion is permanent and ends your Pro unlock.
         </p>
 
         <h2 style={h2Style}>4. Acceptable use</h2>
@@ -127,62 +127,55 @@ export default function Terms() {
           public-profile content that breaks these rules.
         </p>
 
-        <h2 style={h2Style}>6. Pro subscription</h2>
+        <h2 style={h2Style}>6. Pro unlock (one-time purchase)</h2>
         <p style={pStyle}>
-          Some features of the App require a paid <strong>Pro</strong>{' '}
-          subscription. Pro is offered as:
-        </p>
-        <ul style={ulStyle}>
-          <li><strong>Monthly</strong> — $4.99 per month</li>
-          <li><strong>Annual</strong> — $46.71 per year (a discount equivalent to about 22% off the monthly rate)</li>
-        </ul>
-        <p style={pStyle}>
-          Prices are in US dollars and exclude any sales tax or VAT,
-          which Lemon Squeezy adds at checkout based on your location.
+          Some features of the App require the paid <strong>Pro</strong>{' '}
+          unlock. Pro is a <strong>one-time purchase of $3.99</strong>{' '}
+          (US dollars, excluding any sales tax or VAT, which Lemon Squeezy
+          adds at checkout based on your location). It is not a
+          subscription — there is no recurring charge, no automatic
+          renewal, and nothing to cancel.
         </p>
 
         <h3 style={h3Style}>6.1 Billing</h3>
         <p style={pStyle}>
-          Pro payments are processed by Lemon Squeezy, Inc., who acts as
-          the merchant of record. You're agreeing to Lemon Squeezy's own{' '}
+          Payment is processed by Lemon Squeezy, Inc., who acts as the
+          merchant of record. You're agreeing to Lemon Squeezy's own{' '}
           <a href="https://www.lemonsqueezy.com/terms" target="_blank" rel="noopener noreferrer" style={linkStyle}>
             terms of service
           </a>
-          {' '}for the payment portion. Your subscription renews
-          automatically on the same date each month (or each year, for
-          annual plans) until you cancel. We don't store your card
-          number — only Lemon Squeezy does.
+          {' '}for the payment portion. You are charged once. We don't
+          store your card number — only Lemon Squeezy does.
         </p>
 
-        <h3 style={h3Style}>6.2 Cancellation</h3>
+        <h3 style={h3Style}>6.2 What you get</h3>
         <p style={pStyle}>
-          You can cancel Pro at any time from the customer portal linked
-          in Settings → Account. When you cancel, Pro features stay
-          active until the end of your current billing period — there is
-          no proration or refund for the unused portion. After that, your
-          account returns to the free tier and your data stays intact.
+          The Pro unlock is tied to your account and stays unlocked on
+          that account for as long as the App offers it. Because it is a
+          one-time purchase, there is no subscription to cancel and no
+          billing period. If you delete your account, the unlock ends
+          with it and is not transferable to a new account.
         </p>
 
         <h3 style={h3Style}>6.3 Refunds</h3>
         <p style={pStyle}>
-          We do not offer refunds for past Pro payments, except where
-          required by law. If you believe you were charged in error,
-          email{' '}
+          We do not generally offer refunds for the Pro unlock, except
+          where required by law. If you believe you were charged in
+          error, email{' '}
           <a href="mailto:support@erasranker.com" style={linkStyle}>support@erasranker.com</a>
           {' '}and we'll look into it. If you're in the European Union,
           the United Kingdom, or another jurisdiction with a statutory
-          cooling-off period for digital subscriptions, you have the
-          rights given to you by your local law and nothing in these
-          Terms takes those away.
+          cooling-off period for digital purchases, you have the rights
+          given to you by your local law and nothing in these Terms takes
+          those away.
         </p>
 
         <h3 style={h3Style}>6.4 Price changes</h3>
         <p style={pStyle}>
-          We may change Pro prices in the future. If we do, we'll notify
-          you by email at least 30 days before the new price takes
-          effect on your account. The new price never applies
-          retroactively to time you've already paid for, and you can
-          always cancel before it takes effect.
+          We may change the price of the Pro unlock for future buyers.
+          Any change applies only to purchases made after it takes
+          effect — it never retroactively charges anyone who has already
+          bought the unlock.
         </p>
 
         <h2 style={h2Style}>7. Account deletion and termination</h2>
@@ -191,7 +184,7 @@ export default function Terms() {
           my account. Doing so:
         </p>
         <ul style={ulStyle}>
-          <li>Cancels any active Pro subscription effective immediately, with no refund of the current billing period</li>
+          <li>Ends your Pro unlock along with the account — the one-time unlock is tied to the account and is not refunded or transferable</li>
           <li>Permanently deletes your account record and all data attached to it (ratings, brackets, public profile, etc.)</li>
           <li>Cannot be undone</li>
         </ul>
@@ -199,9 +192,10 @@ export default function Terms() {
           We may suspend or terminate your account if you break these
           Terms, if we're legally required to, or if running your
           account becomes legally or technically impractical. If we
-          terminate your account, we'll refund any Pro payment for time
-          you've already paid for but not used (this is the only refund
-          situation under these Terms).
+          terminate your account without cause and you bought the Pro
+          unlock, email{' '}
+          <a href="mailto:support@erasranker.com" style={linkStyle}>support@erasranker.com</a>
+          {' '}and we'll consider a fair refund of the one-time purchase.
         </p>
 
         <h2 style={h2Style}>8. Intellectual property</h2>
