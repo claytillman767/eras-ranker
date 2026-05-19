@@ -3,7 +3,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
 import { DEFAULT_CATEGORIES, EXTRA_CATEGORIES } from '../data/categories';
-import { BIO_MAX_LENGTH } from '../utils/profanity';
+import PublicProfilePanel from './PublicProfilePanel';
 import { TIP_JAR_URL } from '../data/tipJar';
 import CategoriesEditor from './CategoriesEditor';
 import ConfirmModal from './ConfirmModal';
@@ -413,10 +413,10 @@ export default function Settings({
       )}
 
       {/* ── Public profile section ── */}
-      {user && profile && (
+      {profile && (
         <>
           <SectionHeader>Public profile</SectionHeader>
-          <PublicProfileSection profile={profile} />
+          <PublicProfilePanel profile={profile} user={user} signIn={signIn} />
         </>
       )}
 
@@ -884,218 +884,6 @@ export function SignInRequiredStep({ onBack, signIn }) {
         Sign in with Google
       </button>
     </>
-  );
-}
-
-// ── Public profile section ────────────────────────────────────────────────────
-
-function PublicProfileSection({ profile }) {
-  const { isOn, profile: data, setVisibility, setBio, profileUrl, loading } = profile;
-  const [bioDraft, setBioDraft] = useState(data.bio ?? '');
-  const [bioError, setBioError] = useState(null);
-  const [bioSavedTick, setBioSavedTick] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  // Keep the textarea in sync if the cloud doc updates externally (e.g. on sign-in)
-  useEffect(() => { setBioDraft(data.bio ?? ''); }, [data.bio]);
-
-  async function handleToggle() {
-    await setVisibility(isOn ? 'off' : 'unlisted');
-  }
-
-  async function handleSaveBio() {
-    setBioError(null);
-    const result = await setBio(bioDraft);
-    if (!result.ok) {
-      setBioError(result.reason);
-      return;
-    }
-    setBioSavedTick(true);
-    setTimeout(() => setBioSavedTick(false), 1500);
-  }
-
-  async function handleCopyLink() {
-    if (!profileUrl) return;
-    try {
-      await navigator.clipboard.writeText(profileUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      // Fallback: select the input so the user can copy manually
-      const el = document.getElementById('eras-profile-url');
-      if (el) { el.focus(); el.select(); }
-    }
-  }
-
-  const charsLeft = BIO_MAX_LENGTH - bioDraft.length;
-  const tooLong = charsLeft < 0;
-
-  return (
-    <div style={{
-      background: '#ffffff',
-      border: '0.5px solid #e5e7eb',
-      borderRadius: 12,
-      overflow: 'hidden',
-      marginBottom: 24,
-    }}>
-      {/* Toggle */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        padding: '14px 16px',
-        borderBottom: isOn ? '0.5px solid #f3f4f6' : 'none',
-      }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
-            Anyone with the link can view
-          </div>
-          <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>
-            Shows your album rankings and (optional) bio. We won't list your
-            profile anywhere — only people you share the link with will see it.
-          </div>
-        </div>
-        <button
-          onClick={handleToggle}
-          disabled={loading}
-          aria-pressed={isOn}
-          aria-label={isOn ? 'Turn profile off' : 'Turn profile on'}
-          style={{
-            width: 44,
-            height: 26,
-            borderRadius: 13,
-            border: 'none',
-            background: isOn ? '#a855f7' : '#e5e7eb',
-            position: 'relative',
-            cursor: loading ? 'default' : 'pointer',
-            transition: 'background 0.15s ease',
-            flexShrink: 0,
-          }}
-        >
-          <span style={{
-            position: 'absolute',
-            top: 2,
-            left: isOn ? 20 : 2,
-            width: 22,
-            height: 22,
-            borderRadius: '50%',
-            background: '#ffffff',
-            transition: 'left 0.15s ease',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-          }} />
-        </button>
-      </div>
-
-      {/* Share link + bio editor — only when profile is on */}
-      {isOn && (
-        <div style={{ padding: '14px 16px' }}>
-          <div style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: '#6b7280',
-            marginBottom: 6,
-            letterSpacing: '0.04em',
-          }}>
-            SHAREABLE LINK
-          </div>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
-            <input
-              id="eras-profile-url"
-              type="text"
-              value={profileUrl ?? ''}
-              readOnly
-              onFocus={e => e.target.select()}
-              style={{
-                flex: 1,
-                padding: '9px 11px',
-                fontSize: 12,
-                fontFamily: 'monospace',
-                border: '0.5px solid #e5e7eb',
-                borderRadius: 8,
-                background: '#f9fafb',
-                color: '#374151',
-                minWidth: 0,
-              }}
-            />
-            <button
-              onClick={handleCopyLink}
-              style={{
-                padding: '9px 14px',
-                fontSize: 12,
-                fontWeight: 600,
-                color: '#ffffff',
-                background: copied ? '#16a34a' : '#a855f7',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                transition: 'background 0.15s ease',
-                flexShrink: 0,
-              }}
-            >
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
-
-          <div style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: '#6b7280',
-            marginBottom: 6,
-            letterSpacing: '0.04em',
-          }}>
-            BIO (OPTIONAL)
-          </div>
-          <textarea
-            value={bioDraft}
-            onChange={e => { setBioDraft(e.target.value); setBioError(null); }}
-            placeholder="A line about your taste — no links."
-            rows={2}
-            style={{
-              width: '100%',
-              padding: '9px 11px',
-              fontSize: 13,
-              fontFamily: 'inherit',
-              border: `0.5px solid ${tooLong ? '#fecaca' : '#e5e7eb'}`,
-              borderRadius: 8,
-              resize: 'vertical',
-              boxSizing: 'border-box',
-              outline: 'none',
-              color: '#111827',
-            }}
-          />
-
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginTop: 6,
-            marginBottom: 10,
-            fontSize: 11,
-            color: tooLong ? '#dc2626' : '#9ca3af',
-          }}>
-            <span>{bioError ?? ' '}</span>
-            <span>{bioDraft.length} / {BIO_MAX_LENGTH}</span>
-          </div>
-
-          <button
-            onClick={handleSaveBio}
-            disabled={tooLong || bioDraft === (data.bio ?? '')}
-            style={{
-              padding: '9px 18px',
-              fontSize: 13,
-              fontWeight: 600,
-              color: '#ffffff',
-              background: (tooLong || bioDraft === (data.bio ?? '')) ? '#d1d5db' : '#a855f7',
-              border: 'none',
-              borderRadius: 8,
-              cursor: (tooLong || bioDraft === (data.bio ?? '')) ? 'default' : 'pointer',
-            }}
-          >
-            {bioSavedTick ? 'Saved ✓' : 'Save bio'}
-          </button>
-        </div>
-      )}
-    </div>
   );
 }
 

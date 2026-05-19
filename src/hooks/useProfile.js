@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
-import { ALL_ALBUMS } from '../data/albums';
+import { ALL_ALBUMS, SONGS } from '../data/albums';
 import { validateBio } from '../utils/profanity';
 
 // Manages the *owner-side* of the public profile feature.
@@ -9,8 +9,8 @@ import { validateBio } from '../utils/profanity';
 //   - flip their profile ON (visibility 'unlisted' — anyone with the link)
 //     or OFF (only the owner can read)
 //   - set a short bio
-//   - have their album rankings auto-mirrored to the public doc whenever
-//     their ratings change
+//   - have their album AND song rankings auto-mirrored to the public doc
+//     whenever their ratings change
 //
 // Strangers reading the profile go through ProfileView.jsx, which fetches
 // the same doc directly without using this hook.
@@ -27,13 +27,14 @@ function emptyProfile() {
     visibility: VISIBILITY_OFF,
     bio: '',
     albumRankings: [],
+    songRankings: [],
     displayName: '',
     photoURL: '',
     signedUpAt: null,
   };
 }
 
-export function useProfile(user, getAlbumScore, activeCategories) {
+export function useProfile(user, getAlbumScore, getCompositeScore, activeCategories) {
   const [profile, setProfile] = useState(emptyProfile);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -89,11 +90,36 @@ export function useProfile(user, getAlbumScore, activeCategories) {
         name: a.name,
         icon: a.icon,
         year: a.year,
+        color: a.color,
         score: getAlbumScore(a.id, activeCategories),
       }))
       .filter(a => a.score !== null)
       .sort((a, b) => b.score - a.score);
   }, [getAlbumScore, activeCategories]);
+
+  // Derive the public song rankings — every rated song across all albums,
+  // sorted high to low. Same logic the Rankings tab uses for its Songs view.
+  // The public view shows the top 25 first with a "load more"; the full
+  // list is mirrored so that progressive reveal has everything it needs.
+  const buildSongRankings = useCallback(() => {
+    if (!getCompositeScore || !activeCategories) return [];
+    const all = [];
+    for (const album of ALL_ALBUMS) {
+      const songs = SONGS[album.id] || [];
+      for (let i = 0; i < songs.length; i++) {
+        const score = getCompositeScore(album.id, i, activeCategories);
+        if (score !== null) {
+          all.push({
+            name: songs[i],
+            albumName: album.name,
+            albumIcon: album.icon,
+            score,
+          });
+        }
+      }
+    }
+    return all.sort((a, b) => b.score - a.score);
+  }, [getCompositeScore, activeCategories]);
 
   // Persist a doc update both in local state and to Firestore.
   const writeProfile = useCallback(async (patch) => {
@@ -116,23 +142,26 @@ export function useProfile(user, getAlbumScore, activeCategories) {
     }
   }, [user]);
 
-  // Auto-mirror album rankings whenever they change AND the profile is on.
-  // Debounced so a rapid rating session doesn't fire one write per change.
+  // Auto-mirror album + song rankings whenever they change AND the profile
+  // is on. Debounced so a rapid rating session doesn't fire one write per
+  // change.
   useEffect(() => {
     if (!user) return;
     if (profile.visibility !== VISIBILITY_UNLISTED) return;
 
     const t = setTimeout(() => {
-      const fresh = buildAlbumRankings();
-      // Cheap deep-equal on the small array — skip the write if unchanged.
-      const same = JSON.stringify(fresh) === JSON.stringify(profileRef.current.albumRankings);
-      if (same) return;
-      writeProfile({ albumRankings: fresh });
+      const freshAlbums = buildAlbumRankings();
+      const freshSongs = buildSongRankings();
+      // Cheap deep-equal on the small arrays — skip the write if unchanged.
+      const albumsSame = JSON.stringify(freshAlbums) === JSON.stringify(profileRef.current.albumRankings);
+      const songsSame = JSON.stringify(freshSongs) === JSON.stringify(profileRef.current.songRankings);
+      if (albumsSame && songsSame) return;
+      writeProfile({ albumRankings: freshAlbums, songRankings: freshSongs });
     }, SYNC_DEBOUNCE_MS);
 
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, profile.visibility, buildAlbumRankings, writeProfile]);
+  }, [user, profile.visibility, buildAlbumRankings, buildSongRankings, writeProfile]);
 
   // ── Public API ───────────────────────────────────────────────────────────
 
@@ -142,9 +171,11 @@ export function useProfile(user, getAlbumScore, activeCategories) {
     if (!user) return;
     if (next === VISIBILITY_UNLISTED) {
       const albumRankings = buildAlbumRankings();
+      const songRankings = buildSongRankings();
       await writeProfile({
         visibility: VISIBILITY_UNLISTED,
         albumRankings,
+        songRankings,
         displayName: user.displayName ?? '',
         photoURL: user.photoURL ?? '',
       });

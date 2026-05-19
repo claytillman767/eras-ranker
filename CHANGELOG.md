@@ -16,6 +16,24 @@ Newest entries go at the top.
 
 ---
 
+## 0.18.0 — 2026-05-18
+
+### Changed
+- **The Rankings tab is now your profile page.** It shows your photo and
+  name up top, a Share control front and center, and your album and song
+  rankings below — the same view anyone sees when you share your link.
+- **Your public profile now includes your song rankings too**, not just
+  albums. Visitors get a Songs / Albums toggle, with your top 25 songs
+  shown first and a "Load more" button to see the rest.
+
+### Added
+- **Turn on and share your public profile right from the Rankings tab.**
+  The on/off switch, shareable link, and bio editor now live in both the
+  Rankings tab and Settings, so sharing is always one tap away. Signed-out
+  users get a quick "Sign in to share" prompt.
+
+---
+
 ## 0.17.1 — 2026-05-18
 
 ### Fixed

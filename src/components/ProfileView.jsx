@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import ScoreBar from './ScoreBar';
+import RankingList from './RankingList';
 
 // Read-only public profile screen. Reached via /u/{uid}.
 //
 // For v1, the only visibility level is 'unlisted' (anyone with the link).
 // If the profile is off or doesn't exist, we render a friendly "not
 // available" state without leaking whether the uid exists at all.
+//
+// The album + song leaderboard uses the shared RankingList component, so a
+// visitor sees the exact same thing the owner sees on their Rankings tab.
 export default function ProfileView({ uid }) {
   const [state, setState] = useState({ status: 'loading', profile: null });
 
@@ -86,8 +89,8 @@ export default function ProfileView({ uid }) {
 
   // ── OK ─────────────────────────────────────────────────────────────────
   const p = state.profile;
-  const rankings = Array.isArray(p.albumRankings) ? p.albumRankings : [];
-  const maxScore = rankings[0]?.score ?? 100;
+  const albums = Array.isArray(p.albumRankings) ? p.albumRankings : [];
+  const songs = Array.isArray(p.songRankings) ? p.songRankings : [];
 
   return (
     <Shell onHome={goHome}>
@@ -125,7 +128,7 @@ export default function ProfileView({ uid }) {
             {p.displayName || 'A Swiftie'}
           </div>
           <div style={{ fontSize: 12, color: '#6b7280', letterSpacing: '0.04em' }}>
-            ALBUM RANKINGS
+            ALBUM &amp; SONG RANKINGS
           </div>
         </div>
       </div>
@@ -146,47 +149,14 @@ export default function ProfileView({ uid }) {
         </div>
       )}
 
-      {/* Album rankings */}
-      {rankings.length === 0 ? (
+      {/* Album + song rankings — shared with the owner's Rankings tab */}
+      {albums.length === 0 && songs.length === 0 ? (
         <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 13, padding: '30px 0' }}>
           No albums rated yet.
         </div>
-      ) : rankings.map((album, i) => (
-        <div key={album.id} style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          padding: '8px 0',
-          borderBottom: '0.5px solid #f3f4f6',
-        }}>
-          <span style={{ fontSize: i < 3 ? 16 : 12, color: '#9ca3af', width: 28, textAlign: 'center' }}>
-            {rankIcon(i)}
-          </span>
-          <div style={{
-            width: 36,
-            height: 36,
-            borderRadius: 6,
-            background: '#f3f4f6',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 16,
-            flexShrink: 0,
-          }}>
-            {album.icon}
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 500, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {album.name}
-            </div>
-            <div style={{ fontSize: 11, color: '#9ca3af' }}>{album.year}</div>
-          </div>
-          <ScoreBar score={album.score} maxScore={maxScore} />
-          <span style={{ fontSize: 13, fontWeight: 500, color: '#a855f7', width: 28, textAlign: 'right' }}>
-            {album.score}
-          </span>
-        </div>
-      ))}
+      ) : (
+        <RankingList albums={albums} songs={songs} />
+      )}
 
       {/* Footer CTA — drives traffic back to the app */}
       <div style={{
@@ -221,13 +191,6 @@ export default function ProfileView({ uid }) {
       </div>
     </Shell>
   );
-}
-
-function rankIcon(i) {
-  if (i === 0) return '🥇';
-  if (i === 1) return '🥈';
-  if (i === 2) return '🥉';
-  return `#${i + 1}`;
 }
 
 // Page chrome shared across loading/unavailable/ok states.

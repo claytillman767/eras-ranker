@@ -134,9 +134,9 @@ export default function App() {
   const { getAlbumMode, setAlbumMode } = useAlbumModes(user);
   const { settings, updateSetting } = useSettings(user);
 
-  // Public profile (anyone-with-link sharing). Mirrors album rankings to
-  // a separate Firestore doc when the user has it turned on.
-  const profile = useProfile(user, getAlbumScore, activeCategories);
+  // Public profile (anyone-with-link sharing). Mirrors album + song
+  // rankings to a separate Firestore doc when the user has it turned on.
+  const profile = useProfile(user, getAlbumScore, getCompositeScore, activeCategories);
 
   // Per-user analytics: lastActiveAt, sessionCount, totalRatings, albumsCompleted, signup origin
   useUserStats(user, ratings);
@@ -564,6 +564,9 @@ export default function App() {
             activeCategories={activeCategories}
             ratings={ratings}
             onSelectAlbum={handleSelectAlbum}
+            profile={profile}
+            user={user}
+            signIn={signIn}
           />
         )}
 
