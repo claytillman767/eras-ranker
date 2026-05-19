@@ -26,6 +26,8 @@ const STYLE = `
   from { transform: scaleX(0); }
   to   { transform: scaleX(1); }
 }
+/* Tactile press feedback on the tappable cards — snappy 100ms scale. */
+.matchup-card-tappable:active { transform: scale(0.97); }
 `;
 
 function getLyric(categoryId, albumId, songIndex) {
@@ -64,6 +66,7 @@ function MatchupCard({
   return (
     <div
       onClick={() => { if (tappable) onTap(song); }}
+      className={tappable ? 'matchup-card-tappable' : undefined}
       style={{
         flex: 1,
         borderRadius: 16,
@@ -78,10 +81,11 @@ function MatchupCard({
         flexDirection: 'column',
         justifyContent: 'space-between',
         cursor: tappable ? 'pointer' : 'default',
-        opacity: isLoser ? 0.45 : (isQueued ? 0.7 : 1),
-        transition: 'opacity 0.35s ease, box-shadow 0.2s ease, transform 0.2s ease',
+        opacity: isLoser ? 0.45 : 1,
+        transition: 'opacity 0.35s ease, box-shadow 0.2s ease, transform 100ms ease-out',
         animation: isWinner ? 'matchup-winner-pop 0.2s ease-out' : 'matchup-fade-up 0.25s ease-out',
         userSelect: 'none',
+        touchAction: 'manipulation',
       }}
     >
       {/* Top-right status badge */}
@@ -311,10 +315,15 @@ export default function Matchup({
           {/* Phase-specific bottom strip */}
           <div style={{ marginTop: 12, flexShrink: 0 }}>
             {phase === 'ready' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <div style={{
-                  textAlign: 'center', fontSize: 13, color: '#a855f7',
-                  fontStyle: 'italic',
+                  padding: '6px 14px',
+                  borderRadius: 999,
+                  background: '#f3e8ff',
+                  color: '#7e22ce',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  letterSpacing: '0.02em',
                 }}>
                   Tap a card to vote ↑
                 </div>
@@ -322,33 +331,57 @@ export default function Matchup({
             )}
 
             {phase === 'voted' && (
-              <div style={{
-                padding: '10px 12px', borderRadius: 10,
-                background: '#f3e8ff', border: '1px dashed #a855f7',
-                display: 'flex', flexDirection: 'column', gap: 4,
-              }}>
+              communityPercentSong1 != null ? (
+                // Real community data → keep the rich dashed-box reveal
                 <div style={{
-                  fontSize: 14, color: '#7e22ce', fontWeight: 500, textAlign: 'center',
+                  padding: '10px 12px', borderRadius: 10,
+                  background: '#f3e8ff', border: '1px dashed #a855f7',
+                  display: 'flex', flexDirection: 'column', gap: 4,
                 }}>
-                  {communityPercentSong1 != null
-                    ? `${userAgreementPct}% of Swifties agree with you ✦`
-                    : 'Vote counted ✦'}
+                  <div style={{
+                    fontSize: 14, color: '#7e22ce', fontWeight: 500, textAlign: 'center',
+                  }}>
+                    {userAgreementPct}% of Swifties agree with you ✦
+                  </div>
+                  <div style={{
+                    fontSize: 11, color: '#6b7280', textAlign: 'center',
+                    display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10,
+                  }}>
+                    <span>Next matchup in 1.2s…</span>
+                    <button
+                      onClick={handleAdvanceNow}
+                      style={{
+                        background: 'none', border: 'none', padding: 0,
+                        color: '#a855f7', fontSize: 11, fontWeight: 500,
+                        cursor: 'pointer',
+                      }}
+                    >Next →</button>
+                  </div>
                 </div>
-                <div style={{
-                  fontSize: 11, color: '#6b7280', textAlign: 'center',
-                  display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10,
-                }}>
-                  <span>Next matchup in 1.2s…</span>
-                  <button
-                    onClick={handleAdvanceNow}
-                    style={{
-                      background: 'none', border: 'none', padding: 0,
-                      color: '#a855f7', fontSize: 11, fontWeight: 500,
-                      cursor: 'pointer',
-                    }}
-                  >Next →</button>
+              ) : (
+                // No community backend yet → quieter confirmation, no oversold box
+                <div style={{ textAlign: 'center', padding: '4px 0' }}>
+                  <div style={{
+                    fontSize: 13, color: '#7e22ce', fontWeight: 600, marginBottom: 4,
+                  }}>
+                    Vote counted ✦
+                  </div>
+                  <div style={{
+                    fontSize: 11, color: '#9ca3af',
+                    display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10,
+                  }}>
+                    <span>Next matchup in 1.2s</span>
+                    <button
+                      onClick={handleAdvanceNow}
+                      style={{
+                        background: 'none', border: 'none', padding: 0,
+                        color: '#a855f7', fontSize: 11, fontWeight: 500,
+                        cursor: 'pointer',
+                      }}
+                    >Next →</button>
+                  </div>
                 </div>
-              </div>
+              )
             )}
           </div>
 

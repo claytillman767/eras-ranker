@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useBrackets } from '../../hooks/useBrackets';
 import { getCurrentWeekNumber, getWeeklyCategoryName, BRACKET_CATEGORIES } from '../../constants/bracketCategories';
+import { SignInRequiredStep } from '../Settings';
 import Landing from './Landing';
 import Tree from './Tree';
 import Matchup from './Matchup';
@@ -10,7 +11,7 @@ import WinnerReveal from './WinnerReveal';
 import DailyMatchup from './DailyMatchup';
 import BracketBuilder from './BracketBuilder';
 
-export default function Brackets({ user, isPro }) {
+export default function Brackets({ user, isPro, unlockPro, signIn }) {
   const {
     brackets, createBracket, recordWinner, getBracket,
     weeklyState, recordWeeklyVote,
@@ -115,7 +116,14 @@ export default function Brackets({ user, isPro }) {
   // ── Routes ─────────────────────────────────────────────────────────────────
 
   if (screen === 'locked') {
-    return <BracketLocked onClose={backToLanding} />;
+    return (
+      <BracketLocked
+        onClose={backToLanding}
+        user={user}
+        signIn={signIn}
+        unlockPro={unlockPro}
+      />
+    );
   }
 
   if (screen === 'builder') {
@@ -219,48 +227,204 @@ export default function Brackets({ user, isPro }) {
 // Shown when a non-unlocked user tries to BUILD their own bracket.
 // Community weekly + daily brackets are never gated — only the
 // build-your-own flow lives behind the one-time unlock.
-function BracketLocked({ onClose }) {
+//
+// Mirrors PaywallCard's pattern: the primary CTA is always tappable.
+// When no user is signed in, tapping it swaps the screen to a
+// SignInRequiredStep instead of gating up-front, so the user can
+// commit to the unlock before discovering they need to sign in.
+function BracketLocked({ onClose, user, signIn, unlockPro }) {
+  const [step, setStep] = useState('features');
+
+  const perks = [
+    '8 extra rating categories',
+    'Add your own custom categories',
+    'Build your own custom brackets',
+  ];
+
+  function handleUnlock() {
+    if (!user) {
+      setStep('signin');
+      return;
+    }
+    unlockPro();
+  }
+
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      background: '#ffffff',
-      zIndex: 1000,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '0 28px',
-      textAlign: 'center',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    }}>
-      <div style={{ fontSize: 48, marginBottom: 16 }}>🏆</div>
-      <div style={{ fontSize: 22, fontWeight: 700, color: '#111827', marginBottom: 10 }}>
-        Build-your-own brackets are part of the unlock
+    <>
+      <style>{`
+        @keyframes bracket-locked-fade-in {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .bracket-locked-cta {
+          transition: transform 100ms ease-out, box-shadow 150ms ease-out;
+        }
+        .bracket-locked-cta:active { transform: scale(0.97); }
+      `}</style>
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        background: '#ffffff',
+        zIndex: 1000,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px 28px',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        overflowY: 'auto',
+      }}>
+        <div style={{
+          width: '100%',
+          maxWidth: 360,
+          animation: 'bracket-locked-fade-in 0.3s ease-out',
+        }}>
+          {step === 'features' ? (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}>
+              {/* Branded icon tile (SVG, not emoji) */}
+              <div style={{
+                width: 80,
+                height: 80,
+                borderRadius: 20,
+                background: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 20,
+                boxShadow: '0 8px 24px rgba(124, 58, 237, 0.25)',
+              }}>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                  <path d="M4 22h16" />
+                  <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+                  <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+                  <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+                </svg>
+              </div>
+
+              {/* Title */}
+              <div style={{
+                fontSize: 22,
+                fontWeight: 700,
+                color: '#111827',
+                marginBottom: 8,
+                textAlign: 'center',
+              }}>
+                Build your own brackets
+              </div>
+
+              {/* Subhead */}
+              <div style={{
+                fontSize: 14,
+                color: '#6b7280',
+                lineHeight: 1.5,
+                textAlign: 'center',
+                marginBottom: 20,
+              }}>
+                Make a custom tournament from any songs you like.
+                A one-time $3.99 unlock — yours forever, no subscription.
+              </div>
+
+              {/* Perks */}
+              <ul style={{
+                listStyle: 'none',
+                padding: 0,
+                margin: '0 0 24px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                width: '100%',
+              }}>
+                {perks.map(perk => (
+                  <li key={perk} style={{
+                    fontSize: 14,
+                    color: '#374151',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                  }}>
+                    <span style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: 11,
+                      background: '#f3e8ff',
+                      color: '#a855f7',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      flexShrink: 0,
+                    }}>✓</span>
+                    {perk}
+                  </li>
+                ))}
+              </ul>
+
+              {/* Primary CTA */}
+              <button
+                onClick={handleUnlock}
+                className="bracket-locked-cta"
+                style={{
+                  width: '100%',
+                  background: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: 12,
+                  padding: '14px 0',
+                  fontSize: 15,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  touchAction: 'manipulation',
+                  marginBottom: 10,
+                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.2)',
+                }}
+              >
+                Unlock — $3.99 one time
+              </button>
+
+              {/* Secondary action — Back demoted to a text link */}
+              <button
+                onClick={onClose}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: '8px 16px',
+                  color: '#6b7280',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  touchAction: 'manipulation',
+                }}
+              >
+                Maybe later
+              </button>
+
+              {/* Reassurance footer */}
+              <div style={{
+                fontSize: 12,
+                color: '#9ca3af',
+                marginTop: 16,
+                textAlign: 'center',
+                lineHeight: 1.5,
+              }}>
+                Weekly community bracket and daily matchup<br />
+                stay free, always.
+              </div>
+            </div>
+          ) : (
+            <SignInRequiredStep
+              onBack={() => setStep('features')}
+              signIn={signIn}
+            />
+          )}
+        </div>
       </div>
-      <div style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6, maxWidth: 340, marginBottom: 24 }}>
-        Make your own custom tournament from any songs you like with the
-        one-time $3.99 unlock. The weekly community bracket and daily
-        matchup stay free — keep voting on those any time.
-      </div>
-      <button
-        onClick={onClose}
-        style={{
-          padding: '12px 28px',
-          borderRadius: 12,
-          border: '0.5px solid #d1d5db',
-          background: '#ffffff',
-          color: '#4b5563',
-          fontSize: 14,
-          fontWeight: 600,
-          cursor: 'pointer',
-        }}
-      >
-        Back
-      </button>
-      <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 16, lineHeight: 1.5, maxWidth: 320 }}>
-        Unlock anytime in Settings → Membership.
-      </div>
-    </div>
+    </>
   );
 }

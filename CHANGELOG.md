@@ -16,6 +16,39 @@ Newest entries go at the top.
 
 ---
 
+## 0.20.0 — 2026-05-19
+
+### Added
+- **The "build your own bracket" lock screen now has an actual unlock
+  button.** Before, tapping "build a bracket" without the unlock just
+  gave you a "Back" button — no way forward. Now you see the same
+  $3.99 one-time unlock pitch you'd see elsewhere, with a primary
+  "Unlock — $3.99 one time" button, the three unlock perks listed
+  explicitly, and a "Maybe later" link if you're not ready. If you
+  aren't signed in yet, tapping the unlock button walks you through
+  Google sign-in first, then drops you back at the unlock screen.
+
+### Changed
+- **Bracket lock screen now uses a proper branded icon tile** (purple
+  gradient trophy) instead of an emoji, and reassures you that the
+  weekly community bracket and daily matchup stay free.
+- **Voting on a bracket matchup feels more tactile.** The two cards
+  now scale-press 0.97 on tap, instant tap feedback (no 300ms iOS
+  delay), and the "Tap a card to vote" prompt is a clearer purple
+  pill instead of small italic text.
+- **After you vote, the "Vote counted" confirmation is quieter** when
+  there's no community-vote data to share yet — no more dashed
+  purple box around a one-line message. (When the community-vote
+  backend exists and we can show "X% of Swifties agree with you",
+  the rich reveal returns.)
+
+### Fixed
+- **A stale `isQueued` reference in the matchup card** that did
+  nothing in normal use but would have thrown if a "queued"
+  state were ever introduced. Cleaned up.
+
+---
+
 ## 0.19.1 — 2026-05-18
 
 ### Changed

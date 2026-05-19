@@ -559,7 +559,7 @@ export default function App() {
         )}
 
         {activeTab === 'brackets' && (
-          <Brackets user={user} isPro={isPro} />
+          <Brackets user={user} isPro={isPro} unlockPro={unlockPro} signIn={signIn} />
         )}
 
         {activeTab === 'rankings' && (
