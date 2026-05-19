@@ -13,9 +13,9 @@ export default function PaywallCard({ onUnlock, user, signIn }) {
   const [step, setStep] = useState('features');
 
   const features = [
-    '8 extra rating categories',
-    'Add your own custom categories',
-    'Build your own custom brackets',
+    { label: '8 extra rating categories', desc: 'Hook, Vocals, Cry Factor, and more' },
+    { label: 'Custom categories',         desc: 'Add your own scoring dimensions' },
+    { label: 'Custom brackets',           desc: 'Build your own song tournaments' },
   ];
 
   function handleUnlock() {
@@ -47,11 +47,14 @@ export default function PaywallCard({ onUnlock, user, signIn }) {
           </p>
 
           {/* Feature list */}
-          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             {features.map(item => (
-              <li key={item} style={{ fontSize: 13, color: '#374151', display: 'flex', gap: 8 }}>
-                <span style={{ color: '#a855f7' }}>✓</span>
-                {item}
+              <li key={item.label} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <span style={{ color: '#a855f7', fontSize: 13, flexShrink: 0, lineHeight: '18px' }}>✓</span>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', lineHeight: 1.35 }}>{item.label}</div>
+                  <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>{item.desc}</div>
+                </div>
               </li>
             ))}
           </ul>

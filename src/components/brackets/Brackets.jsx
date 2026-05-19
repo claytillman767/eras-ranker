@@ -236,9 +236,9 @@ function BracketLocked({ onClose, user, signIn, unlockPro }) {
   const [step, setStep] = useState('features');
 
   const perks = [
-    '8 extra rating categories',
-    'Add your own custom categories',
-    'Build your own custom brackets',
+    { label: '8 extra rating categories', desc: 'Hook, Vocals, Cry Factor, and more' },
+    { label: 'Custom categories',         desc: 'Add your own scoring dimensions' },
+    { label: 'Custom brackets',           desc: 'Build your own song tournaments' },
   ];
 
   function handleUnlock() {
@@ -337,15 +337,13 @@ function BracketLocked({ onClose, user, signIn, unlockPro }) {
                 margin: '0 0 24px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 10,
+                gap: 12,
                 width: '100%',
               }}>
                 {perks.map(perk => (
-                  <li key={perk} style={{
-                    fontSize: 14,
-                    color: '#374151',
+                  <li key={perk.label} style={{
                     display: 'flex',
-                    alignItems: 'center',
+                    alignItems: 'flex-start',
                     gap: 10,
                   }}>
                     <span style={{
@@ -360,8 +358,12 @@ function BracketLocked({ onClose, user, signIn, unlockPro }) {
                       fontSize: 13,
                       fontWeight: 700,
                       flexShrink: 0,
+                      marginTop: 1,
                     }}>✓</span>
-                    {perk}
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', lineHeight: 1.35 }}>{perk.label}</div>
+                      <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>{perk.desc}</div>
+                    </div>
                   </li>
                 ))}
               </ul>

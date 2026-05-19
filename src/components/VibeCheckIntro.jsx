@@ -176,17 +176,17 @@ export default function VibeCheckIntro({
             {
               icon: '📊',
               title: '8 extra rating categories',
-              desc: 'Hook, Vocals, Cry Factor, Storytelling and more.',
+              desc: 'Hook, Vocals, Cry Factor, and more.',
             },
             {
               icon: '✏️',
               title: 'Custom categories',
-              desc: 'Add your own scoring dimensions and tune their weights.',
+              desc: 'Add your own scoring dimensions.',
             },
             {
               icon: '🏆',
               title: 'Custom brackets',
-              desc: 'Build your own bracket tournament from any songs.',
+              desc: 'Build your own song tournaments.',
             },
           ].map((item, i, arr) => (
             <div
@@ -236,24 +236,36 @@ export default function VibeCheckIntro({
         {/* Unlock Pro — primary CTA for any non-Pro user (signed-in or not).
             Tapping without sign-in routes through the signin step instead. */}
         {!isPro && (
-          <button
-            onClick={handleUnlock}
-            style={{
-              width: '100%',
-              padding: '14px',
-              borderRadius: 12,
-              border: 'none',
-              background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
-              color: '#ffffff',
-              fontSize: 16,
-              fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(168,85,247,0.3)',
-              marginBottom: 10,
-            }}
-          >
-            ⭐ Unlock — $3.99 one time
-          </button>
+          <>
+            {/* Price/positioning line — matches every other upgrade surface */}
+            <div style={{
+              fontSize: 13,
+              color: '#6b7280',
+              textAlign: 'center',
+              lineHeight: 1.5,
+              marginBottom: 12,
+            }}>
+              A one-time $3.99 unlock — yours forever, no subscription.
+            </div>
+            <button
+              onClick={handleUnlock}
+              style={{
+                width: '100%',
+                padding: '14px',
+                borderRadius: 12,
+                border: 'none',
+                background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+                color: '#ffffff',
+                fontSize: 16,
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(168,85,247,0.3)',
+                marginBottom: 10,
+              }}
+            >
+              ⭐ Unlock — $3.99 one time
+            </button>
+          </>
         )}
 
         {/* Always show a neutral dismiss — user can opt out at any state */}

@@ -16,6 +16,26 @@ Newest entries go at the top.
 
 ---
 
+## 0.20.1 — 2026-05-19
+
+### Changed
+- **Pro perks now read the same on every upgrade screen.** Before, the
+  same three perks were named slightly differently across the lock
+  screen, the categories paywall, the settings modal, and the first
+  Vibe Check pitch. Every surface now reads "8 extra rating categories
+  / Custom categories / Custom brackets" with the same one-line
+  descriptions underneath.
+- **The first Vibe Check pitch now states the price up front.** It
+  used to only show "$3.99" on the button itself; now the standard
+  "A one-time $3.99 unlock — yours forever, no subscription." line
+  sits right above the unlock button, matching every other upgrade
+  screen.
+- **The sign-in promo footer names the three Pro perks explicitly**
+  instead of a vague "extra categories, custom categories + custom
+  brackets" parenthetical.
+
+---
+
 ## 0.20.0 — 2026-05-19
 
 ### Added
