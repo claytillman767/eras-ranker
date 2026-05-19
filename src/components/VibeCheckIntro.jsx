@@ -183,6 +183,11 @@ export default function VibeCheckIntro({
               title: 'Custom categories',
               desc: 'Add your own scoring dimensions and tune their weights.',
             },
+            {
+              icon: '🏆',
+              title: 'Custom brackets',
+              desc: 'Build your own bracket tournament from any songs.',
+            },
           ].map((item, i, arr) => (
             <div
               key={item.title}

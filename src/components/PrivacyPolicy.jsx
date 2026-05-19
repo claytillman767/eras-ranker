@@ -328,7 +328,7 @@ export default function PrivacyPolicy() {
         </p>
         <p style={pStyle}>
           Feedback messages are kept as long as they're useful for
-          improving the App. Subscription records (invoices, payment
+          improving the App. Purchase records (invoices, payment
           confirmations) may be kept longer to meet tax and accounting
           requirements — typically 7 years under US law.
         </p>

@@ -29,9 +29,10 @@ export default function Terms() {
           <strong>The short version.</strong> By using The Eras Ranker, you
           agree to these terms. You need to be at least 13 years old. Be
           decent to other people in anything you make public. Pro is a
-          recurring subscription you can cancel any time, but past payments
-          aren't refunded. The App is a fan-made project — Taylor Swift
-          and her record labels have no involvement.
+          one-time $3.99 unlock — no subscription, nothing to cancel; past
+          payments aren't refunded except as described in Section 6. The
+          App is a fan-made project — Taylor Swift and her record labels
+          have no involvement.
         </div>
 
         <h2 style={h2Style}>1. Agreement</h2>
@@ -74,8 +75,7 @@ export default function Terms() {
         </p>
         <p style={pStyle}>
           You can delete your account at any time from Settings → Delete
-          my account. Deletion is permanent and cancels any active Pro
-          subscription.
+          my account. Deletion is permanent and ends your Pro unlock.
         </p>
 
         <h2 style={h2Style}>4. Acceptable use</h2>

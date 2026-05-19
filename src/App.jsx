@@ -43,10 +43,10 @@ function getLegalPath() {
   return null;
 }
 
-// Brackets feature is hidden from the published app until phase 2 of launch.
-// Flip to `true` to re-enable the Brackets tab — all underlying code (the tab
-// render, the Brackets components, the useBrackets hook) is intact.
-const BRACKETS_ENABLED = false;
+// Brackets are part of the launch unlock (decided 2026-05-18). Community
+// weekly/daily voting is FREE; building your own personal bracket is gated
+// behind the one-time unlock (see Brackets.jsx). Set false to hide the tab.
+const BRACKETS_ENABLED = true;
 
 // Tab definitions — Categories lives inside Settings
 const TABS = [

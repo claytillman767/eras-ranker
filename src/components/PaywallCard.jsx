@@ -13,8 +13,9 @@ export default function PaywallCard({ onUnlock, user, signIn }) {
   const [step, setStep] = useState('features');
 
   const features = [
-    '8 new categories to score',
+    '8 extra rating categories',
     'Add your own custom categories',
+    'Build your own custom brackets',
   ];
 
   function handleUnlock() {
