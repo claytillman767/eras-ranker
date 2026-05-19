@@ -16,6 +16,17 @@ Newest entries go at the top.
 
 ---
 
+## 0.17.1 — 2026-05-18
+
+### Fixed
+- **Shared profile links now open correctly.** Opening someone's public
+  profile link (`/u/...`) in a fresh browser used to show a "404 — not
+  found" error page instead of the profile. The same issue could show the
+  error when opening the Privacy Policy or Terms pages by direct link.
+  All of these now load properly.
+
+---
+
 ## 0.17.0 — 2026-05-18
 
 ### Changed
