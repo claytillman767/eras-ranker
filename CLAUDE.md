@@ -97,17 +97,22 @@ MembershipSection, VibeCheckIntro, GoogleLoginPromo.
 effect. Old `VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY/_ANNUAL` are now dead
 and can be deleted after the new code deploys.
 
-**THE SOLE REMAINING GATE: lawyer review of the DRAFT Terms/Privacy.**
-The user explicitly chose "hold for lawyer review" (2026-05-18) on the
-legal text. The full conversion is on branch `890299e` (build green) but
-is **NOT merged and NOT deployed** — nothing goes live until a lawyer
-signs off the Terms/Privacy rewrite. Do NOT merge before that, even though
-LS, env, brackets, and §11 are all settled.
+**SHIPPED — v0.17.0, 2026-05-18.** The user reviewed the Terms/Privacy
+locally and approved them on their own review, **explicitly waiving the
+earlier lawyer-review hold**. Merged to main (merge `ca909f0`, release
+`6d488ab`) and deployed via Vercel. `package.json` → 0.17.0, CHANGELOG
+updated. The one-time $3.99 model, brackets, tip jar, and the rewritten
+legal text are LIVE on erasranker.com.
 
-**After legal sign-off, the rest is mechanical:** merge branch → Vercel
-auto-deploys → do one real $3.99 purchase + self-refund to verify
-checkout → webhook → Firestore → UI unlock. Then bump `package.json`
-(0.16.0 → 0.17.0) + CHANGELOG as part of that ship.
+**Remaining (post-ship, operator actions — not code):**
+1. Do one real $3.99 purchase + self-refund to verify checkout → webhook
+   → Firestore → UI unlock end-to-end. This is the ONLY part not yet
+   proven in production. If it fails, check: LS webhook delivery log,
+   Vercel logs for `/api/lemon-webhook`, that the signing secret matches
+   the rotated value, and that `FIREBASE_SERVICE_ACCOUNT_B64` is set.
+2. Delete the now-dead `VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY/_ANNUAL`
+   Vercel env vars.
+3. §11 email stays waived (Option B — no prior users).
 
 **Recommended follow-up (deferred, not a blocker):** the BracketLocked
 screen has no inline "Unlock — $3.99" CTA — a user at the highest-intent
