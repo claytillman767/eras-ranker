@@ -10,6 +10,7 @@ import PublicProfilePanel from './PublicProfilePanel';
 // stays as a secondary share option at the bottom.
 export default function Rankings({
   getCompositeScore,
+  getScoreBreakdown,
   getAlbumScore,
   activeCategories,
   ratings,
@@ -18,14 +19,21 @@ export default function Rankings({
   user,
   signIn,
 }) {
-  // Every rated song across all albums, high → low.
+  // Every rated song across all albums, high → low. Each carries its
+  // per-category breakdown so a tap can show how the score was built.
   const songs = [];
   for (const album of ALL_ALBUMS) {
     const albumSongs = SONGS[album.id] || [];
     for (let i = 0; i < albumSongs.length; i++) {
-      const score = getCompositeScore(album.id, i, activeCategories);
-      if (score !== null) {
-        songs.push({ name: albumSongs[i], albumName: album.name, albumIcon: album.icon, score });
+      const b = getScoreBreakdown(album.id, i, activeCategories);
+      if (b) {
+        songs.push({
+          name: albumSongs[i],
+          albumName: album.name,
+          albumIcon: album.icon,
+          score: b.score,
+          categories: b.rows,
+        });
       }
     }
   }

@@ -34,7 +34,7 @@ function emptyProfile() {
   };
 }
 
-export function useProfile(user, getAlbumScore, getCompositeScore, activeCategories) {
+export function useProfile(user, getAlbumScore, getScoreBreakdown, activeCategories) {
   const [profile, setProfile] = useState(emptyProfile);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -102,24 +102,27 @@ export function useProfile(user, getAlbumScore, getCompositeScore, activeCategor
   // The public view shows the top 25 first with a "load more"; the full
   // list is mirrored so that progressive reveal has everything it needs.
   const buildSongRankings = useCallback(() => {
-    if (!getCompositeScore || !activeCategories) return [];
+    if (!getScoreBreakdown || !activeCategories) return [];
     const all = [];
     for (const album of ALL_ALBUMS) {
       const songs = SONGS[album.id] || [];
       for (let i = 0; i < songs.length; i++) {
-        const score = getCompositeScore(album.id, i, activeCategories);
-        if (score !== null) {
+        const b = getScoreBreakdown(album.id, i, activeCategories);
+        if (b) {
           all.push({
             name: songs[i],
             albumName: album.name,
             albumIcon: album.icon,
-            score,
+            score: b.score,
+            // Per-category breakdown so the public profile can show users
+            // exactly how the score was built (tap a song to expand).
+            categories: b.rows,
           });
         }
       }
     }
     return all.sort((a, b) => b.score - a.score);
-  }, [getCompositeScore, activeCategories]);
+  }, [getScoreBreakdown, activeCategories]);
 
   // Persist a doc update both in local state and to Firestore.
   const writeProfile = useCallback(async (patch) => {

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ScoreBar from './ScoreBar';
+import StarRating from './StarRating';
 
 // Shared rankings list — the Songs | Albums leaderboard used by BOTH the
 // Rankings tab (the owner's live view) and ProfileView (what a visitor sees
@@ -24,6 +25,66 @@ function rankIcon(i) {
   return `#${i + 1}`;
 }
 
+// Expanded panel under a song row — shows users exactly how the 0–100
+// score was built from the category stars they gave. The average is
+// recomputed here from the rows so what's shown always adds up.
+function ScoreBreakdown({ song }) {
+  const cats = song.categories || [];
+  let num = 0;
+  let den = 0;
+  for (const c of cats) {
+    num += c.stars * c.weight;
+    den += c.weight;
+  }
+  const avg = den > 0 ? num / den : 0;
+
+  return (
+    <div style={{
+      background: '#faf5ff',
+      border: '0.5px solid #e9d5ff',
+      borderRadius: 10,
+      padding: '12px 14px',
+      margin: '4px 0 10px 38px',
+    }}>
+      <div style={{
+        fontSize: 10,
+        fontWeight: 700,
+        letterSpacing: '0.05em',
+        color: '#7c3aed',
+        marginBottom: 10,
+      }}>
+        HOW THIS SCORE IS BUILT
+      </div>
+
+      {cats.map(c => (
+        <div key={c.id} style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '4px 0',
+        }}>
+          <span style={{ flex: 1, minWidth: 0, fontSize: 12, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {c.label}
+          </span>
+          <StarRating value={c.stars} readonly size="sm" />
+          <span style={{ width: 56, textAlign: 'right', fontSize: 11, color: '#9ca3af' }}>
+            weight {c.weight}%
+          </span>
+        </div>
+      ))}
+
+      <div style={{ borderTop: '0.5px solid #e9d5ff', margin: '8px 0', paddingTop: 8 }}>
+        <div style={{ fontSize: 12, color: '#374151', marginBottom: 3 }}>
+          Weighted average of your stars: <strong>{avg.toFixed(2)}</strong> out of 5
+        </div>
+        <div style={{ fontSize: 12, color: '#374151' }}>
+          Scaled to 100: {avg.toFixed(2)} ÷ 5 × 100 = <strong style={{ color: '#a855f7' }}>{song.score}</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function RankingList({
   albums = [],
   songs = [],
@@ -33,6 +94,7 @@ export default function RankingList({
 }) {
   const [view, setView] = useState(initialView); // 'songs' | 'albums'
   const [songLimit, setSongLimit] = useState(songPageSize);
+  const [openSong, setOpenSong] = useState(null); // key of expanded song row
 
   const maxScore = view === 'songs'
     ? (songs[0]?.score ?? 100)
@@ -75,30 +137,57 @@ export default function RankingList({
         </div>
       )}
 
-      {/* Songs leaderboard */}
-      {view === 'songs' && visibleSongs.map((song, i) => (
-        <div key={`${song.albumName}-${song.name}-${i}`} style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          padding: '8px 0',
-          borderBottom: '0.5px solid #f3f4f6',
-        }}>
-          <span style={{ fontSize: i < 3 ? 16 : 12, color: '#9ca3af', width: 28, textAlign: 'center' }}>
-            {rankIcon(i)}
-          </span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 500, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {song.name}
+      {/* Songs leaderboard — tap a row to see how its score was built */}
+      {view === 'songs' && visibleSongs.map((song, i) => {
+        const key = `${song.albumName}-${song.name}-${i}`;
+        const expandable = Array.isArray(song.categories) && song.categories.length > 0;
+        const open = openSong === key;
+        return (
+          <div key={key}>
+            <div
+              onClick={expandable ? () => setOpenSong(open ? null : key) : undefined}
+              role={expandable ? 'button' : undefined}
+              tabIndex={expandable ? 0 : undefined}
+              aria-expanded={expandable ? open : undefined}
+              onKeyDown={expandable ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setOpenSong(open ? null : key);
+                }
+              } : undefined}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '8px 0',
+                borderBottom: '0.5px solid #f3f4f6',
+                cursor: expandable ? 'pointer' : 'default',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <span style={{ fontSize: i < 3 ? 16 : 12, color: '#9ca3af', width: 28, textAlign: 'center' }}>
+                {rankIcon(i)}
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {song.name}
+                  {expandable && (
+                    <span style={{ color: '#c4b5fd', fontSize: 11, marginLeft: 6 }}>
+                      {open ? '▾' : '▸'}
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize: 11, color: '#9ca3af' }}>{song.albumIcon} {song.albumName}</div>
+              </div>
+              <ScoreBar score={song.score} maxScore={maxScore} />
+              <span style={{ fontSize: 13, fontWeight: 500, color: '#a855f7', width: 28, textAlign: 'right' }}>
+                {song.score}
+              </span>
             </div>
-            <div style={{ fontSize: 11, color: '#9ca3af' }}>{song.albumIcon} {song.albumName}</div>
+            {expandable && open && <ScoreBreakdown song={song} />}
           </div>
-          <ScoreBar score={song.score} maxScore={maxScore} />
-          <span style={{ fontSize: 13, fontWeight: 500, color: '#a855f7', width: 28, textAlign: 'right' }}>
-            {song.score}
-          </span>
-        </div>
-      ))}
+        );
+      })}
 
       {/* Load more (Songs view only) */}
       {view === 'songs' && remaining > 0 && (

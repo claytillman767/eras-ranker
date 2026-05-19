@@ -97,6 +97,7 @@ export default function App() {
     streak,
     setStarRating,
     getCompositeScore,
+    getScoreBreakdown,
     getAlbumScore,
     getSortedSongs,
     getTopCategoryForSong,
@@ -136,7 +137,7 @@ export default function App() {
 
   // Public profile (anyone-with-link sharing). Mirrors album + song
   // rankings to a separate Firestore doc when the user has it turned on.
-  const profile = useProfile(user, getAlbumScore, getCompositeScore, activeCategories);
+  const profile = useProfile(user, getAlbumScore, getScoreBreakdown, activeCategories);
 
   // Per-user analytics: lastActiveAt, sessionCount, totalRatings, albumsCompleted, signup origin
   useUserStats(user, ratings);
@@ -560,6 +561,7 @@ export default function App() {
         {activeTab === 'rankings' && (
           <Rankings
             getCompositeScore={getCompositeScore}
+            getScoreBreakdown={getScoreBreakdown}
             getAlbumScore={getAlbumScore}
             activeCategories={activeCategories}
             ratings={ratings}

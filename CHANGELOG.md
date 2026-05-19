@@ -16,6 +16,17 @@ Newest entries go at the top.
 
 ---
 
+## 0.19.0 — 2026-05-18
+
+### Added
+- **Tap any song to see how its score was built.** On the Rankings tab
+  and on shared public profiles, tapping a song now expands a breakdown
+  showing the stars given in each category, each category's weight, and
+  the simple math that turns them into the 0–100 score. The scoring is
+  no longer a mystery.
+
+---
+
 ## 0.18.0 — 2026-05-18
 
 ### Changed

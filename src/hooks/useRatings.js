@@ -144,11 +144,18 @@ export function useRatings(user) {
     }
   }, [user]);
 
-  // Calculate composite score (0–100) for one song given the active categories.
-  // Returns null if no categories have been rated yet.
-  // Formula: sum(starValue * weight) / sum(weight for rated cats only) / 5 * 100
-  // Special case: if the song has no bridge, bridge's weight is folded into lyrics' weight.
-  const getCompositeScore = useCallback((albumId, songIndex, activeCategories) => {
+  // Canonical scoring computation for one song. Returns the full breakdown
+  // so the UI can show users exactly how the 0–100 number is built:
+  //   { score, rows: [{ id, label, stars, weight }] }
+  // rows are ONLY the categories that contributed (a star value > 0), with
+  // their effective weights, so the displayed math always sums to `score`.
+  // Returns null if nothing has been rated.
+  //
+  // Formula: sum(stars * weight) / sum(weight for rated cats only) → 1–5,
+  // then /5 * 100 → 0–100.
+  // Special case: if the song has no bridge, bridge's weight is folded into
+  // lyrics' weight (so the breakdown reflects what actually counted).
+  const getScoreBreakdown = useCallback((albumId, songIndex, activeCategories) => {
     const key = `${albumId}_${songIndex}`;
     const songRatings = ratings[key];
     if (!songRatings || !activeCategories) return null;
@@ -165,6 +172,7 @@ export function useRatings(user) {
       }
     }
 
+    const rows = [];
     let numerator = 0;
     let denominator = 0;
 
@@ -173,14 +181,23 @@ export function useRatings(user) {
       if (stars && stars > 0) {
         numerator += stars * cat.weight;
         denominator += cat.weight;
+        rows.push({ id: cat.id, label: cat.name, stars, weight: cat.weight });
       }
     }
 
     if (denominator === 0) return null;
 
-    const raw = numerator / denominator; // 1–5 scale
-    return Math.round((raw / 5) * 100);  // convert to 0–100
+    const rawAvg = numerator / denominator;        // 1–5 scale
+    const score = Math.round((rawAvg / 5) * 100);  // convert to 0–100
+    return { score, rows };
   }, [ratings]);
+
+  // Composite score (0–100) for one song — thin wrapper over the breakdown
+  // so the two can never drift apart.
+  const getCompositeScore = useCallback((albumId, songIndex, activeCategories) => {
+    const b = getScoreBreakdown(albumId, songIndex, activeCategories);
+    return b ? b.score : null;
+  }, [getScoreBreakdown]);
 
   // Calculate average score across all rated songs in an album.
   // Returns null if no songs have been rated yet.
@@ -249,6 +266,7 @@ export function useRatings(user) {
     streak,
     setStarRating,
     getCompositeScore,
+    getScoreBreakdown,
     getAlbumScore,
     getSortedSongs,
     getTopCategoryForSong,
