@@ -82,23 +82,39 @@ no spurious modal). This is a per-change call for a pre-launch product — it
 does NOT relax the general rule: future material changes with a real user
 base still owe the §11 email.
 
-**Remaining gates before go-live (still NOT merged to main):**
-1. User reviews branch `52390b4` + decides brackets-in-launch (`BRACKETS_ENABLED`
-   is currently false → launch unlock is categories-only unless flipped).
-2. Legal sign-off on the DRAFT Terms/Privacy rewrite (binding doc, commercial
-   product — ideally a lawyer glance).
-3. Set Vercel env: `VITE_LEMON_SQUEEZY_UNLOCK_UUID`,
-   `LEMON_SQUEEZY_WEBHOOK_SECRET` (rotated value), `LEMON_SQUEEZY_API_KEY`;
-   confirm `FIREBASE_SERVICE_ACCOUNT_B64` is already present (webhook can't
-   write the unlock to Firestore without it). `VITE_*` is baked at build →
-   must redeploy after setting.
-4. Merge branch → deploy.
-5. One real $3.99 purchase + self-refund to verify checkout → webhook →
-   Firestore → UI unlock end-to-end.
+**Brackets-in-launch — RESOLVED (2026-05-18): brackets are ON.**
+`BRACKETS_ENABLED = true`. Community weekly/daily voting is FREE; building
+your own personal bracket is gated behind the unlock (BracketLocked screen
+in Brackets.jsx). The unlock now advertises THREE perks (8 extra rating
+categories, custom categories, custom brackets) — perk copy was updated +
+re-audited for consistency across PaywallCard, Settings ProModal +
+MembershipSection, VibeCheckIntro, GoogleLoginPromo.
 
-**Still NOT merged to main** until 1–2 are cleared — a half-migrated billing
-model must not go live on the commercial site. (The old "if LS/legal slips,
-launch free + tip jar" fallback still stands if 1–2 stall.)
+**Env vars — DONE (2026-05-18).** All three set in Vercel
+(`VITE_LEMON_SQUEEZY_UNLOCK_UUID`, `LEMON_SQUEEZY_WEBHOOK_SECRET` rotated,
+`LEMON_SQUEEZY_API_KEY`); `FIREBASE_SERVICE_ACCOUNT_B64` confirmed present.
+`VITE_*` is baked at build → a deploy is still required for it to take
+effect. Old `VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY/_ANNUAL` are now dead
+and can be deleted after the new code deploys.
+
+**THE SOLE REMAINING GATE: lawyer review of the DRAFT Terms/Privacy.**
+The user explicitly chose "hold for lawyer review" (2026-05-18) on the
+legal text. The full conversion is on branch `890299e` (build green) but
+is **NOT merged and NOT deployed** — nothing goes live until a lawyer
+signs off the Terms/Privacy rewrite. Do NOT merge before that, even though
+LS, env, brackets, and §11 are all settled.
+
+**After legal sign-off, the rest is mechanical:** merge branch → Vercel
+auto-deploys → do one real $3.99 purchase + self-refund to verify
+checkout → webhook → Firestore → UI unlock. Then bump `package.json`
+(0.16.0 → 0.17.0) + CHANGELOG as part of that ship.
+
+**Recommended follow-up (deferred, not a blocker):** the BracketLocked
+screen has no inline "Unlock — $3.99" CTA — a user at the highest-intent
+moment only gets a "Back" button. Adding the unlock CTA there (needs
+unlockPro/signIn/user plumbed into Brackets, mirroring PaywallCard's
+sign-in-routing pattern) is a real PRO FUNNEL improvement for the next
+pass.
 
 ---
 
