@@ -221,8 +221,7 @@ export default function GoogleLoginPromo({ user, signIn, onContinue }) {
           textAlign: 'center',
           lineHeight: 1.6,
         }}>
-          You can sign in any time from Settings → Account.
-          Pro — 8 extra rating categories, custom categories, and custom brackets — needs a signed-in account.
+          You can sign in any time from Settings → Account
         </div>
       </div>
     </div>

@@ -16,6 +16,17 @@ Newest entries go at the top.
 
 ---
 
+## 0.20.2 — 2026-05-20
+
+### Changed
+- **Cleaner welcome login prompt.** The footer line on the
+  "Sign in with Google" screen used to mention the Pro perks; it now
+  just says "You can sign in any time from Settings → Account." The
+  Pro pitch still lives on the categories paywall, the first Vibe
+  Check, and Settings — the welcome moment is just about signing in.
+
+---
+
 ## 0.20.1 — 2026-05-19
 
 ### Changed
