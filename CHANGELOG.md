@@ -16,6 +16,16 @@ Newest entries go at the top.
 
 ---
 
+## 0.20.4 — 2026-05-20
+
+### Changed
+- **Unpicked stars are quieter during rating.** Stars above your
+  current pick are now an outline only (no fill), so the stars you
+  actually chose carry the visual weight on the screen. Picked stars
+  still glow in the album's accent color. Applies to every album.
+
+---
+
 ## 0.20.3 — 2026-05-20
 
 ### Changed

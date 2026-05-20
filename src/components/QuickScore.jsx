@@ -2285,9 +2285,7 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
                     ? (hovered > 0
                         ? '#f59e0b'
                         : (textTuning?.starFilled ?? '#a855f7'))
-                    : (textTuning?.starFilled
-                        ? 'transparent'
-                        : '#a78bfa')}
+                    : 'transparent'}
                   style={{
                     display: 'block',
                     transition: 'fill 0.08s ease',
@@ -2301,9 +2299,10 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
                         : undefined,
                   }}
                 >
-                  {/* Empty stars get a thin deeper-purple outline so they
-                      read as clearly tappable on any backdrop — without it,
-                      pale-purple cream / lavender backgrounds wash them out.
+                  {/* Empty stars are outline-only — no fill — so the picked
+                      stars carry the visual weight on the screen. The deep
+                      purple stroke keeps them tappable on lavender/cream
+                      backdrops without competing with the filled stars.
                       Registry themes (Red, 1989) supply their own stroke. */}
                   <path
                     d="M10 1l2.39 4.84 5.34.78-3.86 3.76.91 5.32L10 13.27l-4.78 2.51.91-5.32L2.27 6.62l5.34-.78L10 1z"
@@ -2312,7 +2311,7 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
                       : (textTuning?.starEmptyStroke ?? '#7c3aed')}
                     strokeWidth={active
                       ? (textTuning?.starFilledStroke ? 1.4 : 0)
-                      : (textTuning?.starEmptyStroke ? 1.4 : 0.5)}
+                      : (textTuning?.starEmptyStroke ? 1.4 : 1.2)}
                     strokeLinejoin="round"
                   />
                 </svg>
