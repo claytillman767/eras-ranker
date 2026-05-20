@@ -115,12 +115,23 @@ legal text are LIVE on erasranker.com.
 2. **[Operator] Delete dead Vercel env vars**
    `VITE_LEMON_SQUEEZY_VARIANT_ID_MONTHLY` and `_ANNUAL` — nothing reads
    them anymore.
-3. **[Dev — deferred, real PRO FUNNEL win] Add an inline "Unlock — $3.99"
-   CTA to the BracketLocked screen** (`src/components/brackets/Brackets.jsx`).
-   Today a non-unlocked user who taps "build a bracket" only gets a "Back"
-   button at the highest-intent moment — a wasted conversion. Needs
-   `unlockPro`/`signIn`/`user` plumbed into `Brackets` (App.jsx passes only
-   `user`/`isPro` today), mirroring PaywallCard's sign-in-routing pattern.
+3. **[DONE — v0.20.0, 2026-05-19] BracketLocked now has a real unlock
+   CTA.** Shipped: branded SVG icon (purple-gradient trophy tile, no more
+   🏆 emoji), three perks listed explicitly with descriptions, primary
+   "Unlock — $3.99 one time" button, "Maybe later" demoted to a text link,
+   and sign-in-first routing for signed-out users (mirrors PaywallCard's
+   pattern). `unlockPro`/`signIn` are plumbed App.jsx → `Brackets` →
+   `BracketLocked`. Same release also gave the bracket matchup card
+   tactile polish: press-scale 0.97 with 100ms ease-out, `touch-action:
+   manipulation` to kill the 300ms iOS tap delay, "Tap a card to vote"
+   upgraded from italic text to a centered purple pill, and the post-vote
+   confirmation is quieter (no oversized dashed box) when the
+   community-vote backend hasn't been built yet. **Follow-up v0.20.1
+   unified Pro perk copy across every upgrade surface** (PaywallCard,
+   BracketLocked, Settings ProModal, MembershipSection, VibeCheckIntro,
+   GoogleLoginPromo) — same three perks named identically, same price
+   line "A one-time $3.99 unlock — yours forever, no subscription.", same
+   CTA wording.
 4. **[Dev — future, only on explicit instruction] Phase 2 not started:**
    Eras DNA / Taste Profile (the headline ~$6.99 paid feature) + the
    community "Fan's Picks" baseline — see the "Eras DNA" notes above.
@@ -344,7 +355,12 @@ src/
                              Below stars: matching pill buttons — "← Back" (fades when on first step) + "Skip →"
                              Back navigates to previous category (or previous song's last category)
     StarRating.jsx         — reusable star input; size='sm'|'md'|'lg'; readonly prop
-    Rankings.jsx           — top songs / top albums leaderboard + RankingCard at bottom
+    Rankings.jsx           — profile page: user photo + display name + Share control
+                             at the top, then top songs and top albums sections,
+                             RankingCard at the bottom. Same view a visitor sees on
+                             /u/{uid}. (v0.18.0 turned this tab from a leaderboard
+                             into a profile page; tap-a-song reveals the score
+                             breakdown, v0.19.0.)
     RankingCard.jsx        — shareable card button (Rankings tab); also exports drawCard()
     AlbumCompleteCard.jsx  — full-screen overlay shown once when album becomes fully ranked
     Categories.jsx         — Pro unlock + category toggles + weight sliders + custom creator
@@ -388,8 +404,10 @@ src/
   clears `eras_is_pro` and resets `isPro` state. Firestore still has the user's record, so signing
   back in instantly restores Pro via the snapshot listener. Detection uses a `prevUserRef` so the
   initial `null → null` render on app load doesn't trigger a false revocation.
-- Pro UI surfaces (Settings ProModal, PaywallCard, VibeCheckIntro) keep "Unlock Pro" tappable; if
-  no user, tapping it routes through a shared "Sign in to continue" step (Back arrow → returns).
+- Pro UI surfaces (Settings ProModal, PaywallCard, VibeCheckIntro, BracketLocked) keep "Unlock Pro"
+  tappable; if no user, tapping it routes through a shared "Sign in to continue" step
+  (Back arrow → returns). The same three-perk list and price line ship on every surface — when
+  changing any of them, run the `pro-funnel-auditor` subagent to catch drift before shipping.
 - Extra category weights rescaled so all active categories always sum to 100
 - Weight overrides stored per-category in `eras_category_weights`; reset clears that key
 - Pro gates: extra categories, custom categories, Categories tab paywall UI
