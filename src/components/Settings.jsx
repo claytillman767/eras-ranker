@@ -154,6 +154,13 @@ export default function Settings({
         </div>
       </div>
 
+      {/* ── Sign-in hero (signed-out only) ──
+          Consolidates the three sign-in asks (Account, Membership, Public
+          profile) into a single primary CTA. The three sections below that
+          require an account are hidden when signed out, so this card is the
+          one place that pitches sign-in. */}
+      {!user && <SignInHeroCard signIn={signIn} />}
+
       {/* ── Pro upgrade modal ── */}
       {showProModal && (
         <ProModal
@@ -164,7 +171,11 @@ export default function Settings({
         />
       )}
 
-      {/* ── Account section ── */}
+      {/* ── Account section (signed-in only) ──
+          When signed out, the Sign-in hero above carries the ask; the
+          account-management rows (sign out / forget / delete) have no
+          meaning without an account, so the section is hidden entirely. */}
+      {user && <>
       <SectionHeader>Account</SectionHeader>
       <div style={{
         background: '#ffffff',
@@ -173,8 +184,6 @@ export default function Settings({
         overflow: 'hidden',
         marginBottom: 24,
       }}>
-        {user ? (
-          <>
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -340,46 +349,17 @@ export default function Settings({
                 <span style={{ fontSize: 14, color: '#b91c1c', flexShrink: 0 }}>→</span>
               </button>
             </div>
-          </>
-        ) : (
-          <div style={{ padding: '16px' }}>
-            <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.5, marginBottom: 14 }}>
-              Sign in with Google to back up your ratings and sync across devices.
-            </div>
-            <button
-              onClick={signIn}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                width: '100%',
-                padding: '11px',
-                borderRadius: 10,
-                border: '1px solid #d1d5db',
-                background: '#ffffff',
-                fontSize: 14,
-                fontWeight: 500,
-                color: '#111827',
-                cursor: 'pointer',
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 18 18">
-                <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
-                <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
-                <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
-                <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
-              </svg>
-              Sign in with Google
-            </button>
-          </div>
-        )}
       </div>
+      </>}
 
       {/* Dev-only UAT panel — only the developer email sees this row */}
       {isDevEmail(user?.email) && <UatToggle user={user} isPro={isPro} />}
 
-      {/* ── Membership section ── */}
+      {/* ── Membership section (signed-in only) ──
+          The Sign-in hero up top covers the "what Pro unlocks" pitch when
+          signed out, so this section only renders once there's an account
+          to attach a subscription to. */}
+      {user && <>
       <SectionHeader>Membership</SectionHeader>
       <MembershipSection
         user={user}
@@ -392,6 +372,7 @@ export default function Settings({
         nextRenewalAt={nextRenewalAt}
         subscriptionPlan={subscriptionPlan}
       />
+      </>}
 
       {/* Tip jar — pure goodwill, hidden until a URL is configured. */}
       {TIP_JAR_URL && (
@@ -412,8 +393,11 @@ export default function Settings({
         </a>
       )}
 
-      {/* ── Public profile section ── */}
-      {profile && (
+      {/* ── Public profile section (signed-in only) ──
+          The Sign-in hero up top mentions public profiles when signed out,
+          so this section only renders once there's an account it can mirror
+          rankings into. */}
+      {user && profile && (
         <>
           <SectionHeader>Public profile</SectionHeader>
           <PublicProfilePanel profile={profile} user={user} signIn={signIn} />
@@ -900,6 +884,124 @@ function SectionHeader({ children }) {
       marginBottom: 8,
     }}>
       {children}
+    </div>
+  );
+}
+
+// Signed-out hero on the Settings page. Replaces three separate "Sign in
+// with Google" buttons (one each in Account, Membership, Public profile)
+// with one primary CTA that consolidates what signing in unlocks. The
+// three sections below are hidden when signed out, so this card is the
+// only sign-in ask on the page.
+//
+// Pro perk copy ("8 extra rating categories, custom categories, and
+// custom brackets") and price ("$3.99 one time") must match the canonical
+// wording used on PaywallCard / VibeCheckIntro / MembershipSection / the
+// ProModal. If this changes, run the pro-funnel-auditor.
+function SignInHeroCard({ signIn }) {
+  const benefits = [
+    {
+      title: 'Back up your ratings',
+      body: 'Your scores follow you to every device — phone, tablet, laptop.',
+    },
+    {
+      title: 'Unlock the full toolkit',
+      body: '8 extra rating categories, custom categories, and custom brackets — $3.99 one time.',
+    },
+    {
+      title: 'Share a public ranking page',
+      body: 'A simple link anyone can open to see your album and song rankings.',
+    },
+  ];
+
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, #faf5ff, #f3e8ff)',
+      border: '0.5px solid #e9d5ff',
+      borderRadius: 14,
+      padding: '20px 18px',
+      marginBottom: 28,
+    }}>
+      <div style={{
+        fontSize: 17,
+        fontWeight: 700,
+        color: '#111827',
+        marginBottom: 4,
+        letterSpacing: '-0.01em',
+      }}>
+        Sign in to get more out of the app
+      </div>
+      <div style={{
+        fontSize: 13,
+        color: '#6b7280',
+        lineHeight: 1.5,
+        marginBottom: 16,
+      }}>
+        One Google account unlocks three things you can&rsquo;t do signed out:
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 18 }}>
+        {benefits.map(({ title, body }) => (
+          <div key={title} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <div style={{
+              flexShrink: 0,
+              width: 18,
+              height: 18,
+              borderRadius: '50%',
+              background: '#a855f7',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 11,
+              fontWeight: 700,
+              marginTop: 1,
+            }} aria-hidden="true">✓</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: '#111827',
+                marginBottom: 2,
+                lineHeight: 1.3,
+              }}>
+                {title}
+              </div>
+              <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.45 }}>
+                {body}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <button
+        onClick={signIn}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          width: '100%',
+          padding: '12px',
+          borderRadius: 12,
+          border: '1px solid #d1d5db',
+          background: '#ffffff',
+          fontSize: 14,
+          fontWeight: 600,
+          color: '#111827',
+          cursor: 'pointer',
+          boxShadow: '0 4px 14px rgba(0,0,0,0.06)',
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 18 18">
+          <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+          <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+          <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+          <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+        </svg>
+        Sign in with Google
+      </button>
     </div>
   );
 }

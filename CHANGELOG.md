@@ -16,6 +16,20 @@ Newest entries go at the top.
 
 ---
 
+## 0.20.3 — 2026-05-20
+
+### Changed
+- **Cleaner signed-out Settings page.** Before, signed-out Settings
+  showed three "Sign in with Google" buttons in a row — one in
+  Account, one in Membership, one in Public Profile. Now there is
+  one consolidated sign-in card at the top that names the three
+  things signing in unlocks (back up ratings, unlock the toolkit,
+  share a public ranking page), and the three account-tied sections
+  below it are hidden until you sign in. The page still has the
+  Rating Categories, Preferences, Data, and footer below.
+
+---
+
 ## 0.20.2 — 2026-05-20
 
 ### Changed
