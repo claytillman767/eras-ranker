@@ -709,6 +709,118 @@ category-fit-score feature is ever revived without Spotify.
 **Effect:** Before the `AlbumCompleteCard` shows, a full-screen parchment-textured overlay fades in (`background: linear-gradient(135deg, #f5f0e8, #ede5d0)`). A line of text — *"The story isn't mine anymore..."* — types itself out character-by-character in a monospace/typewriter font (use `setInterval` over ~2 s to append chars to state). The overlay then slowly fades away (~1 s), and the normal completion card appears. Implement as `ManuscriptEgg.jsx`, wired into `SongList.jsx` alongside the Midnights egg (`albumId === 'tp'`).
 
 
+### Phantom-slider preview when rebalancing category weights — NOT BUILT
+
+**Where:** the weight sliders in the Categories editor (rendered from
+[src/components/Categories.jsx](src/components/Categories.jsx), reachable via
+**Settings → Rating Categories → Edit categories & weights**). All active
+category weights are forced to sum to 100, so when the user drags one
+slider, the other sliders silently auto-rebalance under the hood. Today
+that auto-rebalance is invisible during the drag — the other sliders only
+snap to their new positions after the user releases. From the user's
+perspective it can look like nothing else is happening.
+
+**The idea:** while a slider is being dragged, render *phantom* thumbs on
+every other active-category slider at their projected new positions, in a
+lighter purple than the real thumbs. The phantoms move live as the user
+drags. On release (mouseup / touchend), the dragged slider commits, the
+phantoms vanish, and the other sliders snap to the position the phantoms
+were just showing — so the rebalance reads as "the preview I was watching
+just became real," not "everything jumped at once."
+
+**Why it matters:** the rebalance is the most useful and least obvious
+thing the weight editor does — surfacing it during the drag turns an
+invisible mechanic into an "oh, that's clever" moment, and helps users
+trust that the score system is doing what they expect.
+
+**Implementation sketch (not built yet):**
+- On `pointerdown` on a slider, capture the snapshot of all current
+  weights. Render the live drag as `localWeight` (component state),
+  while the *real* `categoryWeights` stays unchanged.
+- Compute the projected rebalance on every drag frame (using the same
+  rescale function that runs today on `setCategoryWeight`) and pass the
+  result down so each non-dragged slider can render a phantom thumb at
+  the projected value.
+- Style: phantom track uses the same purple at ~30–40% opacity, phantom
+  thumb is an outlined circle (or fill at #c4b5fd) — clearly secondary
+  to the real thumb. Respect `prefers-reduced-motion`: when reduced
+  motion is on, skip the phantom animation and just snap on release.
+- On `pointerup` / `touchend` / `pointercancel`, call `setCategoryWeight`
+  with the final dragged value (which triggers the existing rebalance),
+  clear `localWeight`, and remove the phantoms.
+
+**Edge cases to handle:** dragging a slider all the way to 0 or 100 (other
+sliders absorb / disappear), dragging while a category is also being
+toggled off in the same session (phantoms must reflect the new active
+set), keyboard adjustment via arrow keys (probably skip phantoms there —
+no drag gesture to anchor them to).
+
+
+### Shareable custom brackets — NOT BUILT
+
+**Where:** custom personal brackets are built and run from
+[src/components/brackets/Brackets.jsx](src/components/brackets/Brackets.jsx) +
+`BracketBuilder.jsx`, with state in
+[src/hooks/useBrackets.js](src/hooks/useBrackets.js) (currently local +
+Firestore field `brackets` on `users/{uid}` — strictly per-user). Creating a
+custom bracket is gated behind the $3.99 unlock (BracketLocked screen).
+
+**The idea:** once a Pro user builds a custom bracket, give them a
+"Share this bracket" link. Anyone who opens the link — Pro, free,
+signed-out — can play through and vote on that exact bracket. Their picks
+flow back to the bracket's creator as a "your friends' results" view.
+Tournament play, not just spectating: each visitor runs their own copy of
+the bracket end-to-end.
+
+**Why it matters — SHARING FUNNEL: major positive.** Today brackets only
+live on the device of the person who built them. Letting them be shared
+turns a single-player feature into a viral one: every Pro creator is a
+potential top-of-funnel for new users who land on a friend's bracket.
+This also pairs naturally with the existing public profile feature — a
+bracket link could live on the creator's `/u/{uid}` page.
+
+**The trade-off the user already accepted:** non-Pro and signed-out users
+get to *play* a custom bracket without paying. Creation is still
+Pro-gated, and the participant is engaging with the app at a meaningful
+level (clicking through a multi-round tournament) — net positive for
+top-of-funnel. Do not gate participation, even cheaply.
+
+**Implementation sketch (not built yet):**
+- New Firestore collection `sharedBrackets/{shortId}` holding the
+  bracket definition (categories, contestants, rounds, creator uid,
+  display name, createdAt). Generate `shortId` as a 6–8 char base62
+  slug — short enough to share casually.
+- New route `/b/{shortId}` (hand-rolled in App.jsx like `/u/{uid}`).
+  Loads the bracket from `sharedBrackets`, runs it through the existing
+  bracket-playback UI, and stores the visitor's picks locally
+  (localStorage key keyed on the shortId so a returning visitor sees
+  their previous picks).
+- Aggregation: a `sharedBracketResults/{shortId}/votes/{voteId}` subcollection
+  with one doc per visitor pick. Anonymous writes allowed (rule
+  similar to feedback). Creator sees an aggregated "X friends played,
+  here's the consensus winner" panel in their bracket view.
+- Sharing UX: a "Share this bracket" button next to a completed
+  personal bracket → Web Share API (or copy-link fallback) with the
+  `erasranker.com/b/{shortId}` URL.
+- Visitor onboarding: when a signed-out visitor finishes a shared
+  bracket, surface a soft "build your own — sign in to make one" CTA
+  on the results screen.
+
+**Open questions before building:**
+1. Should the creator see *which* friends played, or just aggregate
+   results? (Lean aggregate-only for v1 — sidesteps identity / spam.)
+2. Rate limiting on `sharedBrackets` creation per uid to avoid abuse?
+3. Anonymous vote stuffing — a single visitor playing the bracket 50
+   times to skew the consensus. Possible mitigations: localStorage
+   token tied to votes; rule that requires a `clientId` field present
+   on each vote and rejects duplicate `(shortId, clientId, matchupId)`
+   combos. Not perfect, but raises the cost of stuffing.
+4. Pricing impact on PRO FUNNEL: does letting free users play a
+   custom bracket reduce upgrade intent? Hypothesis: no — playing
+   someone else's bracket teases the feature; the "I want to make my
+   own" upgrade ask gets stronger after the visitor finishes.
+
+
 ### ~~User Accounts~~ ✅ BUILT
 Google sign-in is live. Ratings, Pro settings, manual order, and album modes all sync to Firestore. See the **Authentication & Firestore** section above for full details.
 Remaining future work in this area: real billing — see "Payment provider — Lemon Squeezy plan" below.
