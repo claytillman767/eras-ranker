@@ -125,11 +125,17 @@ function seededRandom(seed) {
 }
 
 // Deterministic split for one matchup → { song1Pct, song2Pct } (integers, sum 100).
-// Leans clearly toward a winner (57–82% range) so reveals feel decisive.
+// Leans clearly toward a winner (57–82% range) so reveals feel decisive, and the
+// winning SIDE varies per matchup (a seeded coin flip) so the crowd doesn't
+// always favor song1 — that keeps the reveal suspenseful and lets a user
+// genuinely "go rogue". Still fully deterministic per week (Phase B swaps this
+// for real tallies).
 export function communityPercent(weekSeed, roundIndex, matchupIndex) {
   const rand = seededRandom(weekSeed * 100003 + roundIndex * 1009 + matchupIndex * 31 + 7);
   rand(); rand(); // spread the distribution
-  const song1Pct = 57 + Math.floor(rand() * 26); // 57–82
+  const winnerShare = 57 + Math.floor(rand() * 26); // 57–82 for the winning side
+  const song1Wins = rand() < 0.5;
+  const song1Pct = song1Wins ? winnerShare : 100 - winnerShare;
   return { song1Pct, song2Pct: 100 - song1Pct };
 }
 

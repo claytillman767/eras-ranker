@@ -26,7 +26,6 @@ import Terms from './components/Terms';
 import UpdatedTermsModal from './components/UpdatedTermsModal';
 import FeedbackButton from './components/FeedbackButton';
 import { ALL_ALBUMS } from './data/albums';
-import WeeklyPreview from './components/brackets/weekly/_WeeklyPreview'; // TEMP PREVIEW — remove with /weekly-preview route
 
 // Hand-rolled URL routing. The app is otherwise tab-driven, so adding
 // react-router for a handful of extra routes would be overkill. If we
@@ -42,14 +41,6 @@ function getLegalPath() {
   if (p === '/privacy' || p === '/privacy/') return 'privacy';
   if (p === '/terms' || p === '/terms/') return 'terms';
   return null;
-}
-
-// TEMP PREVIEW — dev-only weekly-bracket preview route. Remove this helper,
-// its state, its popstate line, and the early return below when Phase A wiring
-// lands. Also delete _WeeklyPreview.jsx + its import.
-function isWeeklyPreviewPath() {
-  const p = window.location.pathname;
-  return p === '/weekly-preview' || p === '/weekly-preview/';
 }
 
 // Brackets are part of the launch unlock (decided 2026-05-18). Community
@@ -74,12 +65,10 @@ export default function App() {
   // so a shared profile link is reachable without signing in.
   const [profileUid, setProfileUid] = useState(getProfileUidFromPath);
   const [legalPath, setLegalPath] = useState(getLegalPath);
-  const [weeklyPreview, setWeeklyPreview] = useState(isWeeklyPreviewPath); // TEMP PREVIEW
   useEffect(() => {
     function onPop() {
       setProfileUid(getProfileUidFromPath());
       setLegalPath(getLegalPath());
-      setWeeklyPreview(isWeeklyPreviewPath()); // TEMP PREVIEW
     }
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
@@ -189,8 +178,6 @@ export default function App() {
   // the welcome tour or sign-in flow. Also reachable while the
   // UpdatedTermsModal is up (its links open in a new tab, but pasting
   // /privacy directly into the URL bar still works).
-  if (weeklyPreview) return <WeeklyPreview />; // TEMP PREVIEW — remove with route
-
   if (legalPath === 'privacy') return <PrivacyPolicy />;
   if (legalPath === 'terms')   return <Terms />;
 

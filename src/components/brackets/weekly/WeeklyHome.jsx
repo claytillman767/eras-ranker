@@ -288,6 +288,7 @@ export default function WeeklyHome({
   floatingSongs = [],
   onPrimary,
   onShare,
+  onBack,
   showHeader = true,
 }) {
   let hero;
@@ -310,7 +311,16 @@ export default function WeeklyHome({
       fontFamily: fontUI, overflow: 'hidden',
     }}>
       {showHeader && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '52px 20px 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '52px 20px 12px' }}>
+          {onBack && (
+            <button onClick={onBack} aria-label="Back" style={{
+              appearance: 'none', cursor: 'pointer', flexShrink: 0,
+              width: 34, height: 34, borderRadius: 17,
+              background: '#fff', border: '1px solid rgba(124,58,237,0.2)', color: PURPLE_DEEP,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700,
+              boxShadow: '0 2px 6px rgba(124,58,237,0.12)',
+            }}>‹</button>
+          )}
           <div style={{ width: 30, height: 30, borderRadius: 9, background: `linear-gradient(150deg, ${PURPLE}, ${PURPLE_DEEP})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#fff', boxShadow: '0 4px 12px rgba(124,58,237,0.35)' }}>♪</div>
           <div style={{ fontFamily: fontDisplay, fontSize: 22, color: PURPLE_DEEP, letterSpacing: -0.3 }}>Eras Ranker</div>
         </div>

@@ -6,7 +6,42 @@ import {
   buildNextRound,
   getCurrentWeekNumber,
   getWeeklyCategoryName,
+  BRACKET_CATEGORIES,
 } from '../constants/bracketCategories';
+import { WEEKLY_BRACKET_SIZE } from '../constants/weeklySchedule';
+
+// Resolve the rotating weekly category NAME → a real category id so the song
+// pool matches the displayed theme. Falls back to a no-filter category.
+function weeklyCategoryIdForWeek(weekNumber) {
+  const name = getWeeklyCategoryName(weekNumber);
+  return BRACKET_CATEGORIES.find(c => c.name === name)?.id || 'most-devastating';
+}
+
+// Build a fresh weekly bracket for `wk`: 16 contestants, no per-user advancement.
+// The community's 4-round outcome is recomputed on the fly from (contestants, seed)
+// in the UI; we persist only contestants + the user's personal pick ledger +
+// which round reveals they've seen. None of these are nested arrays, so they
+// store to Firestore directly (no JSON.stringify needed).
+function freshWeekly(wk) {
+  const seed = wk * 999983;
+  const categoryId = weeklyCategoryIdForWeek(wk);
+  let generated = generateBracket(categoryId, 'all', seed, WEEKLY_BRACKET_SIZE);
+  if (!generated || generated.contestants.length < WEEKLY_BRACKET_SIZE) {
+    generated = generateBracket('most-devastating', 'all', seed, WEEKLY_BRACKET_SIZE);
+  }
+  if (!generated) return null;
+  return {
+    weekNumber: wk,
+    categoryId,
+    categoryName: getWeeklyCategoryName(wk),
+    seed,
+    contestants: generated.contestants.slice(0, WEEKLY_BRACKET_SIZE),
+    personalVotes: {}, // { `${roundIndex}_${matchupIndex}`: "albumId_songIndex" }
+    revealsSeen: {},    // { [roundIndex]: true }
+  };
+}
+
+const isNewWeeklyShape = (w) => !!(w && w.contestants && w.personalVotes);
 
 const STORAGE_KEY = 'eras_brackets';
 const WEEKLY_KEY = 'eras_weekly_bracket';
@@ -55,23 +90,23 @@ export function useBrackets(user) {
         }
       }
       if (snap.exists() && snap.data().weeklyBracket) {
-        const raw = snap.data().weeklyBracket;
-        // rounds is serialized as a JSON string to work around Firestore's nested-array restriction
-        const w = typeof raw.rounds === 'string'
-          ? { ...raw, rounds: JSON.parse(raw.rounds) }
-          : raw;
+        const w = snap.data().weeklyBracket;
         const currentWk = getCurrentWeekNumber();
-        setWeeklyState(prev => {
-          // Keep local state if it's the same week and has at least as many votes —
-          // prevents a stale Firestore read (e.g. from StrictMode double-effect) from
-          // reverting votes the user just cast.
-          if (
-            prev && prev.weekNumber === currentWk && w.weekNumber === currentWk &&
-            (prev.votes?.length ?? 0) >= (w.votes?.length ?? 0)
-          ) return prev;
-          saveToStorage(WEEKLY_KEY, w);
-          return w;
-        });
+        // Only hydrate from the cloud when it's the redesigned shape for the
+        // current week. Old-shape docs (from before the redesign) are ignored —
+        // the mount effect regenerates a fresh weekly for this week.
+        if (isNewWeeklyShape(w) && w.weekNumber === currentWk) {
+          setWeeklyState(prev => {
+            // Keep local state if it has at least as many personal votes —
+            // prevents a stale Firestore read (e.g. StrictMode double-effect)
+            // from reverting votes the user just cast.
+            const prevVotes = prev?.personalVotes ? Object.keys(prev.personalVotes).length : 0;
+            const cloudVotes = Object.keys(w.personalVotes).length;
+            if (prev && prev.weekNumber === currentWk && prevVotes >= cloudVotes) return prev;
+            saveToStorage(WEEKLY_KEY, w);
+            return w;
+          });
+        }
       }
     }).catch(() => {});
   }, [user]);
@@ -90,24 +125,13 @@ export function useBrackets(user) {
   useEffect(() => {
     const wk = getCurrentWeekNumber();
 
-    // Weekly — reset if it's a new week
+    // Weekly — reset on a new week OR when the stored state predates the
+    // redesign (old shape). The community outcome is derived from the seed in
+    // the UI; we only persist contestants + the user's personal pick ledger.
     setWeeklyState(prev => {
-      if (prev && prev.weekNumber === wk) return prev;
-      const seed = wk * 999983;
-      const generated = generateBracket('most-devastating', 'all', seed);
-      if (!generated) return prev;
-      const next = {
-        weekNumber: wk,
-        categoryName: getWeeklyCategoryName(wk),
-        seed,
-        status: 'in-progress',
-        currentRound: 0,
-        currentMatchupIndex: 0,
-        contestants: generated.contestants,
-        rounds: generated.rounds,
-        votes: [],
-        winner: null,
-      };
+      if (prev && prev.weekNumber === wk && isNewWeeklyShape(prev)) return prev;
+      const next = freshWeekly(wk);
+      if (!next) return prev;
       saveToStorage(WEEKLY_KEY, next);
       return next;
     });
@@ -222,72 +246,37 @@ export function useBrackets(user) {
 
   const weekNumber = getCurrentWeekNumber();
 
-  const recordWeeklyVote = useCallback((_roundIndex, _matchupIndex, winner) => {
+  // Record the user's pick for one matchup. Option A: this does NOT advance the
+  // bracket — the community's survivors are derived deterministically from the
+  // seed. We only log the pick to the personal ledger (which feeds Crowd Match
+  // and the future Eras DNA). Reads the latest ledger from the ref to avoid
+  // stale closures.
+  const recordWeeklyVote = useCallback((roundIndex, matchupIndex, winner) => {
     const w = weeklyStateRef.current;
-    if (!w || !w.rounds || w.weekNumber !== getCurrentWeekNumber()) return;
+    if (!w || !isNewWeeklyShape(w) || w.weekNumber !== getCurrentWeekNumber()) return;
 
-    // Always use the authoritative position from state — never trust params from stale closures.
-    const roundIndex = w.currentRound;
-    const matchupIndex = w.currentMatchupIndex;
-
-    const rounds = w.rounds.map((round, ri) => {
-      if (ri !== roundIndex) return round;
-      return round.map((m, mi) => {
-        if (mi !== matchupIndex) return m;
-        return { ...m, winner };
-      });
-    });
-
-    const currentRound = rounds[roundIndex];
-    if (!currentRound) return;
-    const allDone = currentRound.every(m => m.winner !== null);
-
-    let newRounds = rounds;
-    let newCurrentRound = roundIndex;
-    let newCurrentMatchupIndex = matchupIndex + 1;
-    let status = 'in-progress';
-    let bracketWinner = null;
-
-    if (allDone) {
-      if (currentRound.length === 1) {
-        status = 'complete';
-        bracketWinner = winner;
-      } else {
-        const nextRound = buildNextRound(currentRound);
-        if (nextRound) {
-          newRounds = [...rounds, nextRound];
-          newCurrentRound = roundIndex + 1;
-          newCurrentMatchupIndex = 0;
-        }
-      }
-    }
-
-    const prevVotes = w.votes || [];
-    const votes = [
-      ...prevVotes.filter(v => !(v.roundIndex === roundIndex && v.matchupIndex === matchupIndex)),
-      { roundIndex, matchupIndex, winnerId: `${winner.albumId}_${winner.songIndex}` },
-    ];
-
-    const next = {
-      ...w,
-      rounds: newRounds,
-      currentRound: newCurrentRound,
-      currentMatchupIndex: newCurrentMatchupIndex,
-      status,
-      winner: bracketWinner,
-      votes,
-    };
+    const key = `${roundIndex}_${matchupIndex}`;
+    const winnerId = `${winner.albumId}_${winner.songIndex}`;
+    const next = { ...w, personalVotes: { ...w.personalVotes, [key]: winnerId } };
 
     saveToStorage(WEEKLY_KEY, next);
     if (user) {
-      // Firestore doesn't support nested arrays (rounds is array-of-arrays).
-      // Serialize rounds to JSON string so the document is valid.
-      try {
-        const firestoreNext = { ...next, rounds: JSON.stringify(next.rounds) };
-        setDoc(doc(db, 'users', user.uid), { weeklyBracket: firestoreNext }, { merge: true }).catch(() => {});
-      } catch {
-        // skip Firestore sync if serialization fails
-      }
+      // New shape has no nested arrays → writes directly, no JSON.stringify.
+      setDoc(doc(db, 'users', user.uid), { weeklyBracket: next }, { merge: true }).catch(() => {});
+    }
+    setWeeklyState(next);
+  }, [user]);
+
+  // Mark a round's results reveal as watched (so the home hero advances past
+  // "results are in" and the reveal isn't replayed every visit).
+  const markWeeklyRevealSeen = useCallback((roundIndex) => {
+    const w = weeklyStateRef.current;
+    if (!w || !isNewWeeklyShape(w)) return;
+    if (w.revealsSeen?.[roundIndex]) return;
+    const next = { ...w, revealsSeen: { ...w.revealsSeen, [roundIndex]: true } };
+    saveToStorage(WEEKLY_KEY, next);
+    if (user) {
+      setDoc(doc(db, 'users', user.uid), { weeklyBracket: next }, { merge: true }).catch(() => {});
     }
     setWeeklyState(next);
   }, [user]);
@@ -329,6 +318,7 @@ export function useBrackets(user) {
     weekNumber,
     weeklyState,
     recordWeeklyVote,
+    markWeeklyRevealSeen,
     // Daily
     dailyState,
     recordDailyVote,

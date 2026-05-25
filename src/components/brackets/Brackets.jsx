@@ -7,21 +7,20 @@ import Tree from './Tree';
 import Matchup from './Matchup';
 import RoundTransition from './RoundTransition';
 import BracketResults from './BracketResults';
-import WinnerReveal from './WinnerReveal';
 import DailyMatchup from './DailyMatchup';
 import BracketBuilder from './BracketBuilder';
+import WeeklyExperience from './weekly/WeeklyExperience';
 
 export default function Brackets({ user, isPro, unlockPro, signIn }) {
   const {
     brackets, createBracket, recordWinner, getBracket,
-    weeklyState, recordWeeklyVote,
+    weeklyState, recordWeeklyVote, markWeeklyRevealSeen,
     dailyState, recordDailyVote,
   } = useBrackets(user);
 
-  // Screens: 'landing' | 'builder' | 'tree' | 'matchup' | 'transition' | 'results' | 'reveal' | 'daily'
+  // Screens: 'landing' | 'builder' | 'tree' | 'matchup' | 'transition' | 'results' | 'weekly' | 'daily' | 'locked'
   const [screen, setScreen] = useState('landing');
   const [activeBracketId, setActiveBracketId] = useState(null);
-  const [activeMode, setActiveMode] = useState(null); // 'personal' | 'weekly'
   const [transitionRound, setTransitionRound] = useState(null);
 
   const weekNumber = getCurrentWeekNumber();
@@ -29,42 +28,35 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
   const personalInProgress = brackets.find(b => b.status === 'in-progress') || null;
   const recentlyCrowned = brackets.filter(b => b.status === 'complete').slice(-5).reverse();
 
-  const isWeekly = activeMode === 'weekly';
-  const activeBracket = isWeekly
-    ? weeklyState
-    : (activeBracketId ? getBracket(activeBracketId) : null);
+  // The weekly community bracket runs through WeeklyExperience now; only
+  // personal brackets flow through tree/matchup/results here.
+  const activeBracket = activeBracketId ? getBracket(activeBracketId) : null;
 
-  const weekLabel = isWeekly
-    ? `${weeklyCategoryName} · Wk ${weekNumber + 1}`
-    : (activeBracket
-        ? (BRACKET_CATEGORIES.find(c => c.id === activeBracket.categoryId)?.name || 'Bracket')
-        : '');
+  const weekLabel = activeBracket
+    ? (BRACKET_CATEGORIES.find(c => c.id === activeBracket.categoryId)?.name || 'Bracket')
+    : '';
 
-  // Auto-route off the matchup screen when the active bracket completes.
+  // Auto-route off the matchup screen when the active (personal) bracket completes.
   useEffect(() => {
     if (screen !== 'matchup' || !activeBracket) return;
     if (activeBracket.status === 'complete') {
-      setScreen(isWeekly ? 'reveal' : 'results');
+      setScreen('results');
     }
-  }, [activeBracket?.status, screen, isWeekly]);
+  }, [activeBracket?.status, screen]);
 
   function backToLanding() {
     setActiveBracketId(null);
-    setActiveMode(null);
     setScreen('landing');
   }
 
   function openWeekly() {
     if (!weeklyState) return;
-    if (weeklyState.status === 'complete') { setScreen('reveal'); return; }
-    setActiveMode('weekly');
-    setScreen('tree');
+    setScreen('weekly');
   }
 
   function continuePersonal() {
     if (!personalInProgress) return;
     setActiveBracketId(personalInProgress.id);
-    setActiveMode('personal');
     setScreen(personalInProgress.status === 'complete' ? 'results' : 'matchup');
   }
 
@@ -83,33 +75,28 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
     const id = createBracket(categoryId, scope, size);
     if (id) {
       setActiveBracketId(id);
-      setActiveMode('personal');
       setScreen('matchup');
     }
   }
 
   function openCrowned(bracketId) {
     setActiveBracketId(bracketId);
-    setActiveMode('personal');
     setScreen('results');
   }
 
+  // Personal-bracket vote (weekly votes go through WeeklyExperience).
   function handleVote(winnerSong) {
     if (!activeBracket) return;
-    if (isWeekly) {
-      recordWeeklyVote(activeBracket.currentRound, activeBracket.currentMatchupIndex, winnerSong);
-    } else {
-      const ri = activeBracket.currentRound;
-      const mi = activeBracket.currentMatchupIndex;
-      recordWinner(activeBracket.id, ri, mi, winnerSong);
-      // Synchronously check the about-to-be-updated state for round transition.
-      const completed = activeBracket.rounds[ri];
-      const wasLastInRound = mi === completed.length - 1;
-      const isFinal = completed.length === 1;
-      if (wasLastInRound && !isFinal) {
-        setTransitionRound(ri);
-        setScreen('transition');
-      }
+    const ri = activeBracket.currentRound;
+    const mi = activeBracket.currentMatchupIndex;
+    recordWinner(activeBracket.id, ri, mi, winnerSong);
+    // Synchronously check the about-to-be-updated state for round transition.
+    const completed = activeBracket.rounds[ri];
+    const wasLastInRound = mi === completed.length - 1;
+    const isFinal = completed.length === 1;
+    if (wasLastInRound && !isFinal) {
+      setTransitionRound(ri);
+      setScreen('transition');
     }
   }
 
@@ -191,8 +178,16 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
     );
   }
 
-  if (screen === 'reveal') {
-    return <WinnerReveal weeklyState={weeklyState} onClose={backToLanding} />;
+  if (screen === 'weekly') {
+    return (
+      <WeeklyExperience
+        weeklyState={weeklyState}
+        recordWeeklyVote={recordWeeklyVote}
+        markWeeklyRevealSeen={markWeeklyRevealSeen}
+        onClose={backToLanding}
+        onBuildOwn={buildPersonal}
+      />
+    );
   }
 
   if (screen === 'daily' && dailyState) {
