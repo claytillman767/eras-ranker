@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getEraColors } from '../../constants/eraColors';
 import { ALL_ALBUMS } from '../../data/albums';
 import { BRACKET_CATEGORIES } from '../../constants/bracketCategories';
+import { computeCommunityBracket, currentRoundIndex, isChampionRevealed, TOTAL_ROUNDS } from '../../constants/weeklySchedule';
 
 const STYLE = `
 @keyframes landing-pulse-dot {
@@ -110,17 +111,16 @@ export default function Landing({
   const revealMs = getNextSundayReveal();
   const participants = fakeParticipantCount(weekNumber ?? 0);
 
-  // Weekly hero — current matchup peek
-  const weeklyMatchup = weeklyState && weeklyState.rounds
-    ? weeklyState.rounds[weeklyState.currentRound]?.[weeklyState.currentMatchupIndex]
-    : null;
-  const weeklyTotalRounds = weeklyState
-    ? Math.log2(weeklyState.contestants.length)
-    : 0;
-  const weeklyMatchupsInRound = weeklyState && weeklyState.rounds
-    ? (weeklyState.rounds[weeklyState.currentRound]?.length ?? 0)
-    : 0;
-  const weeklyComplete = weeklyState?.status === 'complete';
+  // Weekly hero — derived from the redesigned shape (contestants + seed). The
+  // community's 4-round outcome is recomputed from the seed; the current round
+  // comes from the Mon→Sun schedule. We peek the first matchup of the open round.
+  const weeklyReady = !!(weeklyState && weeklyState.contestants && weeklyState.personalVotes);
+  const weeklyCommunity = weeklyReady ? computeCommunityBracket(weeklyState.contestants, weeklyState.seed) : null;
+  const weeklyCurRound = weeklyReady ? Math.min(currentRoundIndex(Date.now(), weeklyState.weekNumber), TOTAL_ROUNDS - 1) : 0;
+  const weeklyComplete = weeklyReady ? isChampionRevealed(Date.now(), weeklyState.weekNumber) : false;
+  const weeklyRoundMatchups = weeklyCommunity ? weeklyCommunity.rounds[weeklyCurRound] : null;
+  const weeklyMatchup = weeklyRoundMatchups ? weeklyRoundMatchups[0] : null;
+  const weeklyMatchupsInRound = weeklyRoundMatchups ? weeklyRoundMatchups.length : 0;
 
   // Personal in-progress card — preview the alive contestants
   const personalCat = personalInProgress
@@ -297,7 +297,7 @@ export default function Landing({
                   fontSize: 10, color: '#cbd5e1',
                   whiteSpace: 'nowrap', flexShrink: 0,
                 }}>
-                  Round {weeklyState.currentRound + 1} · matchup {weeklyState.currentMatchupIndex + 1} of {weeklyMatchupsInRound}
+                  Round {weeklyCurRound + 1} of {TOTAL_ROUNDS} · {weeklyMatchupsInRound} matchups
                 </span>
                 <span style={{
                   flex: 1, height: 1,

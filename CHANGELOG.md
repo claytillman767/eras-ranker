@@ -16,6 +16,34 @@ Newest entries go at the top.
 
 ---
 
+## 0.22.0 — 2026-05-25
+
+### Changed
+- **The weekly community bracket is now a paced, week-long event.** Instead
+  of voting a whole bracket in one sitting, a new round unlocks every couple
+  of days (Mon → Wed → Fri → Sat), and the whole community votes the same
+  16-song bracket together. You vote one matchup at a time, and the songs the
+  *crowd* picks are the ones that advance — so it's one shared tournament,
+  not a private one. The bracket home now shows a week-at-a-glance schedule
+  strip and always points you at the one thing to do next (vote, see results,
+  or come back later).
+
+### Added
+- **A results reveal between rounds.** When a round closes, you get a
+  matchup-by-matchup reveal of how everyone voted — the vote bars fill in live,
+  your pick is highlighted, and you find out whether you went with the crowd
+  or "went rogue."
+- **Your Crowd Match score.** A running tally of how often your picks matched
+  the community's, with a personality label (e.g. "Mostly with the crowd").
+- **A Sunday champion crowning + shareable card.** The week ends with an
+  animated bracket replay that crowns the winning song, plus a square share
+  card showing the champion, the final head-to-head, and your Crowd Match —
+  ready to post.
+- **A waiting screen between rounds** with a countdown to the next drop and a
+  shortcut to build your own bracket while you wait.
+
+---
+
 ## 0.21.1 — 2026-05-25
 
 ### Fixed
