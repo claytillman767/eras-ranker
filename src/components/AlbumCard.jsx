@@ -28,7 +28,10 @@ export default function AlbumCard({ album, ratedCount, albumScore, isSelected, o
     <button
       onClick={onClick}
       style={{
-        background: album.color,
+        // Era-color tile. The scrim layer is transparent in light mode (tile
+        // shows the full pastel) and a dark wash in dark mode (muted dark tile
+        // with legible light text). See --album-scrim in index.css.
+        background: `linear-gradient(var(--album-scrim), var(--album-scrim)), ${album.color}`,
         border: isSelected ? '2px solid var(--brand)' : '0.5px solid var(--border)',
         borderRadius: 12,
         padding: '12px 10px',

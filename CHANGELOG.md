@@ -16,6 +16,19 @@ Newest entries go at the top.
 
 ---
 
+## 0.21.1 — 2026-05-25
+
+### Fixed
+- **Dark mode readability.** Two spots that stayed too bright in dark
+  mode are fixed: the album tiles on the Albums screen are no longer
+  glaring light pastels with unreadable labels — each tile is now a
+  muted dark card that still hints at its album color, with clear
+  text. And the "Your ratings aren't backed up" notice on Home now
+  uses a proper dark amber style so its message reads clearly instead
+  of fading into the card. Light mode is unchanged.
+
+---
+
 ## 0.21.0 — 2026-05-25
 
 ### Added

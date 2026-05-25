@@ -60,6 +60,19 @@
   --success-text:   #166534;
   --success-border: #bbf7d0;
   --success-bg:     #dcfce7;
+
+  /* Semantic — warning / notice (amber) */
+  --warn-bg:      #fef3c7;
+  --warn-border:  #fbbf24;
+  --warn-icon:    #b45309;
+  --warn-heading: #b45309;
+
+  /* Album tile overlay. Album cards fill with a fixed light era-color tint
+     (album.color). In light mode this scrim is fully transparent so the tile
+     is unchanged; in dark mode it lays a dark wash over the pastel so the tile
+     reads as a muted dark card (still hinting at the era color) with legible
+     light text. Applied as the first layer of the card's `background`. */
+  --album-scrim:  rgba(0,0,0,0);
 }
 
 :root[data-theme="dark"] {
@@ -97,6 +110,16 @@
   --success-text:   #4ade80;
   --success-border: #1d4d2e;
   --success-bg:     #14331f;
+
+  /* Semantic — warning / notice (amber): deep amber surface with a bright
+     amber heading so the notice stays legible on the dark theme. */
+  --warn-bg:      #2a2310;
+  --warn-border:  #574516;
+  --warn-icon:    #d97706;
+  --warn-heading: #fcd34d;
+
+  /* Album tile overlay — dark wash over the light era-color tint. */
+  --album-scrim:  rgba(10,12,16,0.80);
 }
 
 /* Reset box-sizing and remove default margin */

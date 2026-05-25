@@ -174,8 +174,8 @@ export default function Home({
         <div style={{
           margin: '14px 16px 0',
           padding: '12px 14px',
-          background: '#fef3c7',
-          border: '1px solid #fbbf24',
+          background: 'var(--warn-bg)',
+          border: '1px solid var(--warn-border)',
           borderRadius: 10,
           display: 'flex',
           gap: 10,
@@ -185,7 +185,7 @@ export default function Home({
             width: 22,
             height: 22,
             borderRadius: '50%',
-            background: '#b45309',
+            background: 'var(--warn-icon)',
             color: 'white',
             display: 'flex',
             alignItems: 'center',
@@ -195,7 +195,7 @@ export default function Home({
             flexShrink: 0,
           }}>!</div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#b45309', marginBottom: 2 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--warn-heading)', marginBottom: 2 }}>
               Your ratings aren't backed up
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-strong)', lineHeight: 1.4, marginBottom: 10 }}>
