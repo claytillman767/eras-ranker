@@ -36,7 +36,7 @@ export default function ProcessingBanner({ visible }) {
           right: 0,
           zIndex: 9800,
           padding: '10px 16px',
-          background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+          background: 'linear-gradient(135deg, var(--brand), var(--brand-2))',
           color: '#ffffff',
           fontSize: 13,
           fontWeight: 600,

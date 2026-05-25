@@ -264,7 +264,7 @@ function BracketLocked({ onClose, user, signIn, unlockPro }) {
       <div style={{
         position: 'fixed',
         inset: 0,
-        background: '#ffffff',
+        background: 'var(--bg)',
         zIndex: 1000,
         display: 'flex',
         flexDirection: 'column',
@@ -290,7 +290,7 @@ function BracketLocked({ onClose, user, signIn, unlockPro }) {
                 width: 80,
                 height: 80,
                 borderRadius: 20,
-                background: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)',
+                background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -311,7 +311,7 @@ function BracketLocked({ onClose, user, signIn, unlockPro }) {
               <div style={{
                 fontSize: 22,
                 fontWeight: 700,
-                color: '#111827',
+                color: 'var(--text)',
                 marginBottom: 8,
                 textAlign: 'center',
               }}>
@@ -321,7 +321,7 @@ function BracketLocked({ onClose, user, signIn, unlockPro }) {
               {/* Subhead */}
               <div style={{
                 fontSize: 14,
-                color: '#6b7280',
+                color: 'var(--text-2)',
                 lineHeight: 1.5,
                 textAlign: 'center',
                 marginBottom: 20,
@@ -350,8 +350,8 @@ function BracketLocked({ onClose, user, signIn, unlockPro }) {
                       width: 22,
                       height: 22,
                       borderRadius: 11,
-                      background: '#f3e8ff',
-                      color: '#a855f7',
+                      background: 'var(--accent-soft)',
+                      color: 'var(--brand-text)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -361,8 +361,8 @@ function BracketLocked({ onClose, user, signIn, unlockPro }) {
                       marginTop: 1,
                     }}>✓</span>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', lineHeight: 1.35 }}>{perk.label}</div>
-                      <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>{perk.desc}</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', lineHeight: 1.35 }}>{perk.label}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.4 }}>{perk.desc}</div>
                     </div>
                   </li>
                 ))}
@@ -374,7 +374,7 @@ function BracketLocked({ onClose, user, signIn, unlockPro }) {
                 className="bracket-locked-cta"
                 style={{
                   width: '100%',
-                  background: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)',
+                  background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%)',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: 12,
@@ -397,7 +397,7 @@ function BracketLocked({ onClose, user, signIn, unlockPro }) {
                   background: 'none',
                   border: 'none',
                   padding: '8px 16px',
-                  color: '#6b7280',
+                  color: 'var(--text-2)',
                   fontSize: 13,
                   fontWeight: 500,
                   cursor: 'pointer',
@@ -410,7 +410,7 @@ function BracketLocked({ onClose, user, signIn, unlockPro }) {
               {/* Reassurance footer */}
               <div style={{
                 fontSize: 12,
-                color: '#9ca3af',
+                color: 'var(--text-3)',
                 marginTop: 16,
                 textAlign: 'center',
                 lineHeight: 1.5,

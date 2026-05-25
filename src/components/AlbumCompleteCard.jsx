@@ -122,7 +122,7 @@ export default function AlbumCompleteCard({
           <div style={{ fontSize: 20, fontWeight: 700, color: '#ffffff', lineHeight: 1.3 }}>
             {albumName}
           </div>
-          <div style={{ fontSize: 14, color: '#a855f7', marginTop: 4, letterSpacing: '0.04em' }}>
+          <div style={{ fontSize: 14, color: 'var(--brand-text)', marginTop: 4, letterSpacing: '0.04em' }}>
             {mode === 'complete'
               ? 'fully ranked ✦'
               : `${ratedCount} of ${songList.length} songs rated`}
@@ -144,7 +144,7 @@ export default function AlbumCompleteCard({
           {cardDataUrl
             ? <img src={cardDataUrl} alt="Your album ranking card" style={{ width: '100%', height: '100%', display: 'block' }} />
             : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: 32, height: 32, border: '3px solid #a855f7', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                <div style={{ width: 32, height: 32, border: '3px solid var(--brand)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
               </div>
           }
         </div>
@@ -171,7 +171,7 @@ export default function AlbumCompleteCard({
                 padding: '13px',
                 borderRadius: 12,
                 border: 'none',
-                background: cardDataUrl ? '#a855f7' : '#2d1b4e',
+                background: cardDataUrl ? 'var(--brand)' : '#2d1b4e',
                 color: '#ffffff',
                 fontSize: 15,
                 fontWeight: 600,
@@ -195,8 +195,8 @@ export default function AlbumCompleteCard({
               border: canNativeShare ? '1px solid rgba(168,85,247,0.5)' : 'none',
               background: canNativeShare
                 ? 'transparent'
-                : (cardDataUrl ? '#a855f7' : '#2d1b4e'),
-              color: canNativeShare ? '#a855f7' : '#ffffff',
+                : (cardDataUrl ? 'var(--brand)' : '#2d1b4e'),
+              color: canNativeShare ? 'var(--brand-text)' : '#ffffff',
               fontSize: 15,
               fontWeight: 600,
               cursor: cardDataUrl ? 'pointer' : 'default',
@@ -213,7 +213,7 @@ export default function AlbumCompleteCard({
               borderRadius: 12,
               border: '0.5px solid rgba(168,85,247,0.3)',
               background: 'none',
-              color: '#9ca3af',
+              color: 'var(--text-3)',
               fontSize: 14,
               fontWeight: 500,
               cursor: 'pointer',

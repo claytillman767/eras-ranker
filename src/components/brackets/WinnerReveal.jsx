@@ -345,7 +345,7 @@ export default function WinnerReveal({ weeklyState, onClose }) {
               marginBottom: 24,
               animation: 'fade-in-up 0.4s ease 0.8s both',
             }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#a855f7', marginBottom: 4 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--brand-text)', marginBottom: 4 }}>
                 NEXT WEEK
               </div>
               <div style={{ fontSize: 14, fontWeight: 600, color: '#f1f5f9' }}>
@@ -363,7 +363,7 @@ export default function WinnerReveal({ weeklyState, onClose }) {
               style={{
                 width: '100%',
                 padding: '14px',
-                background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+                background: 'linear-gradient(135deg, var(--brand), var(--brand-2))',
                 border: 'none',
                 borderRadius: 14,
                 color: '#fff',

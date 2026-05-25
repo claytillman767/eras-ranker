@@ -63,16 +63,16 @@ export default function Rankings({
         alignItems: 'center',
         gap: 14,
         padding: '4px 0 18px',
-        borderBottom: '0.5px solid #f3f4f6',
+        borderBottom: '0.5px solid var(--hairline)',
         marginBottom: 18,
       }}>
         <div style={{
           width: 56,
           height: 56,
           borderRadius: '50%',
-          border: '2px solid #a855f7',
+          border: '2px solid var(--brand)',
           overflow: 'hidden',
-          background: '#f3e8ff',
+          background: 'var(--accent-soft)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -81,16 +81,16 @@ export default function Rankings({
           {user?.photoURL ? (
             <img src={user.photoURL} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
-            <span style={{ fontSize: 22, fontWeight: 700, color: '#a855f7' }}>
+            <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--brand-text)' }}>
               {displayName.charAt(0).toUpperCase()}
             </span>
           )}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: '#111827', marginBottom: 2 }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 2 }}>
             {displayName}
           </div>
-          <div style={{ fontSize: 12, color: '#6b7280', letterSpacing: '0.04em' }}>
+          <div style={{ fontSize: 12, color: 'var(--text-2)', letterSpacing: '0.04em' }}>
             ALBUM &amp; SONG RANKINGS
           </div>
         </div>
@@ -101,7 +101,7 @@ export default function Rankings({
 
       {/* Leaderboard (shared with the public profile view) */}
       {!hasAnyRatings ? (
-        <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 14, padding: '40px 0' }}>
+        <div style={{ textAlign: 'center', color: 'var(--text-3)', fontSize: 14, padding: '40px 0' }}>
           No ratings yet — go to the Albums tab to get started.
         </div>
       ) : (

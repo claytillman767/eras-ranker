@@ -10,11 +10,11 @@ function WeightSlider({ catId, rawWeight, normalizedPct, onChange }) {
   return (
     <div style={{ marginTop: 8 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-        <span style={{ fontSize: 11, color: '#9ca3af' }}>Weight</span>
-        <span style={{ fontSize: 12, color: '#6b7280' }}>
-          <span style={{ fontWeight: 600, color: '#7c3aed' }}>{rawWeight}</span>
-          <span style={{ margin: '0 6px', color: '#d1d5db' }}>·</span>
-          <span style={{ fontWeight: 500, color: '#a855f7' }}>{normalizedPct}% of score</span>
+        <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Weight</span>
+        <span style={{ fontSize: 12, color: 'var(--text-2)' }}>
+          <span style={{ fontWeight: 600, color: 'var(--brand-text)' }}>{rawWeight}</span>
+          <span style={{ margin: '0 6px', color: 'var(--control-off)' }}>·</span>
+          <span style={{ fontWeight: 500, color: 'var(--brand-text)' }}>{normalizedPct}% of score</span>
         </span>
       </div>
       <input
@@ -24,14 +24,14 @@ function WeightSlider({ catId, rawWeight, normalizedPct, onChange }) {
         value={rawWeight}
         onChange={e => onChange(catId, Number(e.target.value))}
         onInput={e => onChange(catId, Number(e.target.value))}
-        style={{ width: '100%', accentColor: '#a855f7', cursor: 'pointer', display: 'block' }}
+        style={{ width: '100%', accentColor: 'var(--brand)', cursor: 'pointer', display: 'block' }}
       />
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         marginTop: 2,
         fontSize: 10,
-        color: '#d1d5db',
+        color: 'var(--control-off)',
       }}>
         <span>1</span>
         <span>100</span>
@@ -43,7 +43,7 @@ function WeightSlider({ catId, rawWeight, normalizedPct, onChange }) {
 // Type toggle — segmented control for Stars vs Yes/No
 function TypeToggle({ value, onChange }) {
   return (
-    <div style={{ display: 'flex', background: '#f3f4f6', borderRadius: 8, padding: 3, gap: 3 }}>
+    <div style={{ display: 'flex', background: 'var(--surface-3)', borderRadius: 8, padding: 3, gap: 3 }}>
       {['stars', 'yesno'].map(t => (
         <button
           key={t}
@@ -56,8 +56,8 @@ function TypeToggle({ value, onChange }) {
             fontSize: 12,
             fontWeight: 500,
             cursor: 'pointer',
-            background: value === t ? '#ffffff' : 'transparent',
-            color: value === t ? '#7c3aed' : '#9ca3af',
+            background: value === t ? 'var(--surface)' : 'transparent',
+            color: value === t ? 'var(--brand-text)' : 'var(--text-3)',
             boxShadow: value === t ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
             transition: 'all 0.15s ease',
           }}
@@ -133,17 +133,17 @@ export default function Categories({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: '#faf5ff',
-          border: '0.5px solid #e9d5ff',
+          background: 'var(--accent-soft)',
+          border: '0.5px solid var(--accent-soft-2)',
           borderRadius: 8,
           padding: '10px 14px',
           marginBottom: 16,
         }}>
-          <span style={{ fontSize: 13, color: '#7c3aed' }}>Weights customised</span>
+          <span style={{ fontSize: 13, color: 'var(--brand-text)' }}>Weights customised</span>
           <button
             onClick={resetCategoryWeights}
             style={{
-              background: '#a855f7',
+              background: 'var(--brand)',
               border: 'none',
               borderRadius: 6,
               padding: '5px 14px',
@@ -161,12 +161,12 @@ export default function Categories({
       {/* Pro unlocked banner */}
       {isPro && (
         <div style={{
-          background: '#dcfce7',
-          border: '0.5px solid #bbf7d0',
+          background: 'var(--success-bg)',
+          border: '0.5px solid var(--success-border)',
           borderRadius: 8,
           padding: '8px 12px',
           fontSize: 13,
-          color: '#166534',
+          color: 'var(--success-text)',
           marginBottom: 16,
         }}>
           ✓ Pro unlocked
@@ -176,7 +176,7 @@ export default function Categories({
       {/* Default categories section */}
       <div style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <div style={{ fontSize: 12, color: '#9ca3af', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Default categories {isPro ? '' : '(free)'}
           </div>
         </div>
@@ -185,8 +185,8 @@ export default function Categories({
             const isOn = !disabledDefaults?.has(cat.id);
             return (
               <div key={cat.id} style={{
-                background: '#ffffff',
-                border: '0.5px solid #e5e7eb',
+                background: 'var(--surface)',
+                border: '0.5px solid var(--border)',
                 borderRadius: 8,
                 padding: '10px 12px',
                 opacity: isOn ? 1 : 0.55,
@@ -196,13 +196,13 @@ export default function Categories({
                     type="checkbox"
                     checked={isOn}
                     onChange={() => toggleDefault?.(cat.id)}
-                    style={{ accentColor: '#a855f7', width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }}
+                    style={{ accentColor: 'var(--brand)', width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }}
                   />
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{cat.name}</span>
+                      <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{cat.name}</span>
                     </div>
-                    <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>
                       {isOn ? cat.description : 'Off — your existing ratings are saved and will reapply if turned back on.'}
                     </div>
                   </div>
@@ -226,7 +226,7 @@ export default function Categories({
         <>
           {/* Extra categories */}
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 12, color: '#9ca3af', fontWeight: 500, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 500, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Extra categories
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -234,8 +234,8 @@ export default function Categories({
                 const isOn = enabledExtras.has(cat.id);
                 return (
                   <div key={cat.id} style={{
-                    background: '#ffffff',
-                    border: '0.5px solid #e5e7eb',
+                    background: 'var(--surface)',
+                    border: '0.5px solid var(--border)',
                     borderRadius: 8,
                     padding: '10px 12px',
                   }}>
@@ -244,11 +244,11 @@ export default function Categories({
                         type="checkbox"
                         checked={isOn}
                         onChange={() => toggleExtra(cat.id)}
-                        style={{ accentColor: '#a855f7', width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }}
+                        style={{ accentColor: 'var(--brand)', width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }}
                       />
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{cat.name}</div>
-                        <div style={{ fontSize: 11, color: '#9ca3af' }}>{cat.description}</div>
+                        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{cat.name}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{cat.description}</div>
                       </div>
                     </div>
                     {isOn && (
@@ -268,15 +268,15 @@ export default function Categories({
           {/* Custom categories */}
           <div style={{ marginBottom: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <div style={{ fontSize: 12, color: '#9ca3af', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Custom categories
               </div>
-              <div style={{ fontSize: 11, color: '#9ca3af' }}>
+              <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
                 {customCategories.length} / {CUSTOM_CAT_LIMIT}
               </div>
             </div>
             {customCategories.length === 0 && (
-              <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 8 }}>
+              <div style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 8 }}>
                 No custom categories yet.
               </div>
             )}
@@ -285,8 +285,8 @@ export default function Categories({
                 const isOn = !disabledCustoms.has(cat.id);
                 return (
                   <div key={cat.id} style={{
-                    background: '#ffffff',
-                    border: '0.5px solid #e5e7eb',
+                    background: 'var(--surface)',
+                    border: '0.5px solid var(--border)',
                     borderRadius: 8,
                     padding: '10px 12px',
                   }}>
@@ -295,14 +295,14 @@ export default function Categories({
                         type="checkbox"
                         checked={isOn}
                         onChange={() => toggleCustom(cat.id)}
-                        style={{ accentColor: '#a855f7', width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }}
+                        style={{ accentColor: 'var(--brand)', width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }}
                       />
                       <div
                         style={{ flex: 1, cursor: 'pointer' }}
                         onClick={() => { setSelectedCat(cat); setConfirmingDelete(false); }}
                       >
-                        <div style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{cat.name}</div>
-                        <div style={{ fontSize: 11, color: '#9ca3af' }}>
+                        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{cat.name}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
                           {cat.type === 'yesno' ? 'Yes / No' : '5 Star Scale'} · tap to edit
                         </div>
                       </div>
@@ -332,7 +332,7 @@ export default function Categories({
                     placeholder="New category name (max 30 chars)"
                     style={{
                       flex: 1,
-                      border: '0.5px solid #e5e7eb',
+                      border: '0.5px solid var(--border)',
                       borderRadius: 8,
                       padding: '8px 12px',
                       fontSize: 13,
@@ -343,8 +343,8 @@ export default function Categories({
                     onClick={handleAdd}
                     disabled={!newCatName.trim()}
                     style={{
-                      background: newCatName.trim() ? '#a855f7' : '#e5e7eb',
-                      color: newCatName.trim() ? '#ffffff' : '#9ca3af',
+                      background: newCatName.trim() ? 'var(--brand)' : 'var(--border)',
+                      color: newCatName.trim() ? '#ffffff' : 'var(--text-3)',
                       border: 'none',
                       borderRadius: 8,
                       padding: '8px 14px',
@@ -359,11 +359,11 @@ export default function Categories({
                 <TypeToggle value={newCatType} onChange={setNewCatType} />
               </>
             ) : (
-              <div style={{ fontSize: 13, color: '#9ca3af', textAlign: 'center', padding: '8px 0' }}>
+              <div style={{ fontSize: 13, color: 'var(--text-3)', textAlign: 'center', padding: '8px 0' }}>
                 Maximum of {CUSTOM_CAT_LIMIT} custom categories reached.
               </div>
             )}
-            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}>
               Weights auto-adjust so all active categories always add up to 100%.
             </div>
           </div>
@@ -384,7 +384,7 @@ export default function Categories({
             >
               <div
                 style={{
-                  background: '#ffffff',
+                  background: 'var(--surface)',
                   borderRadius: '20px 20px 0 0',
                   padding: '24px 24px 40px',
                   width: '100%',
@@ -394,12 +394,12 @@ export default function Categories({
               >
                 {!confirmingDelete ? (
                   <>
-                    <div style={{ fontSize: 17, fontWeight: 700, color: '#111827', marginBottom: 4 }}>
+                    <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>
                       {selectedCat.name}
                     </div>
-                    <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 20 }}>Custom category</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 20 }}>Custom category</div>
 
-                    <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8, fontWeight: 500 }}>Rating type</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 8, fontWeight: 500 }}>Rating type</div>
                     <TypeToggle
                       value={selectedCat.type ?? 'stars'}
                       onChange={t => {
@@ -413,13 +413,13 @@ export default function Categories({
                         onClick={closeModal}
                         style={{
                           flex: 1,
-                          background: '#f3f4f6',
+                          background: 'var(--surface-3)',
                           border: 'none',
                           borderRadius: 10,
                           padding: '12px 0',
                           fontSize: 14,
                           fontWeight: 500,
-                          color: '#6b7280',
+                          color: 'var(--text-2)',
                           cursor: 'pointer',
                         }}
                       >
@@ -429,13 +429,13 @@ export default function Categories({
                         onClick={() => setConfirmingDelete(true)}
                         style={{
                           flex: 1,
-                          background: '#fff1f2',
+                          background: 'var(--danger-bg)',
                           border: 'none',
                           borderRadius: 10,
                           padding: '12px 0',
                           fontSize: 14,
                           fontWeight: 500,
-                          color: '#e11d48',
+                          color: 'var(--danger-text)',
                           cursor: 'pointer',
                         }}
                       >
@@ -445,10 +445,10 @@ export default function Categories({
                   </>
                 ) : (
                   <>
-                    <div style={{ fontSize: 17, fontWeight: 700, color: '#111827', marginBottom: 8 }}>
+                    <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
                       Delete "{selectedCat.name}"?
                     </div>
-                    <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 24 }}>
+                    <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6, marginBottom: 24 }}>
                       Your ratings for this category won't count toward scores anymore. Your other ratings are unaffected.
                     </div>
                     <div style={{ display: 'flex', gap: 10 }}>
@@ -456,13 +456,13 @@ export default function Categories({
                         onClick={() => setConfirmingDelete(false)}
                         style={{
                           flex: 1,
-                          background: '#f3f4f6',
+                          background: 'var(--surface-3)',
                           border: 'none',
                           borderRadius: 10,
                           padding: '12px 0',
                           fontSize: 14,
                           fontWeight: 500,
-                          color: '#6b7280',
+                          color: 'var(--text-2)',
                           cursor: 'pointer',
                         }}
                       >
@@ -472,7 +472,7 @@ export default function Categories({
                         onClick={handleDeleteConfirm}
                         style={{
                           flex: 1,
-                          background: '#e11d48',
+                          background: 'var(--danger-text)',
                           border: 'none',
                           borderRadius: 10,
                           padding: '12px 0',
@@ -498,24 +498,24 @@ export default function Categories({
 
           {/* Teaser — extra categories (locked) */}
           <div style={{ marginTop: 24, position: 'relative' }}>
-            <div style={{ fontSize: 12, color: '#9ca3af', fontWeight: 500, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 500, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Extra categories
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, opacity: 0.45, pointerEvents: 'none', userSelect: 'none' }}>
               {EXTRA_CATEGORIES.map(cat => (
                 <div key={cat.id} style={{
-                  background: '#ffffff',
-                  border: '0.5px solid #e5e7eb',
+                  background: 'var(--surface)',
+                  border: '0.5px solid var(--border)',
                   borderRadius: 8,
                   padding: '10px 12px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
                 }}>
-                  <span style={{ fontSize: 13, color: '#d1d5db' }}>🔒</span>
+                  <span style={{ fontSize: 13, color: 'var(--control-off)' }}>🔒</span>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>{cat.name}</div>
-                    <div style={{ fontSize: 11, color: '#9ca3af' }}>{cat.description}</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-strong)' }}>{cat.name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{cat.description}</div>
                   </div>
                 </div>
               ))}
@@ -524,26 +524,26 @@ export default function Categories({
 
           {/* Teaser — custom categories (locked) */}
           <div style={{ marginTop: 20 }}>
-            <div style={{ fontSize: 12, color: '#9ca3af', fontWeight: 500, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 500, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Custom categories
             </div>
             <div style={{ opacity: 0.45, pointerEvents: 'none', userSelect: 'none' }}>
-              <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 8 }}>No custom categories yet.</div>
+              <div style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 8 }}>No custom categories yet.</div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <div style={{
                   flex: 1,
-                  border: '0.5px solid #e5e7eb',
+                  border: '0.5px solid var(--border)',
                   borderRadius: 8,
                   padding: '8px 12px',
                   fontSize: 13,
-                  color: '#9ca3af',
-                  background: '#f9fafb',
+                  color: 'var(--text-3)',
+                  background: 'var(--surface-2)',
                 }}>
                   🔒 New category name
                 </div>
                 <div style={{
-                  background: '#e5e7eb',
-                  color: '#9ca3af',
+                  background: 'var(--border)',
+                  color: 'var(--text-3)',
                   borderRadius: 8,
                   padding: '8px 14px',
                   fontSize: 13,

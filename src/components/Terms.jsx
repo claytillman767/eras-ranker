@@ -364,9 +364,9 @@ export default function Terms() {
 // ── Styles ──────────────────────────────────────────────────────────────────
 const pageStyle = {
   minHeight: '100dvh',
-  background: '#ffffff',
+  background: 'var(--bg)',
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  color: '#111827',
+  color: 'var(--text)',
   WebkitFontSmoothing: 'antialiased',
 };
 
@@ -380,7 +380,7 @@ const containerStyle = {
 const backLinkStyle = {
   display: 'inline-block',
   fontSize: 13,
-  color: '#7c3aed',
+  color: 'var(--brand-text)',
   textDecoration: 'none',
   marginBottom: 24,
 };
@@ -388,24 +388,24 @@ const backLinkStyle = {
 const h1Style = {
   fontSize: 28,
   fontWeight: 700,
-  color: '#111827',
+  color: 'var(--text)',
   margin: '0 0 6px',
   lineHeight: 1.2,
 };
 
 const metaStyle = {
   fontSize: 13,
-  color: '#9ca3af',
+  color: 'var(--text-3)',
   marginBottom: 24,
 };
 
 const summaryStyle = {
-  background: '#f9fafb',
-  border: '0.5px solid #e5e7eb',
+  background: 'var(--surface-2)',
+  border: '0.5px solid var(--border)',
   borderRadius: 10,
   padding: '14px 16px',
   fontSize: 14,
-  color: '#374151',
+  color: 'var(--text-strong)',
   marginBottom: 28,
   lineHeight: 1.6,
 };
@@ -413,7 +413,7 @@ const summaryStyle = {
 const h2Style = {
   fontSize: 19,
   fontWeight: 600,
-  color: '#111827',
+  color: 'var(--text)',
   margin: '32px 0 10px',
   lineHeight: 1.3,
 };
@@ -421,35 +421,35 @@ const h2Style = {
 const h3Style = {
   fontSize: 15,
   fontWeight: 600,
-  color: '#1f2937',
+  color: 'var(--text-strong)',
   margin: '20px 0 6px',
 };
 
 const pStyle = {
   fontSize: 14,
-  color: '#374151',
+  color: 'var(--text-strong)',
   margin: '0 0 12px',
   lineHeight: 1.65,
 };
 
 const ulStyle = {
   fontSize: 14,
-  color: '#374151',
+  color: 'var(--text-strong)',
   margin: '0 0 12px',
   paddingLeft: 22,
   lineHeight: 1.7,
 };
 
 const linkStyle = {
-  color: '#7c3aed',
+  color: 'var(--brand-text)',
   textDecoration: 'underline',
 };
 
 const footerLinksStyle = {
   fontSize: 13,
-  color: '#9ca3af',
+  color: 'var(--text-3)',
   textAlign: 'center',
-  borderTop: '0.5px solid #e5e7eb',
+  borderTop: '0.5px solid var(--border)',
   paddingTop: 20,
   marginTop: 20,
 };

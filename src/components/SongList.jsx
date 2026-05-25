@@ -226,15 +226,15 @@ export default function SongList({
   const isLover = albumId === 'lv';
   const accent = isLover
     ? { primary: '#ec4899', primaryShadow: 'rgba(236,72,153,0.30)', soft: '#fdf2f8', softBorder: '#fbcfe8', text: '#be185d' }
-    : { primary: '#a855f7', primaryShadow: 'rgba(168,85,247,0.25)', soft: '#faf5ff', softBorder: '#d8b4fe', text: '#7c3aed' };
+    : { primary: '#a855f7', primaryShadow: 'rgba(168,85,247,0.25)', soft: 'var(--accent-soft)', softBorder: 'var(--accent-soft-2)', text: 'var(--brand-text)' };
 
   // Shared style for the selected-row action bar buttons
   const actionBtnStyle = (primary) => ({
     padding: '5px 10px',
     borderRadius: 6,
-    border: primary ? 'none' : '0.5px solid #e5e7eb',
-    background: primary ? accent.primary : '#ffffff',
-    color: primary ? '#ffffff' : '#6b7280',
+    border: primary ? 'none' : '0.5px solid var(--border)',
+    background: primary ? accent.primary : 'var(--surface)',
+    color: primary ? '#ffffff' : 'var(--text-2)',
     fontSize: 12,
     fontWeight: primary ? 500 : 400,
     cursor: 'pointer',
@@ -429,7 +429,7 @@ export default function SongList({
           <div style={{
             fontSize: 11,
             fontWeight: 600,
-            color: '#6b7280',
+            color: 'var(--text-2)',
             letterSpacing: '0.06em',
             textTransform: 'uppercase',
           }}>
@@ -489,10 +489,10 @@ export default function SongList({
                     alignItems: 'center',
                     gap: 6,
                     padding: '7px 10px',
-                    background: '#f5f3ff',
-                    borderLeft: '3px solid #a855f7',
-                    borderRight: '0.5px solid #e9d5ff',
-                    borderBottom: '0.5px solid #e9d5ff',
+                    background: 'var(--accent-soft)',
+                    borderLeft: '3px solid var(--brand)',
+                    borderRight: '0.5px solid var(--accent-soft-2)',
+                    borderBottom: '0.5px solid var(--accent-soft-2)',
                     borderBottomLeftRadius: 10,
                     borderBottomRightRadius: 10,
                   }}>
@@ -545,8 +545,8 @@ function DragHint({ onDismiss }) {
   return (
     <div style={{
       position: 'relative',
-      background: 'linear-gradient(135deg, #faf5ff, #f3e8ff)',
-      border: '0.5px solid #e9d5ff',
+      background: 'linear-gradient(135deg, var(--accent-grad-a), var(--accent-grad-b))',
+      border: '0.5px solid var(--accent-soft-2)',
       borderRadius: 12,
       padding: '12px 14px',
       marginBottom: 18,
@@ -559,12 +559,12 @@ function DragHint({ onDismiss }) {
         width: 36,
         height: 36,
         borderRadius: 10,
-        background: '#ffffff',
-        border: '0.5px solid #e9d5ff',
+        background: 'var(--surface)',
+        border: '0.5px solid var(--accent-soft-2)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: '#a855f7',
+        color: 'var(--brand-text)',
         fontSize: 22,
         flexShrink: 0,
       }}>
@@ -572,10 +572,10 @@ function DragHint({ onDismiss }) {
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>
           Drag to reorder
         </div>
-        <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.4 }}>
           Hold the ⠿ on any row and drag it up or down.
         </div>
       </div>
@@ -606,7 +606,7 @@ function DragHint({ onDismiss }) {
         height: 0,
         borderLeft: '7px solid transparent',
         borderRight: '7px solid transparent',
-        borderTop: '7px solid #f3e8ff',
+        borderTop: '7px solid var(--accent-grad-b)',
       }} />
     </div>
   );

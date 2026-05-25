@@ -334,7 +334,7 @@ export default function BracketResults({ bracket, onTryAnother, onClose }) {
             animation: 'fade-in 0.4s ease 0.4s both',
             textAlign: 'center',
           }}>
-            <div style={{ fontSize: 12, color: '#a855f7', fontWeight: 700, marginBottom: 6 }}>
+            <div style={{ fontSize: 12, color: 'var(--brand-text)', fontWeight: 700, marginBottom: 6 }}>
               HOW DO YOU COMPARE?
             </div>
             <div style={{ fontSize: 24, fontWeight: 800, color: '#f1f5f9', marginBottom: 4 }}>

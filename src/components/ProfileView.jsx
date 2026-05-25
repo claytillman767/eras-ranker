@@ -46,7 +46,7 @@ export default function ProfileView({ uid }) {
   if (state.status === 'loading') {
     return (
       <Shell>
-        <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 13, padding: '40px 0' }}>
+        <div style={{ textAlign: 'center', color: 'var(--text-3)', fontSize: 13, padding: '40px 0' }}>
           Loading profile…
         </div>
       </Shell>
@@ -59,10 +59,10 @@ export default function ProfileView({ uid }) {
       <Shell>
         <div style={{ textAlign: 'center', padding: '60px 24px' }}>
           <div style={{ fontSize: 36, marginBottom: 12 }}>🔒</div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: '#111827', marginBottom: 6 }}>
+          <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>
             This profile isn't available
           </div>
-          <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.5, maxWidth: 320, margin: '0 auto 20px' }}>
+          <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.5, maxWidth: 320, margin: '0 auto 20px' }}>
             The link may have been turned off, or it never existed. The owner
             decides whether their profile is public.
           </div>
@@ -70,7 +70,7 @@ export default function ProfileView({ uid }) {
             onClick={goHome}
             style={{
               padding: '10px 20px',
-              background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+              background: 'linear-gradient(135deg, var(--brand), var(--brand-2))',
               border: 'none',
               borderRadius: 12,
               color: '#ffffff',
@@ -100,16 +100,16 @@ export default function ProfileView({ uid }) {
         alignItems: 'center',
         gap: 14,
         padding: '4px 0 18px',
-        borderBottom: '0.5px solid #f3f4f6',
+        borderBottom: '0.5px solid var(--hairline)',
         marginBottom: 18,
       }}>
         <div style={{
           width: 56,
           height: 56,
           borderRadius: '50%',
-          border: '2px solid #a855f7',
+          border: '2px solid var(--brand)',
           overflow: 'hidden',
-          background: '#f3e8ff',
+          background: 'var(--accent-soft)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -118,16 +118,16 @@ export default function ProfileView({ uid }) {
           {p.photoURL ? (
             <img src={p.photoURL} alt={p.displayName || 'User'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
-            <span style={{ fontSize: 22, fontWeight: 700, color: '#a855f7' }}>
+            <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--brand-text)' }}>
               {(p.displayName || '?').charAt(0).toUpperCase()}
             </span>
           )}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: '#111827', marginBottom: 2 }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 2 }}>
             {p.displayName || 'A Swiftie'}
           </div>
-          <div style={{ fontSize: 12, color: '#6b7280', letterSpacing: '0.04em' }}>
+          <div style={{ fontSize: 12, color: 'var(--text-2)', letterSpacing: '0.04em' }}>
             ALBUM &amp; SONG RANKINGS
           </div>
         </div>
@@ -137,12 +137,12 @@ export default function ProfileView({ uid }) {
       {p.bio && (
         <div style={{
           fontSize: 13,
-          color: '#374151',
+          color: 'var(--text-strong)',
           lineHeight: 1.55,
           marginBottom: 22,
           padding: '12px 14px',
-          background: '#faf5ff',
-          border: '0.5px solid #e9d5ff',
+          background: 'var(--accent-soft)',
+          border: '0.5px solid var(--accent-soft-2)',
           borderRadius: 10,
         }}>
           {p.bio}
@@ -151,7 +151,7 @@ export default function ProfileView({ uid }) {
 
       {/* Album + song rankings — shared with the owner's Rankings tab */}
       {albums.length === 0 && songs.length === 0 ? (
-        <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 13, padding: '30px 0' }}>
+        <div style={{ textAlign: 'center', color: 'var(--text-3)', fontSize: 13, padding: '30px 0' }}>
           No albums rated yet.
         </div>
       ) : (
@@ -162,22 +162,22 @@ export default function ProfileView({ uid }) {
       <div style={{
         marginTop: 28,
         padding: '14px',
-        background: 'linear-gradient(135deg, #faf5ff, #f3e8ff)',
-        border: '0.5px solid #e9d5ff',
+        background: 'linear-gradient(135deg, var(--accent-grad-a), var(--accent-soft))',
+        border: '0.5px solid var(--accent-soft-2)',
         borderRadius: 12,
         textAlign: 'center',
       }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', marginBottom: 4 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>
           Want to rank your own?
         </div>
-        <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 12 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 12 }}>
           The Eras Ranker lets every Swiftie score and share their picks.
         </div>
         <button
           onClick={goHome}
           style={{
             padding: '9px 18px',
-            background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+            background: 'linear-gradient(135deg, var(--brand), var(--brand-2))',
             border: 'none',
             borderRadius: 10,
             color: '#ffffff',
@@ -198,7 +198,7 @@ function Shell({ children, onHome }) {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#ffffff',
+      background: 'var(--bg)',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     }}>
       <div style={{
@@ -212,7 +212,7 @@ function Shell({ children, onHome }) {
           justifyContent: 'space-between',
           marginBottom: 16,
         }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#a855f7' }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--brand-text)' }}>
             The Eras Ranker
           </div>
           {onHome && (
@@ -222,7 +222,7 @@ function Shell({ children, onHome }) {
                 background: 'none',
                 border: 'none',
                 fontSize: 13,
-                color: '#6b7280',
+                color: 'var(--text-2)',
                 fontWeight: 500,
                 cursor: 'pointer',
                 padding: 4,

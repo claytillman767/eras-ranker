@@ -652,7 +652,7 @@ export default function RankingCard({ getCompositeScore, activeCategories, ratin
 
   if (!hasCompletedAlbum) {
     return (
-      <p style={{ textAlign: 'center', color: '#9ca3af', fontSize: 13, marginTop: 28 }}>
+      <p style={{ textAlign: 'center', color: 'var(--text-3)', fontSize: 13, marginTop: 28 }}>
         Finish rating every song in an album to unlock your shareable card.
       </p>
     );
@@ -687,9 +687,9 @@ export default function RankingCard({ getCompositeScore, activeCategories, ratin
   }
 
   return (
-    <div style={{ marginTop: 28, paddingTop: 20, borderTop: '0.5px solid #f3f4f6' }}>
+    <div style={{ marginTop: 28, paddingTop: 20, borderTop: '0.5px solid var(--hairline)' }}>
       {allAlbumsRanked && (
-        <p style={{ textAlign: 'center', fontSize: 12, color: '#a855f7', marginBottom: 10, fontWeight: 600 }}>
+        <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--brand-text)', marginBottom: 10, fontWeight: 600 }}>
           ✦ All 12 albums ranked — mosaic card unlocked!
         </p>
       )}
@@ -701,7 +701,7 @@ export default function RankingCard({ getCompositeScore, activeCategories, ratin
           padding: '12px',
           borderRadius: 10,
           border: 'none',
-          background: '#a855f7',
+          background: 'var(--brand)',
           color: '#ffffff',
           fontSize: 14,
           fontWeight: 600,

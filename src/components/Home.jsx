@@ -198,7 +198,7 @@ export default function Home({
             <div style={{ fontSize: 13, fontWeight: 600, color: '#b45309', marginBottom: 2 }}>
               Your ratings aren't backed up
             </div>
-            <div style={{ fontSize: 12, color: '#374151', lineHeight: 1.4, marginBottom: 10 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-strong)', lineHeight: 1.4, marginBottom: 10 }}>
               Right now, your ratings only live in this browser. If you clear your history or switch devices, they'll be gone.
             </div>
             <button
@@ -206,12 +206,12 @@ export default function Home({
               style={{
                 width: '100%',
                 padding: '8px 12px',
-                background: '#ffffff',
-                border: '1px solid #374151',
+                background: 'var(--surface)',
+                border: '1px solid var(--text-strong)',
                 borderRadius: 8,
                 fontSize: 13,
                 fontWeight: 500,
-                color: '#111827',
+                color: 'var(--text)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -230,7 +230,7 @@ export default function Home({
       <div style={{ padding: '20px 16px 16px', textAlign: 'center' }}>
         <div style={{
           fontSize: 11,
-          color: '#9ca3af',
+          color: 'var(--text-3)',
           textTransform: 'uppercase',
           letterSpacing: '0.1em',
           marginBottom: 6,
@@ -238,18 +238,18 @@ export default function Home({
           Catalog progress
         </div>
         <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 2 }}>
-          <span style={{ fontSize: 84, fontWeight: 200, color: '#111827', lineHeight: 1, letterSpacing: '-0.04em' }}>
+          <span style={{ fontSize: 84, fontWeight: 200, color: 'var(--text)', lineHeight: 1, letterSpacing: '-0.04em' }}>
             {pct}
           </span>
-          <span style={{ fontSize: 28, fontWeight: 300, color: '#a855f7', lineHeight: 1 }}>%</span>
+          <span style={{ fontSize: 28, fontWeight: 300, color: 'var(--brand-text)', lineHeight: 1 }}>%</span>
         </div>
-        <div style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>
+        <div style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 4 }}>
           {totalRated.toLocaleString()} of {totalSongs.toLocaleString()} songs rated
         </div>
         <div style={{
           marginTop: 14,
           height: 8,
-          background: '#f3f4f6',
+          background: 'var(--surface-3)',
           borderRadius: 4,
           overflow: 'hidden',
         }}>
@@ -266,8 +266,8 @@ export default function Home({
             {streak > 0 && (
               <span style={{
                 padding: '3px 9px',
-                background: '#f3e8ff',
-                color: '#7e22ce',
+                background: 'var(--accent-soft)',
+                color: 'var(--brand-text)',
                 borderRadius: 12,
                 fontWeight: 500,
                 fontSize: 11,
@@ -277,8 +277,8 @@ export default function Home({
             )}
             <span style={{
               padding: '3px 9px',
-              background: '#f3f4f6',
-              color: '#374151',
+              background: 'var(--surface-3)',
+              color: 'var(--text-strong)',
               borderRadius: 12,
               fontSize: 11,
             }}>
@@ -294,8 +294,8 @@ export default function Home({
         <div style={{
           margin: '4px 16px 16px',
           padding: '16px',
-          background: '#ffffff',
-          border: '1px solid #e5e7eb',
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
           borderRadius: 12,
           display: 'flex',
           alignItems: 'center',
@@ -305,21 +305,21 @@ export default function Home({
             width: 48,
             height: 48,
             borderRadius: 10,
-            background: '#f3e8ff',
+            background: 'var(--accent-soft)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: 22,
           }}>✨</div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>Rate your first song</div>
-            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>We'll start you with a quick vibe check.</div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)' }}>Rate your first song</div>
+            <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 2 }}>We'll start you with a quick vibe check.</div>
           </div>
           <button
             onClick={onGoToAlbums}
             style={{
               padding: '8px 16px',
-              background: '#a855f7',
+              background: 'var(--brand)',
               color: 'white',
               border: 'none',
               borderRadius: 18,
@@ -337,8 +337,8 @@ export default function Home({
         <div style={{
           margin: '4px 16px 16px',
           padding: '14px',
-          background: '#ffffff',
-          border: '1px solid #e5e7eb',
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
           borderRadius: 12,
           display: 'flex',
           alignItems: 'center',
@@ -361,7 +361,7 @@ export default function Home({
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
               fontSize: 10,
-              color: '#9ca3af',
+              color: 'var(--text-3)',
               textTransform: 'uppercase',
               letterSpacing: '0.08em',
               marginBottom: 2,
@@ -369,7 +369,7 @@ export default function Home({
             <div style={{
               fontSize: 15,
               fontWeight: 500,
-              color: '#111827',
+              color: 'var(--text)',
               lineHeight: 1.2,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
@@ -377,7 +377,7 @@ export default function Home({
             }}>
               {continueInfo.songName}
             </div>
-            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 1 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 1 }}>
               {continueInfo.album.name} · next: {continueInfo.nextCategory}
             </div>
           </div>
@@ -387,7 +387,7 @@ export default function Home({
               width: 40,
               height: 40,
               borderRadius: '50%',
-              background: '#a855f7',
+              background: 'var(--brand)',
               color: 'white',
               border: 'none',
               fontSize: 14,
@@ -406,7 +406,7 @@ export default function Home({
         <div style={{
           margin: '0 16px 16px',
           padding: '12px 14px',
-          background: '#f3e8ff',
+          background: 'var(--accent-soft)',
           borderRadius: 10,
           display: 'flex',
           alignItems: 'center',
@@ -414,16 +414,16 @@ export default function Home({
         }}>
           <div style={{ fontSize: 18 }}>🎯</div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 500, color: '#7e22ce' }}>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--brand-text)' }}>
               Today's pick: {dailyInfo.songName}
             </div>
-            <div style={{ fontSize: 11, color: '#374151' }}>
+            <div style={{ fontSize: 11, color: 'var(--text-strong)' }}>
               {dailyInfo.album.name}
             </div>
           </div>
           <span
             onClick={() => onContinueRating(dailyInfo.albumId, dailyInfo.songIndex)}
-            style={{ fontSize: 11, color: '#7e22ce', fontWeight: 500, cursor: 'pointer' }}
+            style={{ fontSize: 11, color: 'var(--brand-text)', fontWeight: 500, cursor: 'pointer' }}
           >
             Try →
           </span>
@@ -441,7 +441,7 @@ export default function Home({
           <div style={{
             fontSize: 11,
             fontWeight: 600,
-            color: '#6b7280',
+            color: 'var(--text-2)',
             letterSpacing: '0.06em',
             textTransform: 'uppercase',
           }}>
@@ -449,7 +449,7 @@ export default function Home({
           </div>
           <div
             onClick={onGoToAlbums}
-            style={{ fontSize: 12, color: '#a855f7', fontWeight: 500, cursor: 'pointer' }}
+            style={{ fontSize: 12, color: 'var(--brand-text)', fontWeight: 500, cursor: 'pointer' }}
           >
             See all {ALBUMS.length} →
           </div>
@@ -471,7 +471,7 @@ export default function Home({
                 alignItems: 'center',
                 gap: 12,
                 padding: '10px 0',
-                borderBottom: '0.5px solid #e5e7eb',
+                borderBottom: '0.5px solid var(--border)',
                 cursor: 'pointer',
               }}
             >
@@ -498,7 +498,7 @@ export default function Home({
                     width: 16,
                     height: 16,
                     borderRadius: '50%',
-                    background: '#a855f7',
+                    background: 'var(--brand)',
                     color: 'white',
                     fontSize: 10,
                     display: 'flex',
@@ -517,18 +517,18 @@ export default function Home({
                   alignItems: 'baseline',
                   marginBottom: 4,
                 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>
                     {album.name}
                   </div>
                   <div style={{
                     fontSize: 11,
-                    color: score !== null ? '#7e22ce' : '#9ca3af',
+                    color: score !== null ? 'var(--brand-text)' : 'var(--text-3)',
                     fontWeight: score !== null ? 500 : 400,
                   }}>
                     {score !== null ? `${score}/100` : `${rated}/${total}`}
                   </div>
                 </div>
-                <div style={{ height: 4, background: '#f3f4f6', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: 4, background: 'var(--surface-3)', borderRadius: 2, overflow: 'hidden' }}>
                   <div style={{
                     height: '100%',
                     width: `${albumPct}%`,

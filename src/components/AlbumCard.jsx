@@ -6,19 +6,19 @@ export default function AlbumCard({ album, ratedCount, albumScore, isSelected, o
   let bottomLine;
   if (albumScore !== null) {
     bottomLine = (
-      <span style={{ color: '#7e22ce', fontWeight: 500, fontSize: 13 }}>
+      <span style={{ color: 'var(--brand-text)', fontWeight: 500, fontSize: 13 }}>
         {albumScore} / 100
       </span>
     );
   } else if (ratedCount > 0) {
     bottomLine = (
-      <span style={{ color: '#a855f7', fontSize: 12 }}>
+      <span style={{ color: 'var(--brand-text)', fontSize: 12 }}>
         {ratedCount} rated
       </span>
     );
   } else {
     bottomLine = (
-      <span style={{ color: '#9ca3af', fontSize: 12 }}>
+      <span style={{ color: 'var(--text-3)', fontSize: 12 }}>
         {album.year}
       </span>
     );
@@ -29,7 +29,7 @@ export default function AlbumCard({ album, ratedCount, albumScore, isSelected, o
       onClick={onClick}
       style={{
         background: album.color,
-        border: isSelected ? '2px solid #a855f7' : '0.5px solid #e5e7eb',
+        border: isSelected ? '2px solid var(--brand)' : '0.5px solid var(--border)',
         borderRadius: 12,
         padding: '12px 10px',
         textAlign: 'center',
@@ -47,7 +47,7 @@ export default function AlbumCard({ album, ratedCount, albumScore, isSelected, o
       <span style={{
         fontSize: 12,
         fontWeight: 500,
-        color: '#111827',
+        color: 'var(--text)',
         lineHeight: 1.3,
         overflow: 'hidden',
         display: '-webkit-box',

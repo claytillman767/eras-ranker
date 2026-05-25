@@ -47,7 +47,7 @@ export default function GoogleLoginPromo({ user, signIn, onContinue }) {
     <div style={{
       position: 'fixed',
       inset: 0,
-      background: 'linear-gradient(180deg, #fdf4ff 0%, #ffffff 50%, #eff6ff 100%)',
+      background: 'linear-gradient(180deg, #fdf4ff 0%, var(--bg) 50%, #eff6ff 100%)',
       zIndex: 9998,
       display: 'flex',
       flexDirection: 'column',
@@ -77,8 +77,8 @@ export default function GoogleLoginPromo({ user, signIn, onContinue }) {
             width: 64,
             height: 64,
             borderRadius: 16,
-            background: '#ffffff',
-            border: '0.5px solid #e5e7eb',
+            background: 'var(--surface)',
+            border: '0.5px solid var(--border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -90,7 +90,7 @@ export default function GoogleLoginPromo({ user, signIn, onContinue }) {
           </div>
           <div style={{
             fontSize: 26,
-            color: '#a855f7',
+            color: 'var(--brand-text)',
             animation: 'glp-pop 0.5s 0.12s cubic-bezier(0.2, 0.8, 0.3, 1.2) both',
           }}>
             ↔
@@ -99,8 +99,8 @@ export default function GoogleLoginPromo({ user, signIn, onContinue }) {
             width: 64,
             height: 64,
             borderRadius: 16,
-            background: '#ffffff',
-            border: '0.5px solid #e5e7eb',
+            background: 'var(--surface)',
+            border: '0.5px solid var(--border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -124,7 +124,7 @@ export default function GoogleLoginPromo({ user, signIn, onContinue }) {
         <div style={{
           fontSize: 24,
           fontWeight: 700,
-          color: '#111827',
+          color: 'var(--text)',
           textAlign: 'center',
           marginBottom: 10,
           lineHeight: 1.25,
@@ -133,7 +133,7 @@ export default function GoogleLoginPromo({ user, signIn, onContinue }) {
         </div>
         <div style={{
           fontSize: 14,
-          color: '#6b7280',
+          color: 'var(--text-2)',
           textAlign: 'center',
           lineHeight: 1.6,
           marginBottom: 28,
@@ -154,9 +154,9 @@ export default function GoogleLoginPromo({ user, signIn, onContinue }) {
             width: '100%',
             padding: '14px',
             borderRadius: 12,
-            border: '1px solid #d1d5db',
-            background: '#ffffff',
-            color: '#111827',
+            border: '1px solid var(--control-off)',
+            background: 'var(--surface)',
+            color: 'var(--text)',
             fontSize: 15,
             fontWeight: 600,
             cursor: 'pointer',
@@ -180,9 +180,9 @@ export default function GoogleLoginPromo({ user, signIn, onContinue }) {
             width: '100%',
             padding: '12px',
             borderRadius: 12,
-            border: '0.5px solid #e5e7eb',
-            background: '#ffffff',
-            color: '#6b7280',
+            border: '0.5px solid var(--border)',
+            background: 'var(--surface)',
+            color: 'var(--text-2)',
             fontSize: 14,
             fontWeight: 500,
             cursor: 'pointer',
@@ -198,17 +198,17 @@ export default function GoogleLoginPromo({ user, signIn, onContinue }) {
             consent moment. */}
         <div style={{
           fontSize: 11,
-          color: '#9ca3af',
+          color: 'var(--text-3)',
           textAlign: 'center',
           lineHeight: 1.6,
           marginBottom: 10,
         }}>
           By signing in, you agree to our{' '}
-          <a href="/terms" style={{ color: '#7c3aed', textDecoration: 'underline' }}>
+          <a href="/terms" style={{ color: 'var(--brand-text)', textDecoration: 'underline' }}>
             Terms of Service
           </a>
           {' '}and{' '}
-          <a href="/privacy" style={{ color: '#7c3aed', textDecoration: 'underline' }}>
+          <a href="/privacy" style={{ color: 'var(--brand-text)', textDecoration: 'underline' }}>
             Privacy Policy
           </a>
           .
@@ -217,7 +217,7 @@ export default function GoogleLoginPromo({ user, signIn, onContinue }) {
         {/* Footer note */}
         <div style={{
           fontSize: 11,
-          color: '#9ca3af',
+          color: 'var(--text-3)',
           textAlign: 'center',
           lineHeight: 1.6,
         }}>

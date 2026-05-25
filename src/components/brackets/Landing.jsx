@@ -339,8 +339,8 @@ export default function Landing({
           marginBottom: 12,
           borderRadius: 12,
           padding: '12px 14px',
-          background: '#ffffff',
-          border: '1px solid #e5e7eb',
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
         }}>
           {personalInProgress ? (
             <>
@@ -348,15 +348,15 @@ export default function Landing({
                 display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
                 marginBottom: 4,
               }}>
-                <div style={{ fontSize: 16, fontWeight: 500, color: '#111827' }}>
+                <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)' }}>
                   My Bracket
                 </div>
                 <div style={{
-                  fontSize: 10, color: '#9ca3af',
+                  fontSize: 10, color: 'var(--text-3)',
                   textTransform: 'uppercase', letterSpacing: '0.08em',
                 }}>In progress</div>
               </div>
-              <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 10 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-2)', marginBottom: 10 }}>
                 {personalCat?.name ? `${personalCat.name} · ` : ''}
                 {personalDoneCount} of {personalTotal} matchups completed
               </div>
@@ -368,7 +368,7 @@ export default function Landing({
                 ))}
                 {personalSwatchOverflow > 0 && (
                   <span style={{
-                    fontSize: 10, color: '#9ca3af', marginLeft: 4,
+                    fontSize: 10, color: 'var(--text-3)', marginLeft: 4,
                   }}>+ {personalSwatchOverflow}</span>
                 )}
               </div>
@@ -379,7 +379,7 @@ export default function Landing({
                   padding: '9px 0',
                   borderRadius: 18,
                   border: 'none',
-                  background: '#a855f7',
+                  background: 'var(--brand)',
                   color: '#ffffff',
                   fontSize: 13, fontWeight: 500,
                   cursor: 'pointer',
@@ -393,11 +393,11 @@ export default function Landing({
                 display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
                 marginBottom: 4,
               }}>
-                <div style={{ fontSize: 16, fontWeight: 500, color: '#111827' }}>
+                <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)' }}>
                   Build your own bracket
                 </div>
               </div>
-              <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 12 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-2)', marginBottom: 12 }}>
                 Pick 8 or 16 of your favorites and run a head-to-head.
               </div>
               <button
@@ -407,7 +407,7 @@ export default function Landing({
                   padding: '9px 0',
                   borderRadius: 18,
                   border: 'none',
-                  background: '#a855f7',
+                  background: 'var(--brand)',
                   color: '#ffffff',
                   fontSize: 13, fontWeight: 500,
                   cursor: 'pointer',
@@ -426,7 +426,7 @@ export default function Landing({
         {recentlyCrowned && recentlyCrowned.length > 0 && (
           <div>
             <div style={{
-              fontSize: 10, color: '#9ca3af',
+              fontSize: 10, color: 'var(--text-3)',
               textTransform: 'uppercase', letterSpacing: '0.1em',
               fontWeight: 600,
               marginBottom: 8,
@@ -458,17 +458,17 @@ export default function Landing({
                       borderRadius: 8,
                       background: winnerColors
                         ? `linear-gradient(135deg, ${winnerColors.primary}, ${winnerColors.secondary})`
-                        : '#f3f4f6',
-                      border: '1px dashed #9ca3af',
+                        : 'var(--surface-3)',
+                      border: '1px dashed var(--text-3)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 18,
                       marginBottom: 4,
                     }}>{album?.icon || '♛'}</div>
-                    <div style={{ fontSize: 9, color: '#9ca3af' }}>
+                    <div style={{ fontSize: 9, color: 'var(--text-3)' }}>
                       {cat?.name ?? 'Bracket'}
                     </div>
                     <div style={{
-                      fontSize: 11, fontWeight: 500, color: '#111827',
+                      fontSize: 11, fontWeight: 500, color: 'var(--text)',
                       lineHeight: 1.2,
                       display: '-webkit-box',
                       WebkitLineClamp: 2,

@@ -10,7 +10,7 @@ export default function ScoreBar({ score, maxScore }) {
   return (
     <div style={{
       height: 4,
-      background: '#f3e8ff',
+      background: 'var(--accent-soft)',
       borderRadius: 2,
       overflow: 'hidden',
       flex: 1,
@@ -19,7 +19,7 @@ export default function ScoreBar({ score, maxScore }) {
       <div style={{
         height: '100%',
         width: `${pct}%`,
-        background: '#a855f7',
+        background: 'var(--brand)',
         borderRadius: 2,
         transition: 'width 0.3s ease',
       }} />

@@ -73,8 +73,8 @@ export default function FeedbackButton({ user, screen }) {
           width: 44,
           height: 44,
           borderRadius: '50%',
-          background: '#ffffff',
-          border: '1px solid #e5e7eb',
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
           boxShadow: '0 4px 12px rgba(0,0,0,0.18)',
           cursor: 'pointer',
           display: 'flex',
@@ -89,7 +89,7 @@ export default function FeedbackButton({ user, screen }) {
         onMouseLeave={e => { e.currentTarget.style.opacity = '0.85'; e.currentTarget.style.transform = 'scale(1)'; }}
       >
         {/* Chat-bubble icon */}
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
       </button>
@@ -115,7 +115,7 @@ export default function FeedbackButton({ user, screen }) {
             style={{
               width: '100%',
               maxWidth: 420,
-              background: '#ffffff',
+              background: 'var(--surface)',
               borderRadius: 16,
               padding: 20,
               boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
@@ -125,19 +125,19 @@ export default function FeedbackButton({ user, screen }) {
             {state === 'sent' ? (
               <div style={{ textAlign: 'center', padding: '12px 0' }}>
                 <div style={{ fontSize: 32, marginBottom: 8 }}>💌</div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: '#111827', marginBottom: 4 }}>
+                <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>
                   Thanks for the feedback!
                 </div>
-                <div style={{ fontSize: 13, color: '#6b7280' }}>
+                <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
                   It'll help shape the app.
                 </div>
               </div>
             ) : (
               <>
-                <div style={{ fontSize: 17, fontWeight: 600, color: '#111827', marginBottom: 4 }}>
+                <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>
                   Send feedback
                 </div>
-                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 12 }}>
+                <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 12 }}>
                   Bug, idea, anything — I read every one.
                 </div>
 
@@ -151,10 +151,10 @@ export default function FeedbackButton({ user, screen }) {
                   style={{
                     width: '100%',
                     padding: '10px 12px',
-                    border: '1px solid #d1d5db',
+                    border: '1px solid var(--control-off)',
                     borderRadius: 10,
                     fontSize: 14,
-                    color: '#111827',
+                    color: 'var(--text)',
                     fontFamily: 'inherit',
                     resize: 'vertical',
                     boxSizing: 'border-box',
@@ -169,14 +169,14 @@ export default function FeedbackButton({ user, screen }) {
                   alignItems: 'center',
                   marginTop: 6,
                   fontSize: 11,
-                  color: '#9ca3af',
+                  color: 'var(--text-3)',
                 }}>
                   <span>{screen ? `Sent from: ${screen}` : ''}</span>
                   <span>{text.length}/{MAX_LEN}</span>
                 </div>
 
                 {state === 'error' && (
-                  <div style={{ fontSize: 12, color: '#dc2626', marginTop: 8 }}>
+                  <div style={{ fontSize: 12, color: 'var(--danger-text)', marginTop: 8 }}>
                     Couldn't send. Check your connection and try again.
                   </div>
                 )}
@@ -190,10 +190,10 @@ export default function FeedbackButton({ user, screen }) {
                       flex: 1,
                       padding: '11px',
                       background: 'none',
-                      border: '1px solid #d1d5db',
+                      border: '1px solid var(--control-off)',
                       borderRadius: 10,
                       fontSize: 14,
-                      color: '#4b5563',
+                      color: 'var(--text-2)',
                       fontWeight: 500,
                       cursor: state === 'sending' ? 'default' : 'pointer',
                     }}
@@ -208,7 +208,7 @@ export default function FeedbackButton({ user, screen }) {
                       padding: '11px',
                       background: !text.trim() || state === 'sending'
                         ? '#c4b5fd'
-                        : 'linear-gradient(135deg, #a855f7, #7c3aed)',
+                        : 'linear-gradient(135deg, var(--brand), var(--brand-2))',
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: 10,

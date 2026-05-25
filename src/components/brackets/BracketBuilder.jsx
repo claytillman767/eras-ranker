@@ -104,7 +104,7 @@ export default function BracketBuilder({ onClose, onStart }) {
     <div style={{
       position: 'fixed',
       inset: 0,
-      background: '#ffffff',
+      background: 'var(--bg)',
       zIndex: 1000,
       display: 'flex',
       flexDirection: 'column',
@@ -116,7 +116,7 @@ export default function BracketBuilder({ onClose, onStart }) {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '14px 20px',
-        borderBottom: '0.5px solid #f3f4f6',
+        borderBottom: '0.5px solid var(--hairline)',
       }}>
         <button
           onClick={step === 'scope' ? () => setStep('category') : onClose}
@@ -124,7 +124,7 @@ export default function BracketBuilder({ onClose, onStart }) {
           style={{
             background: 'none',
             border: 'none',
-            color: '#6b7280',
+            color: 'var(--text-2)',
             fontSize: 14,
             fontWeight: 500,
             cursor: 'pointer',
@@ -133,7 +133,7 @@ export default function BracketBuilder({ onClose, onStart }) {
         >
           {step === 'scope' ? '← Back' : '✕'}
         </button>
-        <div style={{ fontSize: 15, fontWeight: 600, color: '#111827' }}>
+        <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>
           {step === 'category' ? 'Build a Bracket' : 'Across which songs?'}
         </div>
         <div style={{ width: 40 }} />
@@ -177,7 +177,7 @@ export default function BracketBuilder({ onClose, onStart }) {
 function CategoryStep({ categories, onPick }) {
   return (
     <div>
-      <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 14, lineHeight: 1.5 }}>
+      <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 14, lineHeight: 1.5 }}>
         Pick the theme. We'll match up songs head-to-head until one wins.
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -195,8 +195,8 @@ function CategoryStep({ categories, onPick }) {
                 alignItems: 'center',
                 gap: 14,
                 padding: '14px 14px',
-                background: '#fafafa',
-                border: '0.5px solid #e5e7eb',
+                background: 'var(--surface-2)',
+                border: '0.5px solid var(--border)',
                 borderRadius: 14,
                 textAlign: 'left',
                 cursor: 'pointer',
@@ -207,7 +207,7 @@ function CategoryStep({ categories, onPick }) {
                 width: 44,
                 height: 44,
                 borderRadius: 12,
-                background: '#f3e8ff',
+                background: 'var(--accent-soft)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -217,17 +217,17 @@ function CategoryStep({ categories, onPick }) {
                 {ICONS[cat.id] || '🏆'}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>
                   {cat.name}
                 </div>
-                <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.45, marginBottom: 4 }}>
+                <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.45, marginBottom: 4 }}>
                   {cat.description}
                 </div>
-                <div style={{ fontSize: 11, color: '#9ca3af' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
                   {meta}
                 </div>
               </div>
-              <div style={{ color: '#d1d5db', fontSize: 18, flexShrink: 0 }}>›</div>
+              <div style={{ color: 'var(--control-off)', fontSize: 18, flexShrink: 0 }}>›</div>
             </button>
           );
         })}
@@ -248,15 +248,15 @@ function ScopeStep({ category, scope, setScope, size, setSize, allCount, allMaxS
         alignItems: 'center',
         gap: 12,
         padding: '12px 14px',
-        background: '#faf5ff',
-        border: '0.5px solid #e9d5ff',
+        background: 'var(--accent-soft)',
+        border: '0.5px solid var(--accent-soft-2)',
         borderRadius: 12,
         marginBottom: 18,
       }}>
         <div style={{ fontSize: 22 }}>{ICONS[category.id] || '🏆'}</div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: '#111827' }}>{category.name}</div>
-          <div style={{ fontSize: 11, color: '#6b7280' }}>{category.description}</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{category.name}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-2)' }}>{category.description}</div>
         </div>
       </div>
 
@@ -274,7 +274,7 @@ function ScopeStep({ category, scope, setScope, size, setSize, allCount, allMaxS
         icon="🎶"
       />
 
-      <div style={{ fontSize: 12, fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '20px 0 10px' }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '20px 0 10px' }}>
         Or pick one album
       </div>
 
@@ -292,8 +292,8 @@ function ScopeStep({ category, scope, setScope, size, setSize, allCount, allMaxS
               onClick={() => !disabled && setScope(album.id)}
               disabled={disabled}
               style={{
-                background: '#ffffff',
-                border: selected ? '2px solid #a855f7' : '1px solid #e5e7eb',
+                background: 'var(--surface)',
+                border: selected ? '2px solid var(--brand)' : '1px solid var(--border)',
                 borderRadius: 12,
                 padding: '10px 8px',
                 cursor: disabled ? 'not-allowed' : 'pointer',
@@ -315,10 +315,10 @@ function ScopeStep({ category, scope, setScope, size, setSize, allCount, allMaxS
               }}>
                 {album.icon}
               </div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: '#111827', lineHeight: 1.2, marginBottom: 2, height: 26, overflow: 'hidden' }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', lineHeight: 1.2, marginBottom: 2, height: 26, overflow: 'hidden' }}>
                 {album.name}
               </div>
-              <div style={{ fontSize: 10, color: disabled ? '#ef4444' : '#9ca3af' }}>
+              <div style={{ fontSize: 10, color: disabled ? 'var(--danger-text)' : 'var(--text-3)' }}>
                 {disabled
                   ? (count === 0 ? 'no songs' : `${count} song${count === 1 ? '' : 's'} — needs ${MIN_BRACKET}+`)
                   : `up to ${max}`}
@@ -329,7 +329,7 @@ function ScopeStep({ category, scope, setScope, size, setSize, allCount, allMaxS
       </div>
 
       {/* Bracket size — pick how long this should run */}
-      <div style={{ fontSize: 12, fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '24px 0 10px' }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '24px 0 10px' }}>
         Bracket size
       </div>
       <SizePicker
@@ -357,18 +357,18 @@ function SizePicker({ size, setSize, max }) {
             style={{
               padding: '12px 14px',
               borderRadius: 12,
-              border: selected ? '2px solid #a855f7' : '1px solid #e5e7eb',
-              background: selected ? '#faf5ff' : '#ffffff',
+              border: selected ? '2px solid var(--brand)' : '1px solid var(--border)',
+              background: selected ? 'var(--accent-soft)' : 'var(--surface)',
               cursor: disabled ? 'not-allowed' : 'pointer',
               opacity: disabled ? 0.4 : 1,
               textAlign: 'left',
               boxShadow: selected ? '0 2px 8px rgba(168,85,247,0.18)' : 'none',
             }}
           >
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 2 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', marginBottom: 2 }}>
               {s} songs
             </div>
-            <div style={{ fontSize: 11, color: '#6b7280' }}>
+            <div style={{ fontSize: 11, color: 'var(--text-2)' }}>
               {rounds} round{rounds === 1 ? '' : 's'} · ~{minutes} min
             </div>
           </button>
@@ -389,8 +389,8 @@ function ScopeOption({ active, disabled, onClick, title, meta, icon }) {
         gap: 12,
         width: '100%',
         padding: '14px',
-        background: active ? '#faf5ff' : '#ffffff',
-        border: active ? '2px solid #a855f7' : '1px solid #e5e7eb',
+        background: active ? 'var(--accent-soft)' : 'var(--surface)',
+        border: active ? '2px solid var(--brand)' : '1px solid var(--border)',
         borderRadius: 14,
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.5 : 1,
@@ -401,7 +401,7 @@ function ScopeOption({ active, disabled, onClick, title, meta, icon }) {
         width: 40,
         height: 40,
         borderRadius: 10,
-        background: '#f3e8ff',
+        background: 'var(--accent-soft)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -411,15 +411,15 @@ function ScopeOption({ active, disabled, onClick, title, meta, icon }) {
         {icon}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>{title}</div>
-        <div style={{ fontSize: 12, color: disabled ? '#ef4444' : '#6b7280' }}>{meta}</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{title}</div>
+        <div style={{ fontSize: 12, color: disabled ? 'var(--danger-text)' : 'var(--text-2)' }}>{meta}</div>
       </div>
       {active && (
         <div style={{
           width: 22,
           height: 22,
           borderRadius: '50%',
-          background: '#a855f7',
+          background: 'var(--brand)',
           color: '#ffffff',
           fontSize: 14,
           display: 'flex',
@@ -447,11 +447,11 @@ function BottomBar({ scope, size, ready, onStart }) {
       left: 0,
       right: 0,
       padding: '16px 20px 24px',
-      background: '#ffffff',
-      borderTop: '0.5px solid #f3f4f6',
+      background: 'var(--surface)',
+      borderTop: '0.5px solid var(--hairline)',
       boxShadow: '0 -4px 12px rgba(0,0,0,0.04)',
     }}>
-      <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 10, textAlign: 'center' }}>
+      <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 10, textAlign: 'center' }}>
         {ready
           ? `${size} songs · ${rounds} rounds · ~${minutes} min · ${scopeLabel}`
           : 'Pick a scope and bracket size with enough eligible songs'}
@@ -464,8 +464,8 @@ function BottomBar({ scope, size, ready, onStart }) {
           padding: '14px',
           borderRadius: 12,
           border: 'none',
-          background: ready ? 'linear-gradient(135deg, #a855f7, #7c3aed)' : '#e5e7eb',
-          color: ready ? '#ffffff' : '#9ca3af',
+          background: ready ? 'linear-gradient(135deg, var(--brand), var(--brand-2))' : 'var(--border)',
+          color: ready ? '#ffffff' : 'var(--text-3)',
           fontSize: 16,
           fontWeight: 700,
           cursor: ready ? 'pointer' : 'not-allowed',

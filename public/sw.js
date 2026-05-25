@@ -7,7 +7,7 @@
 //   - Cross-origin requests (Firebase, Google APIs, etc.):
 //     not intercepted at all — always go straight to the network.
 
-const CACHE_NAME = 'eras-ranker-v4';
+const CACHE_NAME = 'eras-ranker-v5';
 
 self.addEventListener('install', event => {
   event.waitUntil(

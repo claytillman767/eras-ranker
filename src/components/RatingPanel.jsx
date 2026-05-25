@@ -22,8 +22,8 @@ export default function RatingPanel({ song, albumId, albumName, year, songRating
     <div
       ref={panelRef}
       style={{
-        background: '#faf5ff',
-        border: '0.5px solid #e9d5ff',
+        background: 'var(--accent-grad-a)',
+        border: '0.5px solid var(--accent-soft-2)',
         borderRadius: 12,
         padding: '14px 14px 10px',
         marginTop: 6,
@@ -32,14 +32,14 @@ export default function RatingPanel({ song, albumId, albumName, year, songRating
       {/* Song title and score */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
         <div>
-          <div style={{ fontSize: 15, fontWeight: 500, color: '#111827' }}>{song.name}</div>
-          <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{albumName} · {year}</div>
+          <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text)' }}>{song.name}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>{albumName} · {year}</div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 24, fontWeight: 600, color: '#a855f7', lineHeight: 1 }}>
+          <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--brand-text)', lineHeight: 1 }}>
             {compositeScore !== null ? compositeScore : '—'}
           </div>
-          <div style={{ fontSize: 11, color: '#9ca3af' }}>score</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)' }}>score</div>
         </div>
       </div>
 
@@ -48,11 +48,11 @@ export default function RatingPanel({ song, albumId, albumName, year, songRating
         const starVal = songRatings?.[cat.id] || 0;
         return (
           <div key={cat.id}>
-            {i > 0 && <div style={{ height: 1, background: '#f3e8ff', margin: '4px 0' }} />}
+            {i > 0 && <div style={{ height: 1, background: 'var(--accent-soft)', margin: '4px 0' }} />}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 0' }}>
               <div style={{ width: 90, flexShrink: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{cat.name}</div>
-                <div style={{ fontSize: 11, color: '#9ca3af' }}>{cat.weight}%</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-strong)' }}>{cat.name}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{cat.weight}%</div>
               </div>
               <div style={{ flex: 1 }}>
                 <StarRating
@@ -66,12 +66,12 @@ export default function RatingPanel({ song, albumId, albumName, year, songRating
                   </div>
                 )}
                 {cat.id === 'bridge' && !bridgeLyrics && (
-                  <div style={{ fontSize: 11, color: '#d1d5db', fontStyle: 'italic', marginTop: 2 }}>
+                  <div style={{ fontSize: 11, color: 'var(--control-off)', fontStyle: 'italic', marginTop: 2 }}>
                     No bridge section
                   </div>
                 )}
               </div>
-              <div style={{ fontSize: 12, color: '#a855f7', width: 16, textAlign: 'right' }}>
+              <div style={{ fontSize: 12, color: 'var(--brand-text)', width: 16, textAlign: 'right' }}>
                 {starVal > 0 ? starVal : '—'}
               </div>
             </div>
@@ -80,15 +80,15 @@ export default function RatingPanel({ song, albumId, albumName, year, songRating
       })}
 
       {/* Divider before overall */}
-      <div style={{ height: 1, background: '#e9d5ff', margin: '8px 0' }} />
+      <div style={{ height: 1, background: 'var(--accent-soft-2)', margin: '8px 0' }} />
 
       {/* Overall summary */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{ width: 90, flexShrink: 0, fontSize: 13, fontWeight: 600, color: '#374151' }}>Overall</div>
+        <div style={{ width: 90, flexShrink: 0, fontSize: 13, fontWeight: 600, color: 'var(--text-strong)' }}>Overall</div>
         <div style={{ flex: 1 }}>
           <StarRating value={overallStars} size="md" readonly />
         </div>
-        <div style={{ fontSize: 12, color: '#a855f7', fontWeight: 500 }}>
+        <div style={{ fontSize: 12, color: 'var(--brand-text)', fontWeight: 500 }}>
           {compositeScore !== null ? `${compositeScore} / 100` : '— / 100'}
         </div>
       </div>

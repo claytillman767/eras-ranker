@@ -110,7 +110,7 @@ export default function UpdatedTermsModal({ onAccept }) {
 const overlayStyle = {
   position: 'fixed',
   inset: 0,
-  background: 'linear-gradient(180deg, #fdf4ff 0%, #ffffff 50%, #eff6ff 100%)',
+  background: 'linear-gradient(180deg, #fdf4ff 0%, var(--bg) 50%, #eff6ff 100%)',
   zIndex: 9999,
   display: 'flex',
   alignItems: 'center',
@@ -121,8 +121,8 @@ const overlayStyle = {
 };
 
 const cardStyle = {
-  background: '#ffffff',
-  border: '0.5px solid #e5e7eb',
+  background: 'var(--surface)',
+  border: '0.5px solid var(--border)',
   borderRadius: 16,
   boxShadow: '0 12px 32px rgba(0,0,0,0.10)',
   padding: '28px 24px',
@@ -141,25 +141,25 @@ const titleStyle = {
   margin: '0 0 8px',
   fontSize: 20,
   fontWeight: 700,
-  color: '#111827',
+  color: 'var(--text)',
   lineHeight: 1.3,
 };
 
 const subtitleStyle = {
   margin: '0 0 18px',
   fontSize: 14,
-  color: '#374151',
+  color: 'var(--text-strong)',
   lineHeight: 1.6,
 };
 
 const inlineLinkStyle = {
-  color: '#7c3aed',
+  color: 'var(--brand-text)',
   textDecoration: 'underline',
 };
 
 const changesNoteStyle = {
-  background: '#faf5ff',
-  border: '0.5px solid #e9d5ff',
+  background: 'var(--accent-grad-a)',
+  border: '0.5px solid var(--accent-soft-2)',
   borderRadius: 10,
   padding: '12px 14px',
   marginBottom: 16,
@@ -169,7 +169,7 @@ const changesNoteStyle = {
 const changesNoteLabelStyle = {
   fontSize: 11,
   fontWeight: 700,
-  color: '#7c3aed',
+  color: 'var(--brand-text)',
   letterSpacing: '0.06em',
   textTransform: 'uppercase',
   marginBottom: 4,
@@ -177,13 +177,13 @@ const changesNoteLabelStyle = {
 
 const changesNoteBodyStyle = {
   fontSize: 13,
-  color: '#374151',
+  color: 'var(--text-strong)',
   lineHeight: 1.6,
 };
 
 const effectiveLineStyle = {
   fontSize: 12,
-  color: '#6b7280',
+  color: 'var(--text-2)',
   marginBottom: 18,
 };
 
@@ -192,7 +192,7 @@ const primaryButtonStyle = {
   padding: '13px',
   borderRadius: 12,
   border: 'none',
-  background: 'linear-gradient(180deg, #a855f7, #7c3aed)',
+  background: 'linear-gradient(180deg, var(--brand), var(--brand-2))',
   color: '#ffffff',
   fontSize: 15,
   fontWeight: 600,
@@ -202,6 +202,6 @@ const primaryButtonStyle = {
 
 const footerNoteStyle = {
   fontSize: 11,
-  color: '#9ca3af',
+  color: 'var(--text-3)',
   lineHeight: 1.6,
 };

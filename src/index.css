@@ -1,5 +1,104 @@
 @import "tailwindcss";
 
+/* ──────────────────────────────────────────────────────────────────────────
+   Theme color tokens.
+
+   The whole app uses inline styles with hardcoded hex colors. To support a
+   light/dark toggle without rewriting every style object into JS, we map the
+   recurring colors to CSS variables here. Components reference them as
+   `var(--token)` inside their inline styles.
+
+   IMPORTANT: the LIGHT values below are the EXACT colors the app already used,
+   so converting a component to tokens changes nothing in light mode — only
+   the dark palette differs. The theme is switched by setting
+   `data-theme="dark"` on <html> (see useSettings.js + the bootstrap script in
+   index.html). When the attribute is absent, light values apply.
+
+   Rules used when converting components (so the same source color can map to
+   the right token by context):
+     • background/fill #ffffff  → var(--surface)      (card/header/menu surface)
+     • text  color    #ffffff   → stays literal #ffffff (white text on buttons)
+     • #e5e7eb (border)         → var(--border)
+     • #f3f4f6 as a fill bg     → var(--surface-3)
+     • #f3f4f6 as a divider/line→ var(--hairline)
+     • purple #a855f7/#7c3aed as a background/button → var(--brand)/--brand-2
+     • purple #a855f7/#7c3aed as TEXT/links/arrows    → var(--brand-text)
+   Decorative era/accent colors (pinks, golds, blues, album-scene colors) are
+   intentionally left as literals — they read fine on a dark background.
+   ────────────────────────────────────────────────────────────────────────── */
+:root {
+  color-scheme: light;
+
+  /* Neutral surfaces & text */
+  --bg:            #ffffff;  /* app page background */
+  --surface:       #ffffff;  /* cards, header, sticky bars, menus, modal cards */
+  --surface-2:     #f9fafb;  /* subtle grey panels, footer card, disabled bg */
+  --surface-3:     #f3f4f6;  /* #f3f4f6 used as a background fill */
+  --border:        #e5e7eb;  /* default 0.5–1px borders */
+  --hairline:      #f3f4f6;  /* #f3f4f6 used as a thin divider line */
+  --text:          #111827;  /* primary text */
+  --text-2:        #6b7280;  /* secondary text */
+  --text-3:        #9ca3af;  /* tertiary / muted text */
+  --text-strong:   #374151;  /* gray-700 secondary headers */
+  --control-off:   #d1d5db;  /* toggle "off" track, neutral control borders */
+
+  /* Brand purple */
+  --brand:         #a855f7;  /* primary purple — button bg, active tab, borders */
+  --brand-2:       #7c3aed;  /* deeper purple — gradient end, button bg */
+  --brand-text:    #7c3aed;  /* purple used as TEXT / links / arrows */
+  --accent-soft:   #f3e8ff;  /* soft purple tile / pill / avatar background */
+  --accent-soft-2: #e9d5ff;  /* slightly stronger purple tint / border */
+  --accent-grad-a: #faf5ff;  /* hero gradient start */
+  --accent-grad-b: #f3e8ff;  /* hero gradient end */
+
+  /* Semantic — danger */
+  --danger-text:   #dc2626;
+  --danger-border: #fecaca;
+  --danger-bg:     #fef2f2;
+
+  /* Semantic — success */
+  --success-text:   #166534;
+  --success-border: #bbf7d0;
+  --success-bg:     #dcfce7;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Neutral surfaces & text */
+  --bg:            #0e1014;
+  --surface:       #181b22;
+  --surface-2:     #20242c;
+  --surface-3:     #262b34;
+  --border:        #2c313b;
+  --hairline:      #242931;
+  --text:          #f2f4f7;
+  --text-2:        #9aa4b2;
+  --text-3:        #707a89;
+  --text-strong:   #d4dae3;
+  --control-off:   #3a414e;
+
+  /* Brand purple — solids pop on dark as-is; purple TEXT is lightened so it
+     stays legible against the dark surface. */
+  --brand:         #a855f7;
+  --brand-2:       #7c3aed;
+  --brand-text:    #c4a9ff;
+  --accent-soft:   #2a2342;
+  --accent-soft-2: #382c5e;
+  --accent-grad-a: #1c1830;
+  --accent-grad-b: #251d3a;
+
+  /* Semantic — danger (lighter text, muted dark fills) */
+  --danger-text:   #f87171;
+  --danger-border: #5b2526;
+  --danger-bg:     #2a1718;
+
+  /* Semantic — success */
+  --success-text:   #4ade80;
+  --success-border: #1d4d2e;
+  --success-bg:     #14331f;
+}
+
 /* Reset box-sizing and remove default margin */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -7,7 +106,7 @@
 
 body {
   margin: 0;
-  background: #ffffff;
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

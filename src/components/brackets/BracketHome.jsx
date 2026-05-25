@@ -168,7 +168,7 @@ export default function BracketHome({ brackets, onStartBracket, onContinueBracke
         {/* ── In-Progress Brackets ── */}
         {inProgress.length > 0 && (
           <section style={{ marginBottom: 24 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 10 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-strong)', marginBottom: 10 }}>
               Your Active Brackets
             </div>
             <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 4 }}>
@@ -184,34 +184,34 @@ export default function BracketHome({ brackets, onStartBracket, onContinueBracke
                     onClick={() => onContinueBracket(b.id)}
                     style={{
                       minWidth: 180,
-                      background: '#f9fafb',
-                      border: '1.5px solid #e5e7eb',
+                      background: 'var(--surface-2)',
+                      border: '1.5px solid var(--border)',
                       borderRadius: 14,
                       padding: '14px 16px',
                       cursor: 'pointer',
                       flexShrink: 0,
                     }}
                   >
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#a855f7', marginBottom: 4 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--brand-text)', marginBottom: 4 }}>
                       Round {roundNum} of {totalRounds}
                     </div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', marginBottom: 6, lineHeight: 1.3 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 6, lineHeight: 1.3 }}>
                       {cat?.name || b.categoryId}
                     </div>
-                    <div style={{ fontSize: 11, color: '#6b7280' }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-2)' }}>
                       {totalMatchups - done} matchup{totalMatchups - done !== 1 ? 's' : ''} left
                     </div>
                     <div style={{
                       marginTop: 8,
                       height: 4,
-                      background: '#e5e7eb',
+                      background: 'var(--border)',
                       borderRadius: 2,
                       overflow: 'hidden',
                     }}>
                       <div style={{
                         width: `${(done / totalMatchups) * 100}%`,
                         height: '100%',
-                        background: '#a855f7',
+                        background: 'var(--brand)',
                         borderRadius: 2,
                         transition: 'width 0.3s ease',
                       }} />
@@ -225,7 +225,7 @@ export default function BracketHome({ brackets, onStartBracket, onContinueBracke
 
         {/* ── Start a New Bracket ── */}
         <section style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 10 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-strong)', marginBottom: 10 }}>
             Start a New Bracket
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -237,8 +237,8 @@ export default function BracketHome({ brackets, onStartBracket, onContinueBracke
                   display: 'flex',
                   alignItems: 'center',
                   gap: 14,
-                  background: '#ffffff',
-                  border: '1.5px solid #e5e7eb',
+                  background: 'var(--surface)',
+                  border: '1.5px solid var(--border)',
                   borderRadius: 14,
                   padding: '14px 16px',
                   cursor: 'pointer',
@@ -246,11 +246,11 @@ export default function BracketHome({ brackets, onStartBracket, onContinueBracke
                   transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = '#a855f7';
+                  e.currentTarget.style.borderColor = 'var(--brand)';
                   e.currentTarget.style.boxShadow = '0 2px 12px rgba(168,85,247,0.12)';
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.borderColor = '#e5e7eb';
+                  e.currentTarget.style.borderColor = 'var(--border)';
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
@@ -258,7 +258,7 @@ export default function BracketHome({ brackets, onStartBracket, onContinueBracke
                   width: 44,
                   height: 44,
                   borderRadius: 12,
-                  background: 'linear-gradient(135deg, #f3e8ff, #e9d5ff)',
+                  background: 'linear-gradient(135deg, var(--accent-soft), var(--accent-soft-2))',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -268,14 +268,14 @@ export default function BracketHome({ brackets, onStartBracket, onContinueBracke
                   {['🎵', '💔', '📖', '💌', '🎤', '💎', '🎶', '📝'][availableCategories.indexOf(cat)] || '🏆'}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>
                     {cat.name}
                   </div>
-                  <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>
+                  <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.4 }}>
                     {cat.description}
                   </div>
                 </div>
-                <div style={{ fontSize: 11, color: '#9ca3af', flexShrink: 0 }}>
+                <div style={{ fontSize: 11, color: 'var(--text-3)', flexShrink: 0 }}>
                   ~{cat.estimatedMinutes}m
                 </div>
               </div>
@@ -286,7 +286,7 @@ export default function BracketHome({ brackets, onStartBracket, onContinueBracke
         {/* ── Recently Crowned ── */}
         {recentWinners.length > 0 && (
           <section>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 10 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-strong)', marginBottom: 10 }}>
               Recently Crowned 👑
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -309,7 +309,7 @@ export default function BracketHome({ brackets, onStartBracket, onContinueBracke
                   >
                     <div style={{ fontSize: 22 }}>🏆</div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
                         {b.winner?.name}
                       </div>
                       <div style={{ fontSize: 11, color: '#78350f' }}>
@@ -327,15 +327,15 @@ export default function BracketHome({ brackets, onStartBracket, onContinueBracke
           <div style={{
             textAlign: 'center',
             padding: '32px 16px',
-            background: '#f9fafb',
+            background: 'var(--surface-2)',
             borderRadius: 14,
-            border: '1.5px dashed #e5e7eb',
+            border: '1.5px dashed var(--border)',
           }}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>🏆</div>
-            <div style={{ fontSize: 15, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+            <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-strong)', marginBottom: 6 }}>
               No brackets yet
             </div>
-            <div style={{ fontSize: 13, color: '#6b7280' }}>
+            <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
               Pick a category above to start your first bracket
             </div>
           </div>
