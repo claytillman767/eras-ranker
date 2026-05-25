@@ -56,7 +56,7 @@ export default function VibeCheckIntro({
     <div style={{
       position: 'fixed',
       inset: 0,
-      background: '#ffffff',
+      background: 'var(--bg)',
       zIndex: 9000,
       display: 'flex',
       flexDirection: 'column',
@@ -70,7 +70,7 @@ export default function VibeCheckIntro({
           style={{
             background: 'none',
             border: 'none',
-            color: '#9ca3af',
+            color: 'var(--text-3)',
             fontSize: 13,
             fontWeight: 500,
             cursor: 'pointer',
@@ -133,7 +133,7 @@ export default function VibeCheckIntro({
         <div style={{
           fontSize: 26,
           fontWeight: 700,
-          color: '#111827',
+          color: 'var(--text)',
           marginBottom: 10,
         }}>
           Vibe Check
@@ -142,7 +142,7 @@ export default function VibeCheckIntro({
         {/* Description */}
         <div style={{
           fontSize: 14,
-          color: '#6b7280',
+          color: 'var(--text-2)',
           lineHeight: 1.6,
           marginBottom: 16,
           maxWidth: 360,
@@ -153,8 +153,8 @@ export default function VibeCheckIntro({
 
         {/* Everything Pro unlocks */}
         <div style={{
-          background: 'linear-gradient(135deg, #faf5ff, #f3e8ff)',
-          border: '0.5px solid #e9d5ff',
+          background: 'linear-gradient(135deg, var(--accent-grad-a), var(--accent-soft))',
+          border: '0.5px solid var(--accent-soft-2)',
           borderRadius: 16,
           padding: '16px 18px',
           marginBottom: 8,
@@ -165,7 +165,7 @@ export default function VibeCheckIntro({
           <div style={{
             fontSize: 11,
             fontWeight: 700,
-            color: '#a855f7',
+            color: 'var(--brand-text)',
             letterSpacing: '0.08em',
             marginBottom: 14,
           }}>
@@ -202,7 +202,7 @@ export default function VibeCheckIntro({
                 width: 36,
                 height: 36,
                 borderRadius: 10,
-                background: '#ffffff',
+                background: 'var(--surface)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -212,10 +212,10 @@ export default function VibeCheckIntro({
                 {item.icon}
               </div>
               <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>
                   {item.title}
                 </div>
-                <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>
+                <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.4 }}>
                   {item.desc}
                 </div>
               </div>
@@ -240,7 +240,7 @@ export default function VibeCheckIntro({
             {/* Price/positioning line — matches every other upgrade surface */}
             <div style={{
               fontSize: 13,
-              color: '#6b7280',
+              color: 'var(--text-2)',
               textAlign: 'center',
               lineHeight: 1.5,
               marginBottom: 12,
@@ -254,7 +254,7 @@ export default function VibeCheckIntro({
                 padding: '14px',
                 borderRadius: 12,
                 border: 'none',
-                background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+                background: 'linear-gradient(135deg, var(--brand), var(--brand-2))',
                 color: '#ffffff',
                 fontSize: 16,
                 fontWeight: 700,
@@ -275,9 +275,9 @@ export default function VibeCheckIntro({
             width: '100%',
             padding: '12px',
             borderRadius: 12,
-            border: '0.5px solid #d1d5db',
-            background: '#ffffff',
-            color: '#4b5563',
+            border: '0.5px solid var(--control-off)',
+            background: 'var(--surface)',
+            color: 'var(--text-2)',
             fontSize: 14,
             fontWeight: 500,
             cursor: 'pointer',

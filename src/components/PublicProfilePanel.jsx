@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { BIO_MAX_LENGTH } from '../utils/profanity';
 
 // The public-profile control: turn the anyone-with-link profile on/off,
@@ -56,18 +56,18 @@ export default function PublicProfilePanel({ profile, user, signIn }) {
   if (!user) {
     return (
       <div style={{
-        background: 'linear-gradient(135deg, #faf5ff, #f3e8ff)',
-        border: '0.5px solid #e9d5ff',
+        background: 'linear-gradient(135deg, var(--accent-grad-a), var(--accent-soft))',
+        border: '0.5px solid var(--accent-soft-2)',
         borderRadius: 12,
         padding: '18px 16px',
         marginBottom: 24,
         textAlign: 'center',
       }}>
         <div style={{ fontSize: 28, marginBottom: 8 }}>🔗</div>
-        <div style={{ fontSize: 15, fontWeight: 700, color: '#111827', marginBottom: 4 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>
           Share your rankings
         </div>
-        <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.5, maxWidth: 300, margin: '0 auto 14px' }}>
+        <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5, maxWidth: 300, margin: '0 auto 14px' }}>
           Create a public page of your album and song rankings that anyone
           can view with a link. Sign in to set it up.
         </div>
@@ -75,7 +75,7 @@ export default function PublicProfilePanel({ profile, user, signIn }) {
           onClick={signIn}
           style={{
             padding: '10px 22px',
-            background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+            background: 'linear-gradient(135deg, var(--brand), var(--brand-2))',
             border: 'none',
             borderRadius: 12,
             color: '#ffffff',
@@ -94,8 +94,8 @@ export default function PublicProfilePanel({ profile, user, signIn }) {
   // ── Signed in — full control ─────────────────────────────────────────────
   return (
     <div style={{
-      background: '#ffffff',
-      border: '0.5px solid #e5e7eb',
+      background: 'var(--surface)',
+      border: '0.5px solid var(--border)',
       borderRadius: 12,
       overflow: 'hidden',
       marginBottom: 24,
@@ -106,13 +106,13 @@ export default function PublicProfilePanel({ profile, user, signIn }) {
         alignItems: 'center',
         gap: 12,
         padding: '14px 16px',
-        borderBottom: isOn ? '0.5px solid #f3f4f6' : 'none',
+        borderBottom: isOn ? '0.5px solid var(--hairline)' : 'none',
       }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>
             Public profile — anyone with the link can view
           </div>
-          <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.4 }}>
             Shows your album and song rankings and an optional bio. We won't
             list your profile anywhere — only people you share the link with
             will see it.
@@ -128,7 +128,7 @@ export default function PublicProfilePanel({ profile, user, signIn }) {
             height: 26,
             borderRadius: 13,
             border: 'none',
-            background: isOn ? '#a855f7' : '#e5e7eb',
+            background: isOn ? 'var(--brand)' : 'var(--control-off)',
             position: 'relative',
             cursor: loading ? 'default' : 'pointer',
             transition: 'background 0.15s ease',
@@ -142,7 +142,7 @@ export default function PublicProfilePanel({ profile, user, signIn }) {
             width: 22,
             height: 22,
             borderRadius: '50%',
-            background: '#ffffff',
+            background: 'var(--surface)',
             transition: 'left 0.15s ease',
             boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
           }} />
@@ -155,7 +155,7 @@ export default function PublicProfilePanel({ profile, user, signIn }) {
           <div style={{
             fontSize: 11,
             fontWeight: 600,
-            color: '#6b7280',
+            color: 'var(--text-2)',
             marginBottom: 6,
             letterSpacing: '0.04em',
           }}>
@@ -173,10 +173,10 @@ export default function PublicProfilePanel({ profile, user, signIn }) {
                 padding: '9px 11px',
                 fontSize: 12,
                 fontFamily: 'monospace',
-                border: '0.5px solid #e5e7eb',
+                border: '0.5px solid var(--border)',
                 borderRadius: 8,
-                background: '#f9fafb',
-                color: '#374151',
+                background: 'var(--surface-2)',
+                color: 'var(--text-strong)',
                 minWidth: 0,
               }}
             />
@@ -187,7 +187,7 @@ export default function PublicProfilePanel({ profile, user, signIn }) {
                 fontSize: 12,
                 fontWeight: 600,
                 color: '#ffffff',
-                background: copied ? '#16a34a' : '#a855f7',
+                background: copied ? '#16a34a' : 'var(--brand)',
                 border: 'none',
                 borderRadius: 8,
                 cursor: 'pointer',
@@ -202,7 +202,7 @@ export default function PublicProfilePanel({ profile, user, signIn }) {
           <div style={{
             fontSize: 11,
             fontWeight: 600,
-            color: '#6b7280',
+            color: 'var(--text-2)',
             marginBottom: 6,
             letterSpacing: '0.04em',
           }}>
@@ -218,12 +218,12 @@ export default function PublicProfilePanel({ profile, user, signIn }) {
               padding: '9px 11px',
               fontSize: 13,
               fontFamily: 'inherit',
-              border: `0.5px solid ${tooLong ? '#fecaca' : '#e5e7eb'}`,
+              border: `0.5px solid ${tooLong ? 'var(--danger-border)' : 'var(--border)'}`,
               borderRadius: 8,
               resize: 'vertical',
               boxSizing: 'border-box',
               outline: 'none',
-              color: '#111827',
+              color: 'var(--text)',
             }}
           />
 
@@ -234,7 +234,7 @@ export default function PublicProfilePanel({ profile, user, signIn }) {
             marginTop: 6,
             marginBottom: 10,
             fontSize: 11,
-            color: tooLong ? '#dc2626' : '#9ca3af',
+            color: tooLong ? 'var(--danger-text)' : 'var(--text-3)',
           }}>
             <span>{bioError ?? ' '}</span>
             <span>{bioDraft.length} / {BIO_MAX_LENGTH}</span>
@@ -248,7 +248,7 @@ export default function PublicProfilePanel({ profile, user, signIn }) {
               fontSize: 13,
               fontWeight: 600,
               color: '#ffffff',
-              background: (tooLong || bioDraft === (data.bio ?? '')) ? '#d1d5db' : '#a855f7',
+              background: (tooLong || bioDraft === (data.bio ?? '')) ? 'var(--control-off)' : 'var(--brand)',
               border: 'none',
               borderRadius: 8,
               cursor: (tooLong || bioDraft === (data.bio ?? '')) ? 'default' : 'pointer',

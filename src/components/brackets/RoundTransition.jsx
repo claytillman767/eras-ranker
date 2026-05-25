@@ -167,7 +167,7 @@ export default function RoundTransition({ bracket, completedRoundIndex, onContin
               marginBottom: 28,
               animation: 'fade-in-up 0.4s ease 0.2s both',
             }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#a855f7', marginBottom: 8, letterSpacing: '0.08em' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--brand-text)', marginBottom: 8, letterSpacing: '0.08em' }}>
                 ✦ DID YOU KNOW?
               </div>
               <div style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 }}>
@@ -182,7 +182,7 @@ export default function RoundTransition({ bracket, completedRoundIndex, onContin
             style={{
               width: '100%',
               padding: '16px',
-              background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+              background: 'linear-gradient(135deg, var(--brand), var(--brand-2))',
               border: 'none',
               borderRadius: 16,
               color: '#ffffff',

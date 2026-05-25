@@ -48,9 +48,9 @@ export default function SongRow({
     <div style={{
       display: 'flex',
       alignItems: 'stretch',
-      background: isSelected ? '#faf5ff' : '#ffffff',
-      border: '0.5px solid #e5e7eb',
-      borderLeft: isSelected ? '3px solid #a855f7' : '0.5px solid #e5e7eb',
+      background: isSelected ? 'var(--accent-grad-a)' : 'var(--surface)',
+      border: '0.5px solid var(--border)',
+      borderLeft: isSelected ? '3px solid var(--brand)' : '0.5px solid var(--border)',
       borderRadius: 10,
       overflow: 'hidden',
     }}>
@@ -61,9 +61,9 @@ export default function SongRow({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#c4b5fd',
+          color: 'var(--control-off)',
           fontSize: 16,
-          borderRight: '0.5px solid #f3f4f6',
+          borderRight: '0.5px solid var(--hairline)',
           cursor: 'grab',
           touchAction: 'none',
           userSelect: 'none',
@@ -101,7 +101,7 @@ export default function SongRow({
           <span style={{
             fontSize: 18,
             fontWeight: 300,
-            color: scored ? '#111827' : '#9ca3af',
+            color: scored ? 'var(--text)' : 'var(--text-3)',
             width: 22,
             textAlign: 'center',
             flexShrink: 0,
@@ -114,7 +114,7 @@ export default function SongRow({
             flex: 1,
             fontSize: 14,
             fontWeight: 500,
-            color: '#111827',
+            color: 'var(--text)',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -124,13 +124,13 @@ export default function SongRow({
 
           {scored ? (
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, flexShrink: 0 }}>
-              <span style={{ fontSize: 17, fontWeight: 600, color: '#a855f7', lineHeight: 1, letterSpacing: '-0.02em' }}>
+              <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--brand-text)', lineHeight: 1, letterSpacing: '-0.02em' }}>
                 {compositeScore}
               </span>
-              <span style={{ fontSize: 10, color: '#9ca3af' }}>/100</span>
+              <span style={{ fontSize: 10, color: 'var(--text-3)' }}>/100</span>
             </div>
           ) : (
-            <div style={{ fontSize: 11, color: '#9ca3af', fontStyle: 'italic', flexShrink: 0 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', fontStyle: 'italic', flexShrink: 0 }}>
               not rated
             </div>
           )}
@@ -144,7 +144,7 @@ export default function SongRow({
                 <div style={{
                   flex: 1,
                   fontSize: 12,
-                  color: '#374151',
+                  color: 'var(--text-strong)',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -168,7 +168,7 @@ export default function SongRow({
                       fontSize: 11,
                       fontWeight: 600,
                       color: '#ffffff',
-                      background: bar.shuffle === 'play' ? '#a855f7' : '#9ca3af',
+                      background: bar.shuffle === 'play' ? 'var(--brand)' : 'var(--text-3)',
                       lineHeight: 1.4,
                     }}>
                       <ShuffleIcon kind={bar.shuffle} />
@@ -189,7 +189,7 @@ export default function SongRow({
                       fontSize: 11,
                       fontWeight: 700,
                       color: '#ffffff',
-                      background: bar.yesNo === 'Y' ? '#a855f7' : '#9ca3af',
+                      background: bar.yesNo === 'Y' ? 'var(--brand)' : 'var(--text-3)',
                       textAlign: 'center',
                       lineHeight: 1.5,
                     }}>
@@ -200,7 +200,7 @@ export default function SongRow({
                   <div style={{
                     width: 80,
                     height: 4,
-                    background: '#f3f4f6',
+                    background: 'var(--surface-3)',
                     borderRadius: 2,
                     overflow: 'hidden',
                     flexShrink: 0,
@@ -218,7 +218,7 @@ export default function SongRow({
                   width: 32,
                   fontSize: 11,
                   fontWeight: 600,
-                  color: '#a855f7',
+                  color: 'var(--brand-text)',
                   textAlign: 'right',
                   flexShrink: 0,
                 }}>
@@ -231,7 +231,7 @@ export default function SongRow({
 
         {/* "Tap to score" nudge for unrated songs */}
         {!scored && (
-          <div style={{ marginTop: 5, fontSize: 11, color: '#a855f7', fontWeight: 500 }}>
+          <div style={{ marginTop: 5, fontSize: 11, color: 'var(--brand-text)', fontWeight: 500 }}>
             Tap to score →
           </div>
         )}

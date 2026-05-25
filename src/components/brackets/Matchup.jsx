@@ -73,7 +73,7 @@ function MatchupCard({
         padding: '14px 12px',
         background: `linear-gradient(145deg, ${colors.primary}, ${colors.secondary})`,
         color: colors.text,
-        border: '1px solid #e5e7eb',
+        border: '1px solid var(--border)',
         boxShadow,
         position: 'relative',
         minHeight: 230,
@@ -235,18 +235,18 @@ export default function Matchup({
       <style>{STYLE}</style>
       <div style={{
         position: 'fixed', inset: 0, zIndex: 200,
-        background: '#ffffff',
+        background: 'var(--bg)',
         maxWidth: 700, margin: '0 auto',
         display: 'flex', flexDirection: 'column',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        color: '#111827',
+        color: 'var(--text)',
       }}>
 
         {/* Header */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '14px 16px',
-          borderBottom: '1px solid #e5e7eb',
+          borderBottom: '1px solid var(--border)',
           flexShrink: 0,
         }}>
           <div style={{ fontSize: 16, fontWeight: 500 }}>{weekLabel}</div>
@@ -255,11 +255,11 @@ export default function Matchup({
             aria-label="Close"
             style={{
               width: 26, height: 26, borderRadius: 13,
-              border: '1px solid #111827',
+              border: '1px solid var(--text)',
               background: 'transparent',
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 12, color: '#111827', padding: 0, lineHeight: 1,
+              fontSize: 12, color: 'var(--text)', padding: 0, lineHeight: 1,
             }}
           >✕</button>
         </div>
@@ -275,13 +275,13 @@ export default function Matchup({
             return (
               <span key={i} style={{
                 width: 8, height: 8, borderRadius: 4,
-                background: isComplete ? '#a855f7' : 'transparent',
-                border: `2px solid ${isCurrent ? '#f59e0b' : (isComplete ? '#a855f7' : '#e5e7eb')}`,
+                background: isComplete ? 'var(--brand)' : 'transparent',
+                border: `2px solid ${isCurrent ? '#f59e0b' : (isComplete ? 'var(--brand)' : 'var(--border)')}`,
                 boxSizing: 'border-box',
               }} />
             );
           })}
-          <span style={{ fontSize: 11, color: '#4b5563', marginLeft: 6 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-2)', marginLeft: 6 }}>
             R{roundIndex + 1} · {matchupIndex + 1}/{matchupsInRound}
           </span>
         </div>
@@ -319,8 +319,8 @@ export default function Matchup({
                 <div style={{
                   padding: '6px 14px',
                   borderRadius: 999,
-                  background: '#f3e8ff',
-                  color: '#7e22ce',
+                  background: 'var(--accent-soft)',
+                  color: 'var(--brand-text)',
                   fontSize: 12,
                   fontWeight: 600,
                   letterSpacing: '0.02em',
@@ -335,16 +335,16 @@ export default function Matchup({
                 // Real community data → keep the rich dashed-box reveal
                 <div style={{
                   padding: '10px 12px', borderRadius: 10,
-                  background: '#f3e8ff', border: '1px dashed #a855f7',
+                  background: 'var(--accent-soft)', border: '1px dashed var(--brand)',
                   display: 'flex', flexDirection: 'column', gap: 4,
                 }}>
                   <div style={{
-                    fontSize: 14, color: '#7e22ce', fontWeight: 500, textAlign: 'center',
+                    fontSize: 14, color: 'var(--brand-text)', fontWeight: 500, textAlign: 'center',
                   }}>
                     {userAgreementPct}% of Swifties agree with you ✦
                   </div>
                   <div style={{
-                    fontSize: 11, color: '#6b7280', textAlign: 'center',
+                    fontSize: 11, color: 'var(--text-2)', textAlign: 'center',
                     display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10,
                   }}>
                     <span>Next matchup in 1.2s…</span>
@@ -352,7 +352,7 @@ export default function Matchup({
                       onClick={handleAdvanceNow}
                       style={{
                         background: 'none', border: 'none', padding: 0,
-                        color: '#a855f7', fontSize: 11, fontWeight: 500,
+                        color: 'var(--brand-text)', fontSize: 11, fontWeight: 500,
                         cursor: 'pointer',
                       }}
                     >Next →</button>
@@ -362,12 +362,12 @@ export default function Matchup({
                 // No community backend yet → quieter confirmation, no oversold box
                 <div style={{ textAlign: 'center', padding: '4px 0' }}>
                   <div style={{
-                    fontSize: 13, color: '#7e22ce', fontWeight: 600, marginBottom: 4,
+                    fontSize: 13, color: 'var(--brand-text)', fontWeight: 600, marginBottom: 4,
                   }}>
                     Vote counted ✦
                   </div>
                   <div style={{
-                    fontSize: 11, color: '#9ca3af',
+                    fontSize: 11, color: 'var(--text-3)',
                     display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10,
                   }}>
                     <span>Next matchup in 1.2s</span>
@@ -375,7 +375,7 @@ export default function Matchup({
                       onClick={handleAdvanceNow}
                       style={{
                         background: 'none', border: 'none', padding: 0,
-                        color: '#a855f7', fontSize: 11, fontWeight: 500,
+                        color: 'var(--brand-text)', fontSize: 11, fontWeight: 500,
                         cursor: 'pointer',
                       }}
                     >Next →</button>
@@ -388,13 +388,13 @@ export default function Matchup({
           {/* Footer nav */}
           <div style={{
             marginTop: 10, display: 'flex', justifyContent: 'space-between',
-            alignItems: 'center', fontSize: 11, color: '#6b7280', flexShrink: 0,
+            alignItems: 'center', fontSize: 11, color: 'var(--text-2)', flexShrink: 0,
           }}>
             <button
               onClick={onClose}
               style={{
                 background: 'none', border: 'none', padding: 0,
-                fontSize: 11, color: '#6b7280', cursor: 'pointer',
+                fontSize: 11, color: 'var(--text-2)', cursor: 'pointer',
               }}
             >← Back</button>
             {onSeeBracket && (
@@ -402,7 +402,7 @@ export default function Matchup({
                 onClick={onSeeBracket}
                 style={{
                   background: 'none', border: 'none', padding: 0,
-                  fontSize: 11, color: '#6b7280', cursor: 'pointer',
+                  fontSize: 11, color: 'var(--text-2)', cursor: 'pointer',
                   textDecoration: 'underline',
                 }}
               >See full bracket</button>

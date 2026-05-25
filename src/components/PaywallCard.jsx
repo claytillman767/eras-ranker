@@ -28,21 +28,21 @@ export default function PaywallCard({ onUnlock, user, signIn }) {
 
   return (
     <div style={{
-      border: '0.5px solid #e9d5ff',
+      border: '0.5px solid var(--accent-soft-2)',
       borderRadius: 12,
       padding: 16,
-      background: '#faf5ff',
+      background: 'var(--accent-grad-a)',
       marginTop: 20,
     }}>
       {step === 'features' ? (
         <>
           {/* Header */}
           <div style={{ marginBottom: 6 }}>
-            <span style={{ fontSize: 15, fontWeight: 500, color: '#111827' }}>Unlock everything</span>
+            <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text)' }}>Unlock everything</span>
           </div>
 
           {/* Description */}
-          <p style={{ fontSize: 13, color: '#4b5563', margin: '0 0 12px', lineHeight: 1.5 }}>
+          <p style={{ fontSize: 13, color: 'var(--text-2)', margin: '0 0 12px', lineHeight: 1.5 }}>
             A one-time $3.99 unlock — yours forever, no subscription.
           </p>
 
@@ -50,10 +50,10 @@ export default function PaywallCard({ onUnlock, user, signIn }) {
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             {features.map(item => (
               <li key={item.label} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                <span style={{ color: '#a855f7', fontSize: 13, flexShrink: 0, lineHeight: '18px' }}>✓</span>
+                <span style={{ color: 'var(--brand-text)', fontSize: 13, flexShrink: 0, lineHeight: '18px' }}>✓</span>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', lineHeight: 1.35 }}>{item.label}</div>
-                  <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>{item.desc}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', lineHeight: 1.35 }}>{item.label}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.4 }}>{item.desc}</div>
                 </div>
               </li>
             ))}
@@ -64,7 +64,7 @@ export default function PaywallCard({ onUnlock, user, signIn }) {
             onClick={handleUnlock}
             style={{
               width: '100%',
-              background: '#a855f7',
+              background: 'var(--brand)',
               color: '#ffffff',
               border: 'none',
               borderRadius: 8,

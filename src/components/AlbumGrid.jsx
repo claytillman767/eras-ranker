@@ -23,7 +23,7 @@ export default function AlbumGrid({ onSelectAlbum, selectedAlbumId, getAlbumScor
         ))}
       </div>
 
-      <div style={{ marginTop: 24, marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#6b7280', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+      <div style={{ marginTop: 24, marginBottom: 8, fontSize: 13, fontWeight: 600, color: 'var(--text-2)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
         Other
       </div>
       <div style={gridStyle}>

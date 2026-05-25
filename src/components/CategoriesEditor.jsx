@@ -84,17 +84,17 @@ function changeLineParts(item) {
   // Brand-new song that wasn't rated before this session
   // (oldRank null because the song had no composite score at snapshot time)
   if (item.oldRank == null) {
-    return [{ text: 'newly rated', color: '#a855f7' }];
+    return [{ text: 'newly rated', color: 'var(--brand-text)' }];
   }
   const parts = [];
   if (item.oldRank !== item.rank) {
-    parts.push({ text: `was #${item.oldRank}`, color: '#6b7280' });
+    parts.push({ text: `was #${item.oldRank}`, color: 'var(--text-2)' });
   }
   if (item.scoreDelta !== 0) {
     const positive = item.scoreDelta > 0;
     parts.push({
       text: `${positive ? '+' : '−'}${Math.abs(item.scoreDelta)} pts`,
-      color: positive ? '#16a34a' : '#dc2626',
+      color: positive ? 'var(--success-text)' : 'var(--danger-text)',
     });
   }
   if (parts.length === 0) return null; // truly unchanged
@@ -109,14 +109,14 @@ function PreviewRow({ rank, item, isAlbum }) {
       alignItems: 'center',
       gap: 10,
       padding: '10px 0',
-      borderBottom: '0.5px solid #f3f4f6',
+      borderBottom: '0.5px solid var(--hairline)',
     }}>
-      <span style={{ fontSize: 12, color: '#9ca3af', width: 22, textAlign: 'center', fontWeight: 500 }}>
+      <span style={{ fontSize: 12, color: 'var(--text-3)', width: 22, textAlign: 'center', fontWeight: 500 }}>
         {rank}
       </span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontSize: 13, fontWeight: 500, color: '#111827',
+          fontSize: 13, fontWeight: 500, color: 'var(--text)',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
           {isAlbum
@@ -124,26 +124,26 @@ function PreviewRow({ rank, item, isAlbum }) {
             : item.name}
         </div>
         <div style={{
-          fontSize: 11, color: '#9ca3af',
+          fontSize: 11, color: 'var(--text-3)',
           display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6,
           marginTop: 2,
         }}>
           {!isAlbum && <span>{item.albumIcon} {item.albumName}</span>}
           {changes && (
             <>
-              {!isAlbum && <span style={{ color: '#d1d5db' }}>·</span>}
+              {!isAlbum && <span style={{ color: 'var(--control-off)' }}>·</span>}
               {changes.map((part, i) => (
                 <span key={i} style={{ color: part.color, fontWeight: 500 }}>
                   {part.text}
-                  {i < changes.length - 1 && <span style={{ color: '#d1d5db', marginLeft: 6 }}>·</span>}
+                  {i < changes.length - 1 && <span style={{ color: 'var(--control-off)', marginLeft: 6 }}>·</span>}
                 </span>
               ))}
             </>
           )}
-          {!changes && <span style={{ color: '#9ca3af' }}>unchanged</span>}
+          {!changes && <span style={{ color: 'var(--text-3)' }}>unchanged</span>}
         </div>
       </div>
-      <span style={{ fontSize: 14, fontWeight: 600, color: '#a855f7', width: 32, textAlign: 'right' }}>
+      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--brand-text)', width: 32, textAlign: 'right' }}>
         {item.score}
       </span>
     </div>
@@ -154,17 +154,17 @@ function PreviewRow({ rank, item, isAlbum }) {
 // new rank (if still ranked), and score delta.
 function DropoutRow({ item, isAlbum }) {
   return (
-    <div style={{ fontSize: 12, color: '#6b7280', padding: '4px 0', lineHeight: 1.4 }}>
+    <div style={{ fontSize: 12, color: 'var(--text-2)', padding: '4px 0', lineHeight: 1.4 }}>
       • {isAlbum ? `${item.icon} ${item.name}` : item.name}
-      {!isAlbum && <span style={{ color: '#9ca3af' }}> ({item.albumName})</span>}
-      <span style={{ color: '#9ca3af' }}>
+      {!isAlbum && <span style={{ color: 'var(--text-3)' }}> ({item.albumName})</span>}
+      <span style={{ color: 'var(--text-3)' }}>
         {' '}— was #{item.rank}
         {item.newRank != null
           ? `, now #${item.newRank}`
           : ', no longer ranked'}
         {item.scoreDelta != null && item.scoreDelta !== 0 && (
           <span style={{
-            color: item.scoreDelta > 0 ? '#16a34a' : '#dc2626',
+            color: item.scoreDelta > 0 ? 'var(--success-text)' : 'var(--danger-text)',
             fontWeight: 500,
             marginLeft: 6,
           }}>
@@ -183,20 +183,20 @@ function Preview({ songDiff, albumDiff, songDropouts, albumDropouts, onDone }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 220,
-      background: '#ffffff',
+      background: 'var(--surface)',
       display: 'flex', flexDirection: 'column',
       maxWidth: 700, margin: '0 auto',
     }}>
       {/* Header */}
       <div style={{
         padding: '14px 16px',
-        borderBottom: '0.5px solid #e5e7eb',
+        borderBottom: '0.5px solid var(--border)',
         flexShrink: 0,
       }}>
-        <div style={{ fontSize: 16, fontWeight: 600, color: '#111827' }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)' }}>
           Here's what your changes did
         </div>
-        <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 2 }}>
           Your category settings are saved. Adjust them again any time.
         </div>
       </div>
@@ -207,7 +207,7 @@ function Preview({ songDiff, albumDiff, songDropouts, albumDropouts, onDone }) {
         {songDiff.length > 0 && (
           <div style={{ marginBottom: 24 }}>
             <div style={{
-              fontSize: 11, color: '#9ca3af', fontWeight: 600,
+              fontSize: 11, color: 'var(--text-3)', fontWeight: 600,
               textTransform: 'uppercase', letterSpacing: '0.06em',
               marginBottom: 6,
             }}>
@@ -218,7 +218,7 @@ function Preview({ songDiff, albumDiff, songDropouts, albumDropouts, onDone }) {
             ))}
             {songDropouts.length > 0 && (
               <div style={{ marginTop: 10 }}>
-                <div style={{ fontSize: 10, color: '#9ca3af', marginBottom: 4 }}>
+                <div style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 4 }}>
                   Off the top {songDiff.length}:
                 </div>
                 {songDropouts.map(s => (
@@ -233,7 +233,7 @@ function Preview({ songDiff, albumDiff, songDropouts, albumDropouts, onDone }) {
         {albumDiff.length > 0 && (
           <div>
             <div style={{
-              fontSize: 11, color: '#9ca3af', fontWeight: 600,
+              fontSize: 11, color: 'var(--text-3)', fontWeight: 600,
               textTransform: 'uppercase', letterSpacing: '0.06em',
               marginBottom: 6,
             }}>
@@ -244,7 +244,7 @@ function Preview({ songDiff, albumDiff, songDropouts, albumDropouts, onDone }) {
             ))}
             {albumDropouts.length > 0 && (
               <div style={{ marginTop: 10 }}>
-                <div style={{ fontSize: 10, color: '#9ca3af', marginBottom: 4 }}>
+                <div style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 4 }}>
                   Off the top {albumDiff.length}:
                 </div>
                 {albumDropouts.map(a => (
@@ -260,13 +260,13 @@ function Preview({ songDiff, albumDiff, songDropouts, albumDropouts, onDone }) {
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
         padding: 16,
-        background: 'linear-gradient(180deg, transparent, #ffffff 30%)',
+        background: 'linear-gradient(180deg, transparent, var(--surface) 30%)',
         display: 'flex', justifyContent: 'center',
       }}>
         <button
           onClick={onDone}
           style={{
-            background: '#a855f7',
+            background: 'var(--brand)',
             color: '#ffffff',
             border: 'none',
             borderRadius: 22,
@@ -342,14 +342,14 @@ export default function CategoriesEditor({
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 210,
-      background: '#ffffff',
+      background: 'var(--surface)',
       display: 'flex', flexDirection: 'column',
       maxWidth: 700, margin: '0 auto',
     }}>
       {/* Header */}
       <div style={{
         padding: '14px 16px',
-        borderBottom: '0.5px solid #e5e7eb',
+        borderBottom: '0.5px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         flexShrink: 0,
       }}>
@@ -361,13 +361,13 @@ export default function CategoriesEditor({
             border: 'none',
             padding: '4px 6px',
             fontSize: 14,
-            color: '#a855f7',
+            color: 'var(--brand-text)',
             cursor: 'pointer',
           }}
         >
           ← Back
         </button>
-        <div style={{ fontSize: 16, fontWeight: 600, color: '#111827' }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)' }}>
           Rating Categories
         </div>
         <span style={{ width: 50 }} /> {/* spacer to balance the back button */}
@@ -382,13 +382,13 @@ export default function CategoriesEditor({
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
         padding: 16,
-        background: 'linear-gradient(180deg, transparent, #ffffff 30%)',
+        background: 'linear-gradient(180deg, transparent, var(--surface) 30%)',
         display: 'flex', justifyContent: 'center',
       }}>
         <button
           onClick={handleDone}
           style={{
-            background: '#a855f7',
+            background: 'var(--brand)',
             color: '#ffffff',
             border: 'none',
             borderRadius: 22,

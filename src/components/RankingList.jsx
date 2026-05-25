@@ -48,8 +48,8 @@ function ScoreBreakdown({ song }) {
 
   return (
     <div style={{
-      background: '#faf5ff',
-      border: '0.5px solid #e9d5ff',
+      background: 'var(--accent-soft)',
+      border: '0.5px solid var(--accent-soft-2)',
       borderRadius: 10,
       padding: '12px 14px',
       margin: '4px 0 10px 38px',
@@ -58,7 +58,7 @@ function ScoreBreakdown({ song }) {
         fontSize: 10,
         fontWeight: 700,
         letterSpacing: '0.05em',
-        color: '#7c3aed',
+        color: 'var(--brand-text)',
         marginBottom: 10,
       }}>
         HOW THIS SCORE IS BUILT
@@ -72,11 +72,11 @@ function ScoreBreakdown({ song }) {
           gap: 8,
           padding: '4px 0',
         }}>
-          <span style={{ flex: 1, minWidth: 0, fontSize: 12, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <span style={{ flex: 1, minWidth: 0, fontSize: 12, color: 'var(--text-strong)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {c.label}
           </span>
           <StarRating value={c.stars} readonly size="sm" />
-          <span style={{ width: 56, textAlign: 'right', fontSize: 11, color: '#9ca3af' }}>
+          <span style={{ width: 56, textAlign: 'right', fontSize: 11, color: 'var(--text-3)' }}>
             weight {c.weight}%
           </span>
         </div>
@@ -84,8 +84,8 @@ function ScoreBreakdown({ song }) {
 
       {/* Unrated categories — listed so users see what they didn't rate */}
       {unrated.length > 0 && (
-        <div style={{ marginTop: 8, paddingTop: 8, borderTop: '0.5px dashed #e9d5ff' }}>
-          <div style={{ fontSize: 10, fontWeight: 600, color: '#9ca3af', marginBottom: 4, letterSpacing: '0.03em' }}>
+        <div style={{ marginTop: 8, paddingTop: 8, borderTop: '0.5px dashed var(--accent-soft-2)' }}>
+          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-3)', marginBottom: 4, letterSpacing: '0.03em' }}>
             NOT RATED — DOESN'T COUNT TOWARD THE SCORE
           </div>
           {unrated.map(c => (
@@ -96,11 +96,11 @@ function ScoreBreakdown({ song }) {
               padding: '3px 0',
               opacity: 0.55,
             }}>
-              <span style={{ flex: 1, minWidth: 0, fontSize: 12, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 12, color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {c.label}
               </span>
-              <span style={{ fontSize: 11, color: '#9ca3af', fontStyle: 'italic' }}>not rated</span>
-              <span style={{ width: 56, textAlign: 'right', fontSize: 11, color: '#9ca3af' }}>
+              <span style={{ fontSize: 11, color: 'var(--text-3)', fontStyle: 'italic' }}>not rated</span>
+              <span style={{ width: 56, textAlign: 'right', fontSize: 11, color: 'var(--text-3)' }}>
                 weight {c.weight}%
               </span>
             </div>
@@ -109,12 +109,12 @@ function ScoreBreakdown({ song }) {
       )}
 
       {/* The math */}
-      <div style={{ borderTop: '0.5px solid #e9d5ff', margin: '8px 0 0', paddingTop: 8 }}>
-        <div style={{ fontSize: 12, color: '#374151', marginBottom: 3 }}>
+      <div style={{ borderTop: '0.5px solid var(--accent-soft-2)', margin: '8px 0 0', paddingTop: 8 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-strong)', marginBottom: 3 }}>
           Weighted average of your stars: <strong>{avg.toFixed(2)}</strong> out of 5
         </div>
-        <div style={{ fontSize: 12, color: '#374151' }}>
-          Scaled to 100: {avg.toFixed(2)} ÷ 5 × 100 = <strong style={{ color: '#a855f7' }}>{song.score}</strong>
+        <div style={{ fontSize: 12, color: 'var(--text-strong)' }}>
+          Scaled to 100: {avg.toFixed(2)} ÷ 5 × 100 = <strong style={{ color: 'var(--brand-text)' }}>{song.score}</strong>
         </div>
       </div>
     </div>
@@ -153,9 +153,9 @@ export default function RankingList({
             style={{
               padding: '6px 18px',
               borderRadius: 20,
-              border: '0.5px solid #e5e7eb',
-              background: view === v ? '#a855f7' : '#ffffff',
-              color: view === v ? '#ffffff' : '#374151',
+              border: '0.5px solid var(--border)',
+              background: view === v ? 'var(--brand)' : 'var(--surface)',
+              color: view === v ? '#ffffff' : 'var(--text-strong)',
               fontWeight: 500,
               fontSize: 13,
               cursor: 'pointer',
@@ -168,7 +168,7 @@ export default function RankingList({
 
       {/* Empty state */}
       {isEmpty && (
-        <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 14, padding: '40px 0' }}>
+        <div style={{ textAlign: 'center', color: 'var(--text-3)', fontSize: 14, padding: '40px 0' }}>
           {view === 'songs' ? 'No songs rated yet.' : 'No albums rated yet.'}
         </div>
       )}
@@ -196,16 +196,16 @@ export default function RankingList({
                 alignItems: 'center',
                 gap: 10,
                 padding: '8px 0',
-                borderBottom: '0.5px solid #f3f4f6',
+                borderBottom: '0.5px solid var(--hairline)',
                 cursor: expandable ? 'pointer' : 'default',
                 WebkitTapHighlightColor: 'transparent',
               }}
             >
-              <span style={{ fontSize: i < 3 ? 16 : 12, color: '#9ca3af', width: 28, textAlign: 'center' }}>
+              <span style={{ fontSize: i < 3 ? 16 : 12, color: 'var(--text-3)', width: 28, textAlign: 'center' }}>
                 {rankIcon(i)}
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {song.name}
                   {expandable && (
                     <span style={{ color: '#c4b5fd', fontSize: 11, marginLeft: 6 }}>
@@ -213,10 +213,10 @@ export default function RankingList({
                     </span>
                   )}
                 </div>
-                <div style={{ fontSize: 11, color: '#9ca3af' }}>{song.albumIcon} {song.albumName}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{song.albumIcon} {song.albumName}</div>
               </div>
               <ScoreBar score={song.score} maxScore={maxScore} />
-              <span style={{ fontSize: 13, fontWeight: 500, color: '#a855f7', width: 28, textAlign: 'right' }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--brand-text)', width: 28, textAlign: 'right' }}>
                 {song.score}
               </span>
             </div>
@@ -235,9 +235,9 @@ export default function RankingList({
             marginTop: 14,
             padding: '10px',
             borderRadius: 10,
-            border: '0.5px solid #e9d5ff',
-            background: '#faf5ff',
-            color: '#7c3aed',
+            border: '0.5px solid var(--accent-soft-2)',
+            background: 'var(--accent-soft)',
+            color: 'var(--brand-text)',
             fontSize: 13,
             fontWeight: 600,
             cursor: 'pointer',
@@ -269,19 +269,19 @@ export default function RankingList({
               alignItems: 'center',
               gap: 10,
               padding: '8px 0',
-              borderBottom: '0.5px solid #f3f4f6',
+              borderBottom: '0.5px solid var(--hairline)',
               cursor: tappable ? 'pointer' : 'default',
               WebkitTapHighlightColor: 'transparent',
             }}
           >
-            <span style={{ fontSize: i < 3 ? 16 : 12, color: '#9ca3af', width: 28, textAlign: 'center' }}>
+            <span style={{ fontSize: i < 3 ? 16 : 12, color: 'var(--text-3)', width: 28, textAlign: 'center' }}>
               {rankIcon(i)}
             </span>
             <div style={{
               width: 36,
               height: 36,
               borderRadius: 6,
-              background: album.color || '#f3f4f6',
+              background: album.color || 'var(--surface-3)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -292,13 +292,13 @@ export default function RankingList({
               {album.icon}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {album.name}
               </div>
-              <div style={{ fontSize: 11, color: '#9ca3af' }}>{album.year}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{album.year}</div>
             </div>
             <ScoreBar score={album.score} maxScore={maxScore} />
-            <span style={{ fontSize: 13, fontWeight: 500, color: '#a855f7', width: 28, textAlign: 'right' }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--brand-text)', width: 28, textAlign: 'right' }}>
               {album.score}
             </span>
           </div>

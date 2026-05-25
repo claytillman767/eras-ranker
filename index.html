@@ -12,6 +12,21 @@
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <link rel="manifest" href="/manifest.json" />
     <title>The Eras Ranker</title>
+    <!-- Apply the saved theme before first paint so a dark-mode user never
+         sees a flash of the light UI on load. Reads the same eras_settings
+         localStorage key that useSettings writes. -->
+    <script>
+      (function () {
+        try {
+          var s = JSON.parse(localStorage.getItem('eras_settings') || '{}');
+          if (s.theme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            var m = document.querySelector('meta[name="theme-color"]');
+            if (m) m.setAttribute('content', '#0e1014');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

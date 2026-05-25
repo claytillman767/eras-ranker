@@ -98,7 +98,7 @@ export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing 
         <style>{DAILY_STYLE}</style>
         <div style={{
           position: 'fixed', inset: 0, zIndex: 200,
-          background: '#ffffff',
+          background: 'var(--bg)',
           maxWidth: 700, margin: '0 auto',
           display: 'flex', flexDirection: 'column',
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -106,14 +106,14 @@ export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing 
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '14px 16px',
-            borderBottom: '1px solid #e5e7eb',
+            borderBottom: '1px solid var(--border)',
           }}>
             <div style={{ fontSize: 16, fontWeight: 500 }}>Daily Matchup</div>
             <button onClick={handleClose} style={{
               width: 26, height: 26, borderRadius: 13,
-              border: '1px solid #111827', background: 'transparent',
+              border: '1px solid var(--text)', background: 'transparent',
               cursor: 'pointer', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', fontSize: 12, color: '#111827',
+              justifyContent: 'center', fontSize: 12, color: 'var(--text)',
               padding: 0, lineHeight: 1,
             }}>✕</button>
           </div>
@@ -124,16 +124,16 @@ export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing 
             animation: 'daily-done-pop 0.4s ease both',
           }}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#111827', marginBottom: 6 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)', marginBottom: 6 }}>
               Daily picks done!
             </div>
-            <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 16 }}>
               Come back tomorrow for new matchups.
             </div>
             <button onClick={handleClose} style={{
               padding: '9px 20px',
-              background: '#f3f4f6', border: '1px solid #e5e7eb',
-              borderRadius: 10, color: '#374151', fontSize: 13, cursor: 'pointer',
+              background: 'var(--surface-3)', border: '1px solid var(--border)',
+              borderRadius: 10, color: 'var(--text-strong)', fontSize: 13, cursor: 'pointer',
             }}>Close</button>
           </div>
         </div>
@@ -158,25 +158,25 @@ export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing 
       <style>{DAILY_STYLE}</style>
       <div style={{
         position: 'fixed', inset: 0, zIndex: 200,
-        background: '#ffffff',
+        background: 'var(--bg)',
         maxWidth: 700, margin: '0 auto',
         display: 'flex', flexDirection: 'column',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        color: '#111827',
+        color: 'var(--text)',
       }}>
 
         {/* Header */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '14px 16px',
-          borderBottom: '1px solid #e5e7eb',
+          borderBottom: '1px solid var(--border)',
           flexShrink: 0,
         }}>
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, color: '#d97706', letterSpacing: '0.08em' }}>
               ☀️ DAILY MATCHUP
             </div>
-            <div style={{ fontSize: 12, color: '#6b7280' }}>
+            <div style={{ fontSize: 12, color: 'var(--text-2)' }}>
               {remaining} matchup{remaining !== 1 ? 's' : ''} left today
             </div>
           </div>
@@ -184,9 +184,9 @@ export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing 
             onClick={handleClose}
             style={{
               width: 26, height: 26, borderRadius: 13,
-              border: '1px solid #111827', background: 'transparent',
+              border: '1px solid var(--text)', background: 'transparent',
               cursor: 'pointer', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', fontSize: 12, color: '#111827',
+              justifyContent: 'center', fontSize: 12, color: 'var(--text)',
               padding: 0, lineHeight: 1,
             }}
           >✕</button>
@@ -196,7 +196,7 @@ export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing 
         <div style={{ flex: 1, padding: '12px 16px 24px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
           {/* Progress bar */}
-          <div style={{ height: 3, background: '#f3f4f6', borderRadius: 2, marginBottom: 14, flexShrink: 0 }}>
+          <div style={{ height: 3, background: 'var(--surface-3)', borderRadius: 2, marginBottom: 14, flexShrink: 0 }}>
             <div style={{
               height: '100%',
               width: `${progress * 100}%`,
@@ -207,7 +207,7 @@ export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing 
           </div>
 
           {/* Question label */}
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#6b7280', textAlign: 'center', marginBottom: 12, flexShrink: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-2)', textAlign: 'center', marginBottom: 12, flexShrink: 0 }}>
             Which bridge hits harder?
           </div>
 
@@ -219,7 +219,7 @@ export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing 
               chosen={!!chosen}
               isWinner={song1IsWinner}
             />
-            <div style={{ display: 'flex', alignItems: 'center', fontSize: 11, fontWeight: 700, color: '#9ca3af', flexShrink: 0 }}>VS</div>
+            <div style={{ display: 'flex', alignItems: 'center', fontSize: 11, fontWeight: 700, color: 'var(--text-3)', flexShrink: 0 }}>VS</div>
             <DailySongCard
               song={matchup.song2}
               onPick={handlePick}
@@ -232,9 +232,9 @@ export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing 
           {chosen && communityPercent != null && (
             <div style={{
               textAlign: 'center',
-              background: '#f5f3ff', border: '1px solid #e9d5ff',
+              background: 'var(--accent-soft)', border: '1px solid var(--accent-soft-2)',
               borderRadius: 10, padding: '9px',
-              fontSize: 13, color: '#7c3aed', marginBottom: 10, flexShrink: 0,
+              fontSize: 13, color: 'var(--brand-text)', marginBottom: 10, flexShrink: 0,
             }}>
               {communityPercent}% of Swifties agree with you
               {communityPercent < 50 && ' — bold pick 👀'}
@@ -245,8 +245,8 @@ export default function DailyMatchup({ dailyState, onVote, onClose, onKeepGoing 
           {!chosen && currentIndex === dailyState.matchups.length - 1 && onKeepGoing && (
             <button onClick={onKeepGoing} style={{
               width: '100%', padding: '10px',
-              background: '#f5f3ff', border: '1px solid #e9d5ff',
-              borderRadius: 10, color: '#7c3aed',
+              background: 'var(--accent-soft)', border: '1px solid var(--accent-soft-2)',
+              borderRadius: 10, color: 'var(--brand-text)',
               fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
             }}>
               Keep going → Start a full bracket

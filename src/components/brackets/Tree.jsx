@@ -37,11 +37,11 @@ function TreeNode({ song, status, highlight, small, width }) {
 
   const hasColor = colors && !isTbd;
 
-  let background = '#ffffff';
+  let background = 'var(--surface)';
   if (hasColor) {
     background = `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`;
   } else if (isTbd) {
-    background = '#f9fafb';
+    background = 'var(--surface-2)';
   }
 
   return (
@@ -50,7 +50,7 @@ function TreeNode({ song, status, highlight, small, width }) {
       height: h,
       borderRadius: 8,
       background,
-      border: isTbd ? '1px dashed #d1d5db' : '1px solid #e5e7eb',
+      border: isTbd ? '1px dashed var(--control-off)' : '1px solid var(--border)',
       display: 'flex',
       alignItems: 'center',
       gap: 6,
@@ -74,15 +74,15 @@ function TreeNode({ song, status, highlight, small, width }) {
           width: small ? 10 : 12,
           height: small ? 10 : 12,
           borderRadius: '50%',
-          background: '#f3f4f6',
-          border: '1px dashed #d1d5db',
+          background: 'var(--surface-3)',
+          border: '1px dashed var(--control-off)',
           flexShrink: 0,
         }} />
       )}
       <span style={{
         fontSize: small ? 10 : 11,
         fontWeight: 500,
-        color: hasColor ? colors.text : '#9ca3af',
+        color: hasColor ? colors.text : 'var(--text-3)',
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
@@ -200,18 +200,18 @@ export default function Tree({
       <style>{STYLE}</style>
       <div style={{
         position: 'fixed', inset: 0, zIndex: 200,
-        background: '#ffffff',
+        background: 'var(--bg)',
         maxWidth: 700, margin: '0 auto',
         display: 'flex', flexDirection: 'column',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        color: '#111827',
+        color: 'var(--text)',
       }}>
 
         {/* Header */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '14px 16px',
-          borderBottom: '1px solid #e5e7eb',
+          borderBottom: '1px solid var(--border)',
           flexShrink: 0,
         }}>
           <div style={{ fontSize: 16, fontWeight: 500 }}>{weekLabel}</div>
@@ -220,11 +220,11 @@ export default function Tree({
             aria-label="Close"
             style={{
               width: 26, height: 26, borderRadius: 13,
-              border: '1px solid #111827',
+              border: '1px solid var(--text)',
               background: 'transparent',
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 12, color: '#111827', padding: 0, lineHeight: 1,
+              fontSize: 12, color: 'var(--text)', padding: 0, lineHeight: 1,
             }}
           >✕</button>
         </div>
@@ -232,23 +232,23 @@ export default function Tree({
         {/* "Your turn" CTA — pinned at the top */}
         {showCTA && (
           <div style={{
-            borderBottom: '1px solid #e5e7eb',
+            borderBottom: '1px solid var(--border)',
             padding: '10px 14px',
-            background: '#ffffff',
+            background: 'var(--surface)',
             display: 'flex', alignItems: 'center', gap: 10,
             flexShrink: 0,
           }}>
             <span style={{
               width: 8, height: 8, borderRadius: 4,
-              background: '#a855f7',
+              background: 'var(--brand)',
               flexShrink: 0,
             }} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>
+              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)' }}>
                 Your turn — {getRoundLabel(liveRound, totalRounds)} matchup {liveMatchupIdx + 1}
               </div>
               <div style={{
-                fontSize: 11, color: '#6b7280',
+                fontSize: 11, color: 'var(--text-2)',
                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
               }}>
                 {liveMatchup.song1.name} vs {liveMatchup.song2.name}
@@ -258,7 +258,7 @@ export default function Tree({
               onClick={() => onOpenMatchup?.(liveRound, liveMatchupIdx)}
               style={{
                 padding: '8px 16px', borderRadius: 16,
-                background: '#a855f7', color: '#ffffff',
+                background: 'var(--brand)', color: '#ffffff',
                 border: 'none', fontSize: 13, fontWeight: 600,
                 cursor: 'pointer', flexShrink: 0,
               }}
@@ -306,7 +306,7 @@ export default function Tree({
                           margin: 0,
                           fontFamily: 'inherit',
                           fontSize: 9,
-                          color: isExpanded ? '#111827' : '#9ca3af',
+                          color: isExpanded ? 'var(--text)' : 'var(--text-3)',
                           textTransform: 'uppercase',
                           letterSpacing: '0.1em',
                           fontWeight: isExpanded ? 700 : 600,
@@ -317,7 +317,7 @@ export default function Tree({
                           textOverflow: 'ellipsis',
                           width: '100%',
                           borderBottom: isExpanded
-                            ? '1px solid #111827'
+                            ? '1px solid var(--text)'
                             : '1px dashed transparent',
                           paddingBottom: 2,
                         }}
@@ -374,28 +374,28 @@ export default function Tree({
                                     position: 'absolute', pointerEvents: 'none',
                                     right: -7, top: 15,
                                     width: 7, height: 1,
-                                    background: '#d1d5db',
+                                    background: 'var(--control-off)',
                                   }} />
                                   {/* Horizontal stub from lower box */}
                                   <div style={{
                                     position: 'absolute', pointerEvents: 'none',
                                     right: -7, bottom: 15,
                                     width: 7, height: 1,
-                                    background: '#d1d5db',
+                                    background: 'var(--control-off)',
                                   }} />
                                   {/* Vertical line connecting the two stubs */}
                                   <div style={{
                                     position: 'absolute', pointerEvents: 'none',
                                     right: -7, top: 15, bottom: 15,
                                     width: 1,
-                                    background: '#d1d5db',
+                                    background: 'var(--control-off)',
                                   }} />
                                   {/* Horizontal line from midpoint extending to next column */}
                                   <div style={{
                                     position: 'absolute', pointerEvents: 'none',
                                     right: -14, top: '50%',
                                     width: 7, height: 1,
-                                    background: '#d1d5db',
+                                    background: 'var(--control-off)',
                                   }} />
                                 </>
                               )}
@@ -429,7 +429,7 @@ export default function Tree({
 
           {isComplete && (
             <div style={{
-              borderTop: '1px solid #e5e7eb',
+              borderTop: '1px solid var(--border)',
               padding: '10px 14px',
               background: '#fffbeb',
               fontSize: 12, color: '#78350f', textAlign: 'center',

@@ -46,7 +46,7 @@ export default function WeeklyBracket({ weeklyState, onVote, onClose }) {
           onClick={onClose}
           style={{
             padding: '14px 32px',
-            background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+            background: 'linear-gradient(135deg, var(--brand), var(--brand-2))',
             border: 'none',
             borderRadius: 16,
             color: '#fff',

@@ -43,7 +43,7 @@ export default function StarRating({ value = 0, onChange, size = 'md', readonly 
               width={px}
               height={px}
               viewBox="0 0 20 20"
-              fill={filled ? '#a855f7' : '#e9d5ff'}
+              fill={filled ? 'var(--brand)' : 'var(--accent-soft-2)'}
               xmlns="http://www.w3.org/2000/svg"
             >
               <path d="M10 1l2.39 4.84 5.34.78-3.86 3.76.91 5.32L10 13.27l-4.78 2.51.91-5.32L2.27 6.62l5.34-.78L10 1z" />

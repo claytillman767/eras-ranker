@@ -147,7 +147,7 @@ export default function DeleteAccountModal({ user, isPro, signOut, onClose }) {
         role="dialog"
         aria-modal="true"
         style={{
-          background: '#ffffff',
+          background: 'var(--surface)',
           borderRadius: 20,
           padding: '24px 24px 22px',
           width: '100%',
@@ -200,7 +200,7 @@ function ExplainStep({ isPro, onContinue, onCancel }) {
       <ul style={{
         margin: '0 0 16px',
         paddingLeft: 20,
-        color: '#4b5563',
+        color: 'var(--text-2)',
         fontSize: 14,
         lineHeight: 1.7,
       }}>
@@ -252,9 +252,9 @@ function ConfirmStep({ confirmed, onToggle, onBack, onDelete }) {
         alignItems: 'flex-start',
         gap: 10,
         padding: '12px 14px',
-        border: '0.5px solid #e5e7eb',
+        border: '0.5px solid var(--border)',
         borderRadius: 10,
-        background: '#fafafa',
+        background: 'var(--surface-2)',
         cursor: 'pointer',
         marginBottom: 18,
       }}>
@@ -266,11 +266,11 @@ function ConfirmStep({ confirmed, onToggle, onBack, onDelete }) {
             width: 18,
             height: 18,
             marginTop: 2,
-            accentColor: '#dc2626',
+            accentColor: 'var(--danger-text)',
             flexShrink: 0,
           }}
         />
-        <span style={{ fontSize: 13, color: '#374151', lineHeight: 1.5 }}>
+        <span style={{ fontSize: 13, color: 'var(--text-strong)', lineHeight: 1.5 }}>
           I understand this is permanent and can't be undone.
         </span>
       </label>
@@ -289,10 +289,10 @@ function WorkingStep() {
   return (
     <div style={{ padding: '20px 0', textAlign: 'center' }}>
       <Spinner />
-      <div style={{ fontSize: 14, color: '#4b5563', marginTop: 14 }}>
+      <div style={{ fontSize: 14, color: 'var(--text-2)', marginTop: 14 }}>
         Deleting your account…
       </div>
-      <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 8 }}>
+      <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 8 }}>
         Don't close this tab.
       </div>
     </div>
@@ -321,12 +321,12 @@ function ErrorStep({ message, onRetry, onClose }) {
         {message || 'We couldn\'t finish deleting your account. Please try again.'}
       </Body>
       <div style={{
-        background: '#fef2f2',
-        border: '0.5px solid #fecaca',
+        background: 'var(--danger-bg)',
+        border: '0.5px solid var(--danger-border)',
         borderRadius: 10,
         padding: '10px 12px',
         fontSize: 12,
-        color: '#991b1b',
+        color: 'var(--danger-text)',
         marginBottom: 18,
         lineHeight: 1.5,
       }}>
@@ -349,7 +349,7 @@ function Title({ children }) {
     <div style={{
       fontSize: 18,
       fontWeight: 700,
-      color: '#111827',
+      color: 'var(--text)',
       marginBottom: 10,
     }}>
       {children}
@@ -361,7 +361,7 @@ function Body({ children }) {
   return (
     <div style={{
       fontSize: 14,
-      color: '#4b5563',
+      color: 'var(--text-2)',
       lineHeight: 1.55,
       marginBottom: 14,
     }}>
@@ -381,7 +381,7 @@ function ButtonStack({ children }) {
 function PrimaryButton({ children, onClick, destructive = false, disabled = false }) {
   const bg = destructive
     ? 'linear-gradient(135deg, #ef4444, #b91c1c)'
-    : 'linear-gradient(135deg, #a855f7, #7c3aed)';
+    : 'linear-gradient(135deg, var(--brand), var(--brand-2))';
   const shadow = destructive
     ? '0 4px 12px rgba(239,68,68,0.3)'
     : '0 4px 12px rgba(168,85,247,0.3)';
@@ -394,8 +394,8 @@ function PrimaryButton({ children, onClick, destructive = false, disabled = fals
         padding: '12px',
         borderRadius: 12,
         border: 'none',
-        background: disabled ? '#e5e7eb' : bg,
-        color: disabled ? '#9ca3af' : '#ffffff',
+        background: disabled ? 'var(--border)' : bg,
+        color: disabled ? 'var(--text-3)' : '#ffffff',
         fontSize: 15,
         fontWeight: 700,
         cursor: disabled ? 'not-allowed' : 'pointer',
@@ -415,9 +415,9 @@ function SecondaryButton({ children, onClick }) {
         width: '100%',
         padding: '11px',
         borderRadius: 12,
-        border: '0.5px solid #d1d5db',
-        background: '#ffffff',
-        color: '#4b5563',
+        border: '0.5px solid var(--control-off)',
+        background: 'var(--surface)',
+        color: 'var(--text-2)',
         fontSize: 14,
         fontWeight: 500,
         cursor: 'pointer',
@@ -441,8 +441,8 @@ function Spinner() {
         width: 32,
         height: 32,
         margin: '0 auto',
-        border: '3px solid #f3e8ff',
-        borderTopColor: '#a855f7',
+        border: '3px solid var(--accent-soft)',
+        borderTopColor: 'var(--brand)',
         borderRadius: '50%',
         animation: 'delete-spinner-spin 0.8s linear infinite',
       }} />

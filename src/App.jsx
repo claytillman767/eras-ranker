@@ -317,7 +317,7 @@ export default function App() {
       margin: '0 auto',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       minHeight: '100dvh',
-      background: '#ffffff',
+      background: 'var(--bg)',
       display: 'flex',
       flexDirection: 'column',
     }}>
@@ -329,15 +329,15 @@ export default function App() {
       {/* ── App header + tab bar ── */}
       <div style={{
         padding: '14px 16px 0',
-        borderBottom: '0.5px solid #e5e7eb',
+        borderBottom: '0.5px solid var(--border)',
         position: 'sticky',
         top: 0,
-        background: '#ffffff',
+        background: 'var(--bg)',
         zIndex: 10,
       }}>
         {/* Title row with auth button on the right */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div style={{ fontSize: 17, fontWeight: 500, color: '#111827' }}>
+          <div style={{ fontSize: 17, fontWeight: 500, color: 'var(--text)' }}>
             The Eras Ranker
           </div>
 
@@ -354,8 +354,8 @@ export default function App() {
                   gap: 7,
                   padding: '5px 10px 5px 5px',
                   borderRadius: 20,
-                  border: '1.5px solid #a855f7',
-                  background: '#f3e8ff',
+                  border: '1.5px solid var(--brand)',
+                  background: 'var(--accent-soft)',
                   cursor: 'pointer',
                 }}
               >
@@ -365,7 +365,7 @@ export default function App() {
                   height: 24,
                   borderRadius: '50%',
                   overflow: 'hidden',
-                  background: '#e9d5ff',
+                  background: 'var(--accent-soft-2)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -374,10 +374,10 @@ export default function App() {
                   {user.photoURL ? (
                     <img src={user.photoURL} alt={user.displayName ?? 'User'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
-                    <span style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed' }}>{userInitial}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--brand-text)' }}>{userInitial}</span>
                   )}
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#7c3aed', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--brand-text)', whiteSpace: 'nowrap' }}>
                   Hello, {userFirstName}
                 </span>
               </button>
@@ -387,19 +387,19 @@ export default function App() {
                   position: 'absolute',
                   top: 40,
                   right: 0,
-                  background: '#ffffff',
-                  border: '1px solid #e5e7eb',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
                   borderRadius: 10,
                   boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
                   minWidth: 180,
                   zIndex: 100,
                   overflow: 'hidden',
                 }}>
-                  <div style={{ padding: '12px 14px', borderBottom: '1px solid #f3f4f6' }}>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: '#111827', marginBottom: 2 }}>
+                  <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--hairline)' }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', marginBottom: 2 }}>
                       {user.displayName}
                     </div>
-                    <div style={{ fontSize: 11, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {user.email}
                     </div>
                   </div>
@@ -412,7 +412,7 @@ export default function App() {
                       border: 'none',
                       textAlign: 'left',
                       fontSize: 13,
-                      color: '#ef4444',
+                      color: 'var(--danger-text)',
                       cursor: 'pointer',
                     }}
                   >
@@ -429,12 +429,12 @@ export default function App() {
                 alignItems: 'center',
                 gap: 6,
                 padding: '6px 12px',
-                background: '#ffffff',
-                border: '1px solid #e5e7eb',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
                 borderRadius: 20,
                 fontSize: 12,
                 fontWeight: 500,
-                color: '#374151',
+                color: 'var(--text-strong)',
                 cursor: 'pointer',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
               }}
@@ -461,8 +461,8 @@ export default function App() {
                 padding: '8px 4px',
                 background: 'none',
                 border: 'none',
-                borderBottom: activeTab === tab.id ? '2px solid #a855f7' : '2px solid transparent',
-                color: activeTab === tab.id ? '#a855f7' : '#6b7280',
+                borderBottom: activeTab === tab.id ? '2px solid var(--brand)' : '2px solid transparent',
+                color: activeTab === tab.id ? 'var(--brand)' : 'var(--text-2)',
                 fontWeight: activeTab === tab.id ? 500 : 400,
                 fontSize: 13,
                 cursor: 'pointer',
@@ -552,7 +552,7 @@ export default function App() {
               confirmExit={settings.confirmQuickScoreExit}
             />
           ) : (
-            <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 14, padding: '60px 0' }}>
+            <div style={{ textAlign: 'center', color: 'var(--text-3)', fontSize: 14, padding: '60px 0' }}>
               Go to Albums and tap one to start rating.
             </div>
           )

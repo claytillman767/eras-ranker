@@ -49,7 +49,7 @@ export default function Welcome({ onClose }) {
         inset: 0,
         // Soft pink/lavender wash behind the white slide content — sets the
         // "celebratory" tone without competing with the album art / sparkles.
-        background: 'linear-gradient(180deg, #fdf4ff 0%, #ffffff 45%, #faf5ff 100%)',
+        background: 'linear-gradient(180deg, #fdf4ff 0%, var(--bg) 45%, var(--accent-grad-a) 100%)',
         zIndex: 9999,
         display: 'flex',
         flexDirection: 'column',
@@ -96,7 +96,7 @@ export default function Welcome({ onClose }) {
           style={{
             background: 'none',
             border: 'none',
-            color: '#9ca3af',
+            color: 'var(--text-3)',
             fontSize: 13,
             fontWeight: 500,
             cursor: 'pointer',
@@ -155,7 +155,7 @@ export default function Welcome({ onClose }) {
                 width: i === step ? 22 : 8,
                 height: 8,
                 borderRadius: 4,
-                background: i === step ? '#a855f7' : '#e5e7eb',
+                background: i === step ? 'var(--brand)' : 'var(--border)',
                 border: 'none',
                 cursor: 'pointer',
                 padding: 0,
@@ -173,12 +173,12 @@ export default function Welcome({ onClose }) {
               style={{
                 flex: 1,
                 padding: '13px',
-                background: '#ffffff',
-                border: '0.5px solid #d1d5db',
+                background: 'var(--surface)',
+                border: '0.5px solid var(--control-off)',
                 borderRadius: 12,
                 fontSize: 14,
                 fontWeight: 500,
-                color: '#4b5563',
+                color: 'var(--text-2)',
                 cursor: 'pointer',
               }}
             >
@@ -190,7 +190,7 @@ export default function Welcome({ onClose }) {
             style={{
               flex: step > 0 ? 2 : 1,
               padding: '13px',
-              background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+              background: 'linear-gradient(135deg, var(--brand), var(--brand-2))',
               color: '#ffffff',
               border: 'none',
               borderRadius: 12,
@@ -339,7 +339,7 @@ function SlideWelcome() {
         style={{
           fontSize: 13,
           fontWeight: 600,
-          color: '#7c3aed',
+          color: 'var(--brand-text)',
           letterSpacing: '0.04em',
           marginBottom: 24,
           minHeight: 18,
@@ -372,7 +372,7 @@ function CarouselCenter({ album }) {
         background: album.color,
         borderRadius: 18,
         boxShadow: '0 8px 22px rgba(0,0,0,0.16)',
-        border: '3px solid #ffffff',
+        border: '3px solid var(--surface)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -401,7 +401,7 @@ function CarouselSide({ album, side }) {
         background: album.color,
         borderRadius: 12,
         boxShadow: '0 3px 10px rgba(0,0,0,0.10)',
-        border: '2px solid #ffffff',
+        border: '2px solid var(--surface)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -463,8 +463,8 @@ function ModeCard({ icon, title, desc, proLine, delay = '0s', onTap }) {
         alignItems: 'center',
         gap: 14,
         padding: '14px 16px',
-        background: '#fafafa',
-        border: '0.5px solid #e5e7eb',
+        background: 'var(--surface-2)',
+        border: '0.5px solid var(--border)',
         borderRadius: 14,
         textAlign: 'left',
         cursor: onTap ? 'pointer' : 'default',
@@ -479,7 +479,7 @@ function ModeCard({ icon, title, desc, proLine, delay = '0s', onTap }) {
         width: 48,
         height: 48,
         borderRadius: 12,
-        background: '#f3e8ff',
+        background: 'var(--accent-soft)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -489,10 +489,10 @@ function ModeCard({ icon, title, desc, proLine, delay = '0s', onTap }) {
         {icon}
       </div>
       <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>
           {title}
         </div>
-        <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.5 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5 }}>
           {desc}
         </div>
         {proLine && (
@@ -502,7 +502,7 @@ function ModeCard({ icon, title, desc, proLine, delay = '0s', onTap }) {
             gap: 6,
             marginTop: 6,
             fontSize: 12,
-            color: '#7c3aed',
+            color: 'var(--brand-text)',
             lineHeight: 1.4,
           }}>
             <span style={{
@@ -510,7 +510,7 @@ function ModeCard({ icon, title, desc, proLine, delay = '0s', onTap }) {
               fontWeight: 700,
               letterSpacing: '0.06em',
               color: '#ffffff',
-              background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+              background: 'linear-gradient(135deg, var(--brand), var(--brand-2))',
               padding: '2px 7px',
               borderRadius: 99,
               flexShrink: 0,
@@ -546,8 +546,8 @@ function SlideVibeCheck() {
   return (
     <div style={{ textAlign: 'center', width: '100%' }}>
       <div style={{
-        background: '#ffffff',
-        border: '0.5px solid #e5e7eb',
+        background: 'var(--surface)',
+        border: '0.5px solid var(--border)',
         borderRadius: 14,
         padding: '14px 16px',
         marginBottom: 28,
@@ -561,9 +561,9 @@ function SlideVibeCheck() {
           justifyContent: 'space-between',
           marginBottom: 10,
         }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: '#111827' }}>Cruel Summer</div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>Cruel Summer</div>
           <div style={{
-            background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+            background: 'linear-gradient(135deg, var(--brand), var(--brand-2))',
             color: '#fff',
             fontSize: 13,
             fontWeight: 700,
@@ -579,10 +579,10 @@ function SlideVibeCheck() {
             alignItems: 'center',
             padding: '5px 0',
           }}>
-            <div style={{ fontSize: 13, color: '#4b5563' }}>{c.name}</div>
+            <div style={{ fontSize: 13, color: 'var(--text-2)' }}>{c.name}</div>
             <div style={{ fontSize: 14, color: '#fbbf24', letterSpacing: 1 }}>
               {'★'.repeat(c.stars)}
-              <span style={{ color: '#e5e7eb' }}>{'★'.repeat(5 - c.stars)}</span>
+              <span style={{ color: 'var(--border)' }}>{'★'.repeat(5 - c.stars)}</span>
             </div>
           </div>
         ))}
@@ -716,8 +716,8 @@ function DragRow({ songName, slot, rowHeight, transform, dimmed, isMoving, flash
     }}>
       <div style={{
         height: '100%',
-        background: '#ffffff',
-        border: '0.5px solid #e5e7eb',
+        background: 'var(--surface)',
+        border: '0.5px solid var(--border)',
         borderRadius: 10,
         boxShadow: isMoving
           ? '0 8px 22px rgba(168,85,247,0.22)'
@@ -733,14 +733,14 @@ function DragRow({ songName, slot, rowHeight, transform, dimmed, isMoving, flash
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: dimmed ? '#a855f7' : '#c4b5fd',
+          color: dimmed ? 'var(--brand-text)' : '#c4b5fd',
           fontSize: 16,
-          borderRight: '0.5px solid #f3f4f6',
+          borderRight: '0.5px solid var(--hairline)',
           transition: 'color 0.3s ease',
         }}>
           ⠿
         </div>
-        <div style={{ flex: 1, padding: '0 12px', textAlign: 'left', fontSize: 13, fontWeight: 500, color: '#111827' }}>
+        <div style={{ flex: 1, padding: '0 12px', textAlign: 'left', fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>
           {songName}
         </div>
       </div>
@@ -828,8 +828,8 @@ function SlideRankings() {
 function RatingDemoCard({ starsFilled }) {
   return (
     <div style={{
-      background: '#ffffff',
-      border: '0.5px solid #e5e7eb',
+      background: 'var(--surface)',
+      border: '0.5px solid var(--border)',
       borderRadius: 14,
       padding: '20px 18px',
       boxShadow: '0 6px 20px rgba(0,0,0,0.06)',
@@ -838,13 +838,13 @@ function RatingDemoCard({ starsFilled }) {
       alignItems: 'center',
       gap: 10,
     }}>
-      <div style={{ fontSize: 11, color: '#9ca3af', letterSpacing: '0.05em' }}>
+      <div style={{ fontSize: 11, color: 'var(--text-3)', letterSpacing: '0.05em' }}>
         🍂 Evermore
       </div>
-      <div style={{ fontSize: 18, fontWeight: 700, color: '#111827' }}>
+      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>
         marjorie
       </div>
-      <div style={{ fontSize: 11, fontWeight: 700, color: '#a855f7', letterSpacing: '0.1em' }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--brand-text)', letterSpacing: '0.1em' }}>
         NOSTALGIA
       </div>
       <div style={{ fontSize: 11, color: '#c4b5fd' }}>Category 5 of 5</div>
@@ -864,7 +864,7 @@ function RatingDemoCard({ starsFilled }) {
               width={32}
               height={32}
               viewBox="0 0 20 20"
-              fill={starsFilled ? '#a855f7' : '#e9d5ff'}
+              fill={starsFilled ? 'var(--brand)' : 'var(--accent-soft-2)'}
               style={{ display: 'block', transition: 'fill 0.18s ease' }}
             >
               <path d="M10 1l2.39 4.84 5.34.78-3.86 3.76.91 5.32L10 13.27l-4.78 2.51.91-5.32L2.27 6.62l5.34-.78L10 1z" />
@@ -879,8 +879,8 @@ function RatingDemoCard({ starsFilled }) {
 function LeaderboardDemo({ rows, marjorieIn, rankFor }) {
   return (
     <div style={{
-      background: '#ffffff',
-      border: '0.5px solid #e5e7eb',
+      background: 'var(--surface)',
+      border: '0.5px solid var(--border)',
       borderRadius: 14,
       overflow: 'hidden',
       boxShadow: '0 6px 20px rgba(0,0,0,0.06)',
@@ -902,28 +902,28 @@ function LeaderboardDemo({ rows, marjorieIn, rankFor }) {
               maxHeight: visible ? 80 : 0,
               opacity: visible ? 1 : 0,
               overflow: 'hidden',
-              borderBottom: '0.5px solid #f3f4f6',
+              borderBottom: '0.5px solid var(--hairline)',
               transition: 'max-height 0.55s ease, padding 0.55s ease, opacity 0.35s ease, background 0.4s ease',
-              background: isMj && marjorieIn ? '#faf5ff' : '#ffffff',
+              background: isMj && marjorieIn ? 'var(--accent-grad-a)' : 'var(--surface)',
             }}
           >
             <div style={{
               fontSize: 16,
               fontWeight: 700,
-              color: '#a855f7',
+              color: 'var(--brand-text)',
               width: 22,
               textAlign: 'center',
             }}>
               {rank}
             </div>
             <div style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {r.song}
               </div>
-              <div style={{ fontSize: 11, color: '#9ca3af' }}>{r.album}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{r.album}</div>
             </div>
             <div style={{
-              background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+              background: 'linear-gradient(135deg, var(--brand), var(--brand-2))',
               color: '#fff',
               fontSize: 12,
               fontWeight: 700,
@@ -947,7 +947,7 @@ const shimmerTitleStyle = {
   fontSize: 22,
   fontWeight: 700,
   marginBottom: 10,
-  background: 'linear-gradient(90deg, #7c3aed 0%, #d946ef 30%, #a855f7 50%, #d946ef 70%, #7c3aed 100%)',
+  background: 'linear-gradient(90deg, var(--brand-2) 0%, #d946ef 30%, var(--brand) 50%, #d946ef 70%, var(--brand-2) 100%)',
   backgroundSize: '200% 100%',
   WebkitBackgroundClip: 'text',
   backgroundClip: 'text',
@@ -958,7 +958,7 @@ const shimmerTitleStyle = {
 
 const subtitleStyle = {
   fontSize: 14,
-  color: '#6b7280',
+  color: 'var(--text-2)',
   lineHeight: 1.6,
   maxWidth: 320,
   margin: '0 auto',

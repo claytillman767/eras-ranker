@@ -142,14 +142,14 @@ export default function Settings({
         <h1 style={{
           fontSize: 28,
           fontWeight: 700,
-          color: '#111827',
+          color: 'var(--text)',
           margin: 0,
           marginBottom: 4,
           letterSpacing: '-0.01em',
         }}>
           Settings
         </h1>
-        <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.4 }}>
+        <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.4 }}>
           Account, membership, and app preferences.
         </div>
       </div>
@@ -178,8 +178,8 @@ export default function Settings({
       {user && <>
       <SectionHeader>Account</SectionHeader>
       <div style={{
-        background: '#ffffff',
-        border: '0.5px solid #e5e7eb',
+        background: 'var(--surface)',
+        border: '0.5px solid var(--border)',
         borderRadius: 12,
         overflow: 'hidden',
         marginBottom: 24,
@@ -189,16 +189,16 @@ export default function Settings({
               alignItems: 'center',
               gap: 14,
               padding: '16px',
-              borderBottom: '0.5px solid #f3f4f6',
+              borderBottom: '0.5px solid var(--hairline)',
             }}>
               {/* Avatar */}
               <div style={{
                 width: 48,
                 height: 48,
                 borderRadius: '50%',
-                border: '2px solid #a855f7',
+                border: '2px solid var(--brand)',
                 overflow: 'hidden',
-                background: '#f3e8ff',
+                background: 'var(--accent-soft)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -207,16 +207,16 @@ export default function Settings({
                 {user.photoURL ? (
                   <img src={user.photoURL} alt={user.displayName ?? 'User'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <span style={{ fontSize: 20, fontWeight: 700, color: '#a855f7' }}>
+                  <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--brand-text)' }}>
                     {user.displayName?.charAt(0)?.toUpperCase() ?? '?'}
                   </span>
                 )}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>
                   {user.displayName ?? 'Google User'}
                 </div>
-                <div style={{ fontSize: 12, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 12, color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {user.email}
                 </div>
               </div>
@@ -224,7 +224,7 @@ export default function Settings({
             <div style={{ padding: '12px' }}>
               <div style={{
                 fontSize: 12,
-                color: '#16a34a',
+                color: 'var(--success-text)',
                 marginBottom: 12,
                 display: 'flex',
                 alignItems: 'flex-start',
@@ -248,8 +248,8 @@ export default function Settings({
                   width: '100%',
                   padding: '10px 12px',
                   borderRadius: 10,
-                  border: '0.5px solid #e5e7eb',
-                  background: '#ffffff',
+                  border: '0.5px solid var(--border)',
+                  background: 'var(--surface)',
                   cursor: 'pointer',
                   textAlign: 'left',
                   display: 'flex',
@@ -260,14 +260,14 @@ export default function Settings({
                 }}
               >
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', marginBottom: 2 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>
                     Sign out
                   </div>
-                  <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-2)', lineHeight: 1.4 }}>
                     Your data stays in the cloud. Sign back in any time to restore it.
                   </div>
                 </div>
-                <span style={{ fontSize: 14, color: '#9ca3af', flexShrink: 0 }}>→</span>
+                <span style={{ fontSize: 14, color: 'var(--text-3)', flexShrink: 0 }}>→</span>
               </button>
 
               {/* Danger zone divider — separates non-destructive Sign out
@@ -283,13 +283,13 @@ export default function Settings({
                 <div style={{
                   fontSize: 10,
                   fontWeight: 600,
-                  color: '#9ca3af',
+                  color: 'var(--text-3)',
                   letterSpacing: '0.08em',
                   textTransform: 'uppercase',
                 }}>
                   Danger zone
                 </div>
-                <div style={{ flex: 1, height: '0.5px', background: '#f3f4f6' }} />
+                <div style={{ flex: 1, height: '0.5px', background: 'var(--hairline)' }} />
               </div>
 
               {/* Forget me on this device — destructive: wipes local data */}
@@ -299,8 +299,8 @@ export default function Settings({
                   width: '100%',
                   padding: '10px 12px',
                   borderRadius: 10,
-                  border: '0.5px solid #fecaca',
-                  background: '#ffffff',
+                  border: '0.5px solid var(--danger-border)',
+                  background: 'var(--surface)',
                   cursor: 'pointer',
                   textAlign: 'left',
                   display: 'flex',
@@ -311,14 +311,14 @@ export default function Settings({
                 }}
               >
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#dc2626', marginBottom: 2 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--danger-text)', marginBottom: 2 }}>
                     Forget me on this device
                   </div>
-                  <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-2)', lineHeight: 1.4 }}>
                     Wipes the local copy on this browser. Your cloud data is untouched.
                   </div>
                 </div>
-                <span style={{ fontSize: 14, color: '#dc2626', flexShrink: 0 }}>→</span>
+                <span style={{ fontSize: 14, color: 'var(--danger-text)', flexShrink: 0 }}>→</span>
               </button>
 
               {/* Delete account — fully destructive: wipes cloud + auth + local */}
@@ -328,8 +328,8 @@ export default function Settings({
                   width: '100%',
                   padding: '10px 12px',
                   borderRadius: 10,
-                  border: '0.5px solid #fecaca',
-                  background: '#fef2f2',
+                  border: '0.5px solid var(--danger-border)',
+                  background: 'var(--danger-bg)',
                   cursor: 'pointer',
                   textAlign: 'left',
                   display: 'flex',
@@ -339,14 +339,14 @@ export default function Settings({
                 }}
               >
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#b91c1c', marginBottom: 2 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--danger-text)', marginBottom: 2 }}>
                     Delete my account
                   </div>
-                  <div style={{ fontSize: 11, color: '#7f1d1d', lineHeight: 1.4 }}>
+                  <div style={{ fontSize: 11, color: 'var(--danger-text)', lineHeight: 1.4 }}>
                     Permanently removes your ratings, profile, and account from every device.
                   </div>
                 </div>
-                <span style={{ fontSize: 14, color: '#b91c1c', flexShrink: 0 }}>→</span>
+                <span style={{ fontSize: 14, color: 'var(--danger-text)', flexShrink: 0 }}>→</span>
               </button>
             </div>
       </div>
@@ -384,7 +384,7 @@ export default function Settings({
             display: 'block',
             textAlign: 'center',
             fontSize: 12,
-            color: '#6b7280',
+            color: 'var(--text-2)',
             textDecoration: 'none',
             margin: '-8px 0 24px',
           }}
@@ -410,8 +410,8 @@ export default function Settings({
         onClick={() => setShowCategoriesEditor(true)}
         style={{
           width: '100%',
-          background: '#ffffff',
-          border: '0.5px solid #e5e7eb',
+          background: 'var(--surface)',
+          border: '0.5px solid var(--border)',
           borderRadius: 12,
           padding: '14px 16px',
           marginBottom: 24,
@@ -424,14 +424,14 @@ export default function Settings({
         }}
       >
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 500, color: '#111827', marginBottom: 2 }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', marginBottom: 2 }}>
             Edit categories &amp; weights
           </div>
-          <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-2)', lineHeight: 1.4 }}>
             {activeCategories.length} active · turn defaults on/off, tune weights, see how your top songs and albums shift.
           </div>
         </div>
-        <span style={{ fontSize: 18, color: '#a855f7', flexShrink: 0 }}>→</span>
+        <span style={{ fontSize: 18, color: 'var(--brand-text)', flexShrink: 0 }}>→</span>
       </button>
 
       {showCategoriesEditor && (
@@ -460,13 +460,32 @@ export default function Settings({
         />
       )}
 
+      {/* ── Appearance section ── */}
+      {/* Visual theming. Dark mode flips the data-theme attribute on <html>;
+          CSS variables in index.css repaint the whole app. */}
+      <SectionHeader>Appearance</SectionHeader>
+      <div style={{
+        background: 'var(--surface)',
+        border: '0.5px solid var(--border)',
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 24,
+      }}>
+        <SettingRow
+          label="Dark mode"
+          description="Use a dark color scheme across the app. Your choice is saved and synced to your account."
+          value={settings.theme === 'dark'}
+          onChange={v => updateSetting('theme', v ? 'dark' : 'light')}
+        />
+      </div>
+
       {/* ── Preferences section ── */}
       {/* App-wide behaviour toggles. Renamed from "Display" since the rows
           here are about how the app behaves (rather than visual theming). */}
       <SectionHeader>Preferences</SectionHeader>
       <div style={{
-        background: '#ffffff',
-        border: '0.5px solid #e5e7eb',
+        background: 'var(--surface)',
+        border: '0.5px solid var(--border)',
         borderRadius: 12,
         overflow: 'hidden',
         marginBottom: 24,
@@ -479,7 +498,7 @@ export default function Settings({
         />
         {onShowWelcome && (
           <>
-            <div style={{ height: '0.5px', background: '#f3f4f6', margin: '0 16px' }} />
+            <div style={{ height: '0.5px', background: 'var(--hairline)', margin: '0 16px' }} />
             <button
               onClick={onShowWelcome}
               style={{
@@ -496,14 +515,14 @@ export default function Settings({
               }}
             >
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 500, color: '#111827', marginBottom: 2 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', marginBottom: 2 }}>
                   Show welcome tour again
                 </div>
-                <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>
+                <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.4 }}>
                   Replays the intro slides — handy when you want a refresher.
                 </div>
               </div>
-              <span style={{ fontSize: 14, color: '#a855f7', flexShrink: 0 }}>→</span>
+              <span style={{ fontSize: 14, color: 'var(--brand-text)', flexShrink: 0 }}>→</span>
             </button>
           </>
         )}
@@ -512,17 +531,17 @@ export default function Settings({
       {/* ── Data section ── */}
       <SectionHeader>Data</SectionHeader>
       <div style={{
-        background: '#ffffff',
-        border: '0.5px solid #e5e7eb',
+        background: 'var(--surface)',
+        border: '0.5px solid var(--border)',
         borderRadius: 12,
         overflow: 'hidden',
         marginBottom: 24,
       }}>
         <div style={{ padding: '14px 16px' }}>
-          <div style={{ fontSize: 14, fontWeight: 500, color: '#111827', marginBottom: 2 }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', marginBottom: 2 }}>
             Export ratings
           </div>
-          <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.5, marginBottom: 12 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5, marginBottom: 12 }}>
             Download all your ratings as a spreadsheet (.csv) — one row per song, one column per category.
           </div>
           <button
@@ -532,22 +551,22 @@ export default function Settings({
               width: '100%',
               padding: '10px',
               borderRadius: 10,
-              border: '0.5px solid #e5e7eb',
-              background: ratings && Object.keys(ratings).length > 0 ? '#ffffff' : '#f9fafb',
+              border: '0.5px solid var(--border)',
+              background: ratings && Object.keys(ratings).length > 0 ? 'var(--surface)' : 'var(--surface-2)',
               fontSize: 13,
               fontWeight: 500,
-              color: ratings && Object.keys(ratings).length > 0 ? '#111827' : '#9ca3af',
+              color: ratings && Object.keys(ratings).length > 0 ? 'var(--text)' : 'var(--text-3)',
               cursor: ratings && Object.keys(ratings).length > 0 ? 'pointer' : 'default',
             }}
           >
             Download CSV
           </button>
         </div>
-        <div style={{ borderTop: '0.5px solid #e5e7eb', padding: '14px 16px' }}>
-          <div style={{ fontSize: 14, fontWeight: 500, color: '#111827', marginBottom: 2 }}>
+        <div style={{ borderTop: '0.5px solid var(--border)', padding: '14px 16px' }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', marginBottom: 2 }}>
             Clear bracket data
           </div>
-          <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.5, marginBottom: 12 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5, marginBottom: 12 }}>
             Wipes personal brackets, weekly votes, and the daily matchup so you can replay the flow. Your ratings are not touched.
           </div>
           <button
@@ -556,11 +575,11 @@ export default function Settings({
               width: '100%',
               padding: '10px',
               borderRadius: 10,
-              border: '0.5px solid #fecaca',
-              background: '#ffffff',
+              border: '0.5px solid var(--danger-border)',
+              background: 'var(--surface)',
               fontSize: 13,
               fontWeight: 500,
-              color: '#dc2626',
+              color: 'var(--danger-text)',
               cursor: 'pointer',
             }}
           >
@@ -577,15 +596,15 @@ export default function Settings({
       <div style={{
         marginTop: 16,
         padding: '14px 16px',
-        background: '#f9fafb',
-        border: '0.5px solid #e5e7eb',
+        background: 'var(--surface-2)',
+        border: '0.5px solid var(--border)',
         borderRadius: 12,
         textAlign: 'center',
       }}>
         <div style={{
           fontSize: 11,
           fontWeight: 600,
-          color: '#6b7280',
+          color: 'var(--text-2)',
           letterSpacing: '0.04em',
         }}>
           The Eras Ranker · v{__APP_VERSION__}
@@ -595,28 +614,28 @@ export default function Settings({
             to find from anywhere in the app via Settings → bottom of page. */}
         <div style={{
           fontSize: 11,
-          color: '#9ca3af',
+          color: 'var(--text-3)',
           marginTop: 6,
         }}>
           <a
             href="/privacy"
-            style={{ color: '#7c3aed', textDecoration: 'underline' }}
+            style={{ color: 'var(--brand-text)', textDecoration: 'underline' }}
           >
             Privacy Policy
           </a>
           {' · '}
           <a
             href="/terms"
-            style={{ color: '#7c3aed', textDecoration: 'underline' }}
+            style={{ color: 'var(--brand-text)', textDecoration: 'underline' }}
           >
             Terms of Service
           </a>
         </div>
 
-        <div style={{ height: '0.5px', background: '#e5e7eb', margin: '10px 0' }} />
+        <div style={{ height: '0.5px', background: 'var(--border)', margin: '10px 0' }} />
         <div style={{
           fontSize: 11,
-          color: '#9ca3af',
+          color: 'var(--text-3)',
           lineHeight: 1.5,
         }}>
           This app is a fan-made project and is not affiliated with, endorsed by,
@@ -684,7 +703,7 @@ function ProModal({ onUnlock, onClose, user, signIn }) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: '#ffffff',
+          background: 'var(--surface)',
           borderRadius: 20,
           padding: '28px 24px',
           width: '100%',
@@ -697,11 +716,11 @@ function ProModal({ onUnlock, onClose, user, signIn }) {
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
               <span style={{ fontSize: 22 }}>⭐</span>
-              <div style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>
+              <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>
                 Unlock Pro
               </div>
             </div>
-            <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 20, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 14, color: 'var(--text-2)', marginBottom: 20, lineHeight: 1.5 }}>
               A one-time $3.99 unlock — yours forever, no subscription.
             </div>
 
@@ -713,7 +732,7 @@ function ProModal({ onUnlock, onClose, user, signIn }) {
                     width: 40,
                     height: 40,
                     borderRadius: 10,
-                    background: '#f3e8ff',
+                    background: 'var(--accent-soft)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -723,8 +742,8 @@ function ProModal({ onUnlock, onClose, user, signIn }) {
                     {f.icon}
                   </div>
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>{f.label}</div>
-                    <div style={{ fontSize: 12, color: '#6b7280' }}>{f.desc}</div>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)' }}>{f.label}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-2)' }}>{f.desc}</div>
                   </div>
                 </div>
               ))}
@@ -739,7 +758,7 @@ function ProModal({ onUnlock, onClose, user, signIn }) {
                 padding: '14px',
                 borderRadius: 12,
                 border: 'none',
-                background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+                background: 'linear-gradient(135deg, var(--brand), var(--brand-2))',
                 color: '#ffffff',
                 fontSize: 16,
                 fontWeight: 700,
@@ -757,9 +776,9 @@ function ProModal({ onUnlock, onClose, user, signIn }) {
                 width: '100%',
                 padding: '12px',
                 borderRadius: 12,
-                border: '0.5px solid #e5e7eb',
-                background: '#ffffff',
-                color: '#6b7280',
+                border: '0.5px solid var(--border)',
+                background: 'var(--surface)',
+                color: 'var(--text-2)',
                 fontSize: 14,
                 cursor: 'pointer',
               }}
@@ -795,7 +814,7 @@ export function SignInRequiredStep({ onBack, signIn }) {
           background: 'none',
           border: 'none',
           padding: 0,
-          color: '#6b7280',
+          color: 'var(--text-2)',
           fontSize: 13,
           cursor: 'pointer',
           marginBottom: 16,
@@ -809,7 +828,7 @@ export function SignInRequiredStep({ onBack, signIn }) {
         width: 56,
         height: 56,
         borderRadius: 16,
-        background: '#f3e8ff',
+        background: 'var(--accent-soft)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -822,7 +841,7 @@ export function SignInRequiredStep({ onBack, signIn }) {
       <div style={{
         fontSize: 19,
         fontWeight: 700,
-        color: '#111827',
+        color: 'var(--text)',
         textAlign: 'center',
         marginBottom: 8,
       }}>
@@ -831,7 +850,7 @@ export function SignInRequiredStep({ onBack, signIn }) {
 
       <div style={{
         fontSize: 13,
-        color: '#6b7280',
+        color: 'var(--text-2)',
         textAlign: 'center',
         lineHeight: 1.6,
         marginBottom: 24,
@@ -850,9 +869,9 @@ export function SignInRequiredStep({ onBack, signIn }) {
           width: '100%',
           padding: '13px',
           borderRadius: 12,
-          border: '1px solid #d1d5db',
-          background: '#ffffff',
-          color: '#111827',
+          border: '1px solid var(--control-off)',
+          background: 'var(--surface)',
+          color: 'var(--text)',
           fontSize: 15,
           fontWeight: 600,
           cursor: 'pointer',
@@ -878,7 +897,7 @@ function SectionHeader({ children }) {
     <div style={{
       fontSize: 11,
       fontWeight: 600,
-      color: '#6b7280',
+      color: 'var(--text-2)',
       letterSpacing: '0.06em',
       textTransform: 'uppercase',
       marginBottom: 8,
@@ -916,8 +935,8 @@ function SignInHeroCard({ signIn }) {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, #faf5ff, #f3e8ff)',
-      border: '0.5px solid #e9d5ff',
+      background: 'linear-gradient(135deg, var(--accent-grad-a), var(--accent-soft))',
+      border: '0.5px solid var(--accent-soft-2)',
       borderRadius: 14,
       padding: '20px 18px',
       marginBottom: 28,
@@ -925,7 +944,7 @@ function SignInHeroCard({ signIn }) {
       <div style={{
         fontSize: 17,
         fontWeight: 700,
-        color: '#111827',
+        color: 'var(--text)',
         marginBottom: 4,
         letterSpacing: '-0.01em',
       }}>
@@ -933,7 +952,7 @@ function SignInHeroCard({ signIn }) {
       </div>
       <div style={{
         fontSize: 13,
-        color: '#6b7280',
+        color: 'var(--text-2)',
         lineHeight: 1.5,
         marginBottom: 16,
       }}>
@@ -948,7 +967,7 @@ function SignInHeroCard({ signIn }) {
               width: 18,
               height: 18,
               borderRadius: '50%',
-              background: '#a855f7',
+              background: 'var(--brand)',
               color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
@@ -961,13 +980,13 @@ function SignInHeroCard({ signIn }) {
               <div style={{
                 fontSize: 13,
                 fontWeight: 600,
-                color: '#111827',
+                color: 'var(--text)',
                 marginBottom: 2,
                 lineHeight: 1.3,
               }}>
                 {title}
               </div>
-              <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.45 }}>
+              <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.45 }}>
                 {body}
               </div>
             </div>
@@ -985,11 +1004,11 @@ function SignInHeroCard({ signIn }) {
           width: '100%',
           padding: '12px',
           borderRadius: 12,
-          border: '1px solid #d1d5db',
-          background: '#ffffff',
+          border: '1px solid var(--control-off)',
+          background: 'var(--surface)',
           fontSize: 14,
           fontWeight: 600,
-          color: '#111827',
+          color: 'var(--text)',
           cursor: 'pointer',
           boxShadow: '0 4px 14px rgba(0,0,0,0.06)',
         }}
@@ -1029,13 +1048,13 @@ function MembershipSection({
   if (!user) {
     return (
       <div style={{
-        background: '#ffffff',
-        border: '0.5px solid #e5e7eb',
+        background: 'var(--surface)',
+        border: '0.5px solid var(--border)',
         borderRadius: 12,
         padding: '16px',
         marginBottom: 24,
       }}>
-        <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.5, marginBottom: 14 }}>
+        <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.5, marginBottom: 14 }}>
           Pro is tied to your account so it follows you to every device. Sign in to upgrade.
         </div>
         <button
@@ -1048,11 +1067,11 @@ function MembershipSection({
             width: '100%',
             padding: '11px',
             borderRadius: 10,
-            border: '1px solid #d1d5db',
-            background: '#ffffff',
+            border: '1px solid var(--control-off)',
+            background: 'var(--surface)',
             fontSize: 14,
             fontWeight: 500,
-            color: '#111827',
+            color: 'var(--text)',
             cursor: 'pointer',
           }}
         >
@@ -1071,14 +1090,14 @@ function MembershipSection({
   // STATE 1 — Pro. Show status pill, plan/renewal info, perks, manage button.
   if (isPro) {
     // One-time unlock — nothing to renew, cancel, or manage.
-    const pill = { bg: '#dcfce7', border: '#bbf7d0', color: '#166534', text: 'Unlocked' };
+    const pill = { bg: 'var(--success-bg)', border: 'var(--success-border)', color: 'var(--success-text)', text: 'Unlocked' };
     const planLabel = 'Unlocked — $3.99 one time';
     const subline = 'Yours forever. Thanks for supporting the app.';
 
     return (
       <div style={{
-        background: '#ffffff',
-        border: '0.5px solid #e5e7eb',
+        background: 'var(--surface)',
+        border: '0.5px solid var(--border)',
         borderRadius: 12,
         overflow: 'hidden',
         marginBottom: 24,
@@ -1086,7 +1105,7 @@ function MembershipSection({
         {/* Status header — pill on the right, plan name + subline on the left. */}
         <div style={{
           padding: '16px',
-          borderBottom: '0.5px solid #f3f4f6',
+          borderBottom: '0.5px solid var(--hairline)',
           display: 'flex',
           alignItems: 'flex-start',
           gap: 12,
@@ -1094,11 +1113,11 @@ function MembershipSection({
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
               <span style={{ fontSize: 18 }}>⭐</span>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>
                 {planLabel}
               </div>
             </div>
-            <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.4 }}>
               {subline}
             </div>
           </div>
@@ -1120,11 +1139,11 @@ function MembershipSection({
         </div>
 
         {/* Perks list — what they're getting for their money. */}
-        <div style={{ padding: '12px 16px 14px', borderBottom: '0.5px solid #f3f4f6' }}>
+        <div style={{ padding: '12px 16px 14px', borderBottom: '0.5px solid var(--hairline)' }}>
           <div style={{
             fontSize: 11,
             fontWeight: 600,
-            color: '#6b7280',
+            color: 'var(--text-2)',
             letterSpacing: '0.06em',
             textTransform: 'uppercase',
             marginBottom: 10,
@@ -1142,7 +1161,7 @@ function MembershipSection({
         <div style={{
           padding: '14px 16px',
           fontSize: 11,
-          color: '#6b7280',
+          color: 'var(--text-2)',
           textAlign: 'center',
           lineHeight: 1.4,
         }}>
@@ -1155,29 +1174,29 @@ function MembershipSection({
   // STATE 2 — Free, signed-in. Show plan picker + perks + Unlock button.
   return (
     <div style={{
-      background: '#ffffff',
-      border: '0.5px solid #e5e7eb',
+      background: 'var(--surface)',
+      border: '0.5px solid var(--border)',
       borderRadius: 12,
       overflow: 'hidden',
       marginBottom: 24,
     }}>
-      <div style={{ padding: '16px', borderBottom: '0.5px solid #f3f4f6' }}>
+      <div style={{ padding: '16px', borderBottom: '0.5px solid var(--hairline)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>
             You’re on the Free plan
           </div>
         </div>
-        <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.4 }}>
           A one-time $3.99 unlock — yours forever, no subscription.
         </div>
       </div>
 
       {/* Perks the user would unlock. */}
-      <div style={{ padding: '12px 16px 14px', borderBottom: '0.5px solid #f3f4f6' }}>
+      <div style={{ padding: '12px 16px 14px', borderBottom: '0.5px solid var(--hairline)' }}>
         <div style={{
           fontSize: 11,
           fontWeight: 600,
-          color: '#6b7280',
+          color: 'var(--text-2)',
           letterSpacing: '0.06em',
           textTransform: 'uppercase',
           marginBottom: 10,
@@ -1199,7 +1218,7 @@ function MembershipSection({
             padding: '13px',
             borderRadius: 12,
             border: 'none',
-            background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+            background: 'linear-gradient(135deg, var(--brand), var(--brand-2))',
             color: '#ffffff',
             fontSize: 15,
             fontWeight: 700,
@@ -1223,7 +1242,7 @@ function PerkRow({ perk }) {
         width: 36,
         height: 36,
         borderRadius: 10,
-        background: '#f3e8ff',
+        background: 'var(--accent-soft)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -1233,8 +1252,8 @@ function PerkRow({ perk }) {
         {perk.icon}
       </div>
       <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{perk.label}</div>
-        <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4 }}>{perk.desc}</div>
+        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{perk.label}</div>
+        <div style={{ fontSize: 11, color: 'var(--text-2)', lineHeight: 1.4 }}>{perk.desc}</div>
       </div>
     </div>
   );
@@ -1285,10 +1304,10 @@ function UatToggle({ user, isPro }) {
           <div style={{ fontSize: 12, fontWeight: 700, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
             Dev · UAT
           </div>
-          <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)' }}>
             UAT as new user
           </div>
-          <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, lineHeight: 1.4 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 2, lineHeight: 1.4 }}>
             Resets onboarding flags so the Welcome tour, album mode modal,
             Vibe Check intro, drag hint, and bridge nudge all reappear. While
             on, every reload restores the new-user view.
@@ -1300,7 +1319,7 @@ function UatToggle({ user, isPro }) {
             width: 44,
             height: 26,
             borderRadius: 13,
-            background: on ? '#a855f7' : '#d1d5db',
+            background: on ? 'var(--brand)' : 'var(--control-off)',
             position: 'relative',
             cursor: 'pointer',
             flexShrink: 0,
@@ -1314,7 +1333,7 @@ function UatToggle({ user, isPro }) {
             width: 20,
             height: 20,
             borderRadius: '50%',
-            background: '#ffffff',
+            background: 'var(--surface)',
             transition: 'left 0.2s',
             boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
           }} />
@@ -1332,10 +1351,10 @@ function UatToggle({ user, isPro }) {
         gap: 12,
       }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)' }}>
             Pro test grant
           </div>
-          <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, lineHeight: 1.4 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 2, lineHeight: 1.4 }}>
             Tapping Unlock Pro on this account skips Lemon Squeezy and grants
             Pro instantly. Use Revoke to drop back to non-Pro for re-testing.
           </div>
@@ -1372,9 +1391,9 @@ function SettingRow({ label, description, value, onChange }) {
       padding: '14px 16px',
     }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>{label}</div>
+        <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)' }}>{label}</div>
         {description && (
-          <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, lineHeight: 1.4 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 2, lineHeight: 1.4 }}>
             {description}
           </div>
         )}
@@ -1385,7 +1404,7 @@ function SettingRow({ label, description, value, onChange }) {
           width: 44,
           height: 26,
           borderRadius: 13,
-          background: value ? '#a855f7' : '#d1d5db',
+          background: value ? 'var(--brand)' : 'var(--control-off)',
           position: 'relative',
           cursor: 'pointer',
           flexShrink: 0,
@@ -1399,7 +1418,7 @@ function SettingRow({ label, description, value, onChange }) {
           width: 20,
           height: 20,
           borderRadius: '50%',
-          background: '#ffffff',
+          background: 'var(--surface)',
           boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
           transition: 'left 0.2s',
         }} />

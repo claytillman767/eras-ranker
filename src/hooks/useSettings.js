@@ -7,7 +7,20 @@ const STORAGE_KEY = 'eras_settings';
 const DEFAULTS = {
   showCategoryBars:       true,   // show the mini score-bar breakdown on song rows
   confirmQuickScoreExit:  true,   // ask for confirmation before closing QuickScore mid-session
+  theme:                  'light', // 'light' | 'dark' — drives the data-theme attribute
 };
+
+// Apply the theme by toggling data-theme on <html>. CSS variables in index.css
+// do the rest. Also keeps the address-bar theme-color meta in sync. Light mode
+// removes the attribute so the :root defaults apply.
+function applyTheme(theme) {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  if (theme === 'dark') root.setAttribute('data-theme', 'dark');
+  else root.removeAttribute('data-theme');
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#0e1014' : '#a855f7');
+}
 
 function loadSettings() {
   try {
@@ -24,6 +37,14 @@ function saveToFirestore(user, settings) {
 
 export function useSettings(user) {
   const [settings, setSettingsState] = useState(loadSettings);
+
+  // Keep the document theme in sync with the setting. Covers the initial
+  // load and any later change (including a value pulled down from Firestore
+  // on login). The index.html bootstrap handles the very first paint; this
+  // reconciles once React is running.
+  useEffect(() => {
+    applyTheme(settings.theme);
+  }, [settings.theme]);
 
   // On login, pull settings from Firestore (cloud wins).
   // If nothing in Firestore yet, migrate any non-default local settings up.

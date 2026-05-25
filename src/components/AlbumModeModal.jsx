@@ -18,7 +18,7 @@ export default function AlbumModeModal({
       padding: 0,
     }}>
       <div style={{
-        background: '#ffffff',
+        background: 'var(--surface)',
         borderRadius: 20,
         padding: '28px 20px 20px',
         width: '100%',
@@ -36,7 +36,7 @@ export default function AlbumModeModal({
             background: 'none',
             border: 'none',
             cursor: 'pointer',
-            color: '#6b7280',
+            color: 'var(--text-2)',
             fontSize: 14,
             padding: '0 0 16px',
           }}
@@ -47,8 +47,8 @@ export default function AlbumModeModal({
         {/* Album identity */}
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
           <div style={{ fontSize: 36, marginBottom: 6 }}>{album.icon}</div>
-          <div style={{ fontSize: 17, fontWeight: 600, color: '#111827' }}>{album.name}</div>
-          <div style={{ fontSize: 13, color: '#9ca3af', marginTop: 2 }}>How do you want to rank this album?</div>
+          <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text)' }}>{album.name}</div>
+          <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 2 }}>How do you want to rank this album?</div>
         </div>
 
         {/* Vibe Check option */}
@@ -60,8 +60,8 @@ export default function AlbumModeModal({
             marginBottom: 10,
             padding: '16px 16px',
             borderRadius: 14,
-            border: '2px solid #a855f7',
-            background: '#faf5ff',
+            border: '2px solid var(--brand)',
+            background: 'var(--accent-grad-a)',
             cursor: 'pointer',
             textAlign: 'left',
           }}
@@ -69,10 +69,10 @@ export default function AlbumModeModal({
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span style={{ fontSize: 26 }}>🎧</span>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: '#7c3aed', marginBottom: 3 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--brand-text)', marginBottom: 3 }}>
                 Vibe Check
               </div>
-              <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.45 }}>
+              <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.45 }}>
                 Answer a few questions about each song and we'll rank them for you. You can manually sort songs after a score is assigned.
               </div>
             </div>
@@ -87,8 +87,8 @@ export default function AlbumModeModal({
             width: '100%',
             padding: '16px 16px',
             borderRadius: 14,
-            border: '1.5px solid #e5e7eb',
-            background: '#ffffff',
+            border: '1.5px solid var(--border)',
+            background: 'var(--surface)',
             cursor: 'pointer',
             textAlign: 'left',
           }}
@@ -96,10 +96,10 @@ export default function AlbumModeModal({
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span style={{ fontSize: 26 }}>✋</span>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 3 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 3 }}>
                 Sort It Yourself
               </div>
-              <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.45 }}>
+              <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.45 }}>
                 Drag songs into your own order without answering any questions.
               </div>
             </div>

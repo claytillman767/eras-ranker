@@ -18,7 +18,7 @@ export default function ConfirmModal({
 }) {
   const confirmBg = destructive
     ? 'linear-gradient(135deg, #ef4444, #b91c1c)'
-    : 'linear-gradient(135deg, #a855f7, #7c3aed)';
+    : 'linear-gradient(135deg, var(--brand), var(--brand-2))';
   const confirmShadow = destructive
     ? '0 4px 12px rgba(239,68,68,0.3)'
     : '0 4px 12px rgba(168,85,247,0.3)';
@@ -49,7 +49,7 @@ export default function ConfirmModal({
         role="dialog"
         aria-modal="true"
         style={{
-          background: '#ffffff',
+          background: 'var(--surface)',
           borderRadius: 20,
           padding: '24px 24px 20px',
           width: '100%',
@@ -60,7 +60,7 @@ export default function ConfirmModal({
         <div style={{
           fontSize: 18,
           fontWeight: 700,
-          color: '#111827',
+          color: 'var(--text)',
           marginBottom: 10,
         }}>
           {title}
@@ -69,7 +69,7 @@ export default function ConfirmModal({
         {body && (
           <div style={{
             fontSize: 14,
-            color: '#4b5563',
+            color: 'var(--text-2)',
             lineHeight: 1.55,
             marginBottom: 22,
           }}>
@@ -102,9 +102,9 @@ export default function ConfirmModal({
               width: '100%',
               padding: '11px',
               borderRadius: 12,
-              border: '0.5px solid #d1d5db',
-              background: '#ffffff',
-              color: '#4b5563',
+              border: '0.5px solid var(--control-off)',
+              background: 'var(--surface)',
+              color: 'var(--text-2)',
               fontSize: 14,
               fontWeight: 500,
               cursor: 'pointer',

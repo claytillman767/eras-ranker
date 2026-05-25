@@ -27,11 +27,11 @@ export default function AlbumHero({
     .sort((a, b) => b.score - a.score)[0] || null;
 
   // Rose-pink palette for Lover; default purple for everything else.
-  const accentText        = isLover ? '#be185d' : '#7e22ce';
-  const accentChipBg      = isLover ? 'rgba(252, 231, 243, 0.85)' : '#f3e8ff';
-  const accentChipLabel   = isLover ? '#be185d' : '#7e22ce';
+  const accentText        = isLover ? '#be185d' : 'var(--brand-text)';
+  const accentChipBg      = isLover ? 'rgba(252, 231, 243, 0.85)' : 'var(--accent-soft)';
+  const accentChipLabel   = isLover ? '#be185d' : 'var(--brand-text)';
   const accentBarGradient = isLover ? 'linear-gradient(90deg, #f9a8d4, #ec4899)' : 'linear-gradient(90deg, #a855f7, #7e22ce)';
-  const accentBackBorder  = isLover ? '0.5px solid #fbcfe8' : '0.5px solid #e5e7eb';
+  const accentBackBorder  = isLover ? '0.5px solid #fbcfe8' : '0.5px solid var(--border)';
 
   return (
     <div style={{ padding: '16px' }}>
@@ -45,7 +45,7 @@ export default function AlbumHero({
             borderRadius: 8,
             padding: '5px 10px',
             fontSize: 12,
-            color: '#374151',
+            color: 'var(--text-strong)',
             cursor: 'pointer',
           }}
         >
@@ -70,10 +70,10 @@ export default function AlbumHero({
           {album.icon}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 18, fontWeight: 600, color: '#111827', lineHeight: 1.15 }}>
+          <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', lineHeight: 1.15 }}>
             {album.name}
           </div>
-          <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 2 }}>
             {album.year} · {total} songs
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 8 }}>
@@ -82,10 +82,10 @@ export default function AlbumHero({
                 <span style={{ fontSize: 28, fontWeight: 300, color: accentText, lineHeight: 1, letterSpacing: '-0.02em' }}>
                   {albumScore}
                 </span>
-                <span style={{ fontSize: 12, color: '#6b7280' }}>/100</span>
+                <span style={{ fontSize: 12, color: 'var(--text-2)' }}>/100</span>
               </>
             ) : (
-              <span style={{ fontSize: 13, fontStyle: 'italic', color: '#9ca3af' }}>not yet scored</span>
+              <span style={{ fontSize: 13, fontStyle: 'italic', color: 'var(--text-3)' }}>not yet scored</span>
             )}
           </div>
         </div>
@@ -97,13 +97,13 @@ export default function AlbumHero({
           display: 'flex',
           justifyContent: 'space-between',
           fontSize: 11,
-          color: '#6b7280',
+          color: 'var(--text-2)',
           marginBottom: 4,
         }}>
           <span>{rated} of {total} rated</span>
           <span>{pct}%</span>
         </div>
-        <div style={{ height: 6, background: isLover ? 'rgba(255,255,255,0.6)' : '#f3f4f6', borderRadius: 3, overflow: 'hidden' }}>
+        <div style={{ height: 6, background: isLover ? 'rgba(255,255,255,0.6)' : 'var(--surface-3)', borderRadius: 3, overflow: 'hidden' }}>
           <div style={{
             height: '100%',
             width: `${Math.max(pct, pct > 0 ? 2 : 0)}%`,
@@ -138,7 +138,7 @@ export default function AlbumHero({
             </div>
             <div style={{
               fontSize: 13,
-              color: '#111827',
+              color: 'var(--text)',
               fontWeight: 500,
               whiteSpace: 'nowrap',
               overflow: 'hidden',

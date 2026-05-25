@@ -16,6 +16,21 @@ Newest entries go at the top.
 
 ---
 
+## 0.21.0 — 2026-05-25
+
+### Added
+- **Dark mode.** A new **Settings → Appearance → Dark mode** toggle
+  switches the whole app to a dark color scheme. Your choice is saved
+  on your device and synced to your account, so it follows you across
+  phone, tablet, and laptop. The app remembers your pick and applies
+  it instantly on load — no flash of the light screen first. Every
+  screen is covered: Home, Albums, the rating flow, Rankings, Brackets,
+  Settings, and the sign-in and welcome screens. Album artwork colors,
+  shareable cards, and the celebratory bracket screens keep their
+  signature looks in both modes.
+
+---
+
 ## 0.20.4 — 2026-05-20
 
 ### Changed

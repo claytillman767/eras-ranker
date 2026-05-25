@@ -1986,7 +1986,7 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
   // the default light/dark label palette so per-album backdrops can dial
   // in calibration colors that read on top of the gradient.
   const labelDefaultColor = textTuning?.calibration
-    || (useDarkLabels ? '#e5e7eb' : '#374151');
+    || (useDarkLabels ? '#e5e7eb' : 'var(--text-strong)');
   const labelActiveColor  = textTuning?.calibrationActive
     || (useDarkLabels ? '#e9d5ff' : '#5b21b6');
 
@@ -2284,7 +2284,7 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
                   fill={active
                     ? (hovered > 0
                         ? '#f59e0b'
-                        : (textTuning?.starFilled ?? '#a855f7'))
+                        : (textTuning?.starFilled ?? 'var(--brand)'))
                     : 'transparent'}
                   style={{
                     display: 'block',
@@ -2308,7 +2308,7 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
                     d="M10 1l2.39 4.84 5.34.78-3.86 3.76.91 5.32L10 13.27l-4.78 2.51.91-5.32L2.27 6.62l5.34-.78L10 1z"
                     stroke={active
                       ? (textTuning?.starFilledStroke ?? 'none')
-                      : (textTuning?.starEmptyStroke ?? '#7c3aed')}
+                      : (textTuning?.starEmptyStroke ?? 'var(--brand-2)')}
                     strokeWidth={active
                       ? (textTuning?.starFilledStroke ? 1.4 : 0)
                       : (textTuning?.starEmptyStroke ? 1.4 : 1.2)}
@@ -2438,7 +2438,7 @@ function StarPicker({ currentRating, onRate, labels, flashLevel = 0, celebration
               >
                 <span style={{
                   fontSize: 10,
-                  color: '#a855f7',
+                  color: 'var(--brand-text)',
                   minWidth: 42,
                   letterSpacing: 1,
                   fontWeight: 700,
@@ -2485,7 +2485,7 @@ function ThemedAllDoneCard({ albumIcon, albumName, topSongs, accent, onClose }) 
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: '#ffffff',
+          background: 'var(--surface)',
           borderRadius: 18,
           padding: '24px 22px 22px',
           textAlign: 'center',
@@ -2499,7 +2499,7 @@ function ThemedAllDoneCard({ albumIcon, albumName, topSongs, accent, onClose }) 
         <div style={{
           fontSize: 22,
           fontWeight: 800,
-          color: '#0f172a',
+          color: 'var(--text)',
           lineHeight: 1.2,
           marginBottom: 18,
           textWrap: 'balance',
@@ -2513,7 +2513,7 @@ function ThemedAllDoneCard({ albumIcon, albumName, topSongs, accent, onClose }) 
           display: 'flex',
           flexDirection: 'column',
           marginBottom: 18,
-          borderTop: topSongs.length > 0 ? '1px solid #e2e8f0' : 'none',
+          borderTop: topSongs.length > 0 ? '1px solid var(--border)' : 'none',
         }}>
           {topSongs.map((s, i) => (
             <div
@@ -2523,7 +2523,7 @@ function ThemedAllDoneCard({ albumIcon, albumName, topSongs, accent, onClose }) 
                 alignItems: 'center',
                 gap: 14,
                 padding: '12px 4px',
-                borderBottom: '1px solid #e2e8f0',
+                borderBottom: '1px solid var(--border)',
                 textAlign: 'left',
               }}
             >
@@ -2534,12 +2534,12 @@ function ThemedAllDoneCard({ albumIcon, albumName, topSongs, accent, onClose }) 
               }}>{i + 1}</div>
               <div style={{
                 flex: 1, minWidth: 0,
-                fontSize: 15, fontWeight: 700, color: '#0f172a',
+                fontSize: 15, fontWeight: 700, color: 'var(--text)',
                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
               }}>{s.name}</div>
               <div style={{ flex: '0 0 auto', whiteSpace: 'nowrap' }}>
                 <span style={{ fontSize: 15, fontWeight: 700, color: accent }}>{s.score}</span>
-                <span style={{ fontSize: 11, color: '#94a3b8', marginLeft: 1 }}>/100</span>
+                <span style={{ fontSize: 11, color: 'var(--text-3)', marginLeft: 1 }}>/100</span>
               </div>
             </div>
           ))}
@@ -2549,7 +2549,7 @@ function ThemedAllDoneCard({ albumIcon, albumName, topSongs, accent, onClose }) 
           onClick={onClose}
           style={{
             padding: '11px 18px',
-            background: '#7c3aed',
+            background: 'var(--brand-2)',
             color: '#fff',
             borderRadius: 999,
             fontSize: 13,
@@ -2621,10 +2621,10 @@ function DoneFlash({ albumIcon, albumName, songName, isSingleSong, onClose }) {
           animation: 'qs-label-in 0.35s 0.3s ease both',
           opacity: 0,
         }}>
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#111827', marginBottom: 4 }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>
             {isSingleSong ? 'Scored!' : 'All done!'}
           </div>
-          <div style={{ fontSize: 13, color: '#9ca3af' }}>
+          <div style={{ fontSize: 13, color: 'var(--text-3)' }}>
             {isSingleSong ? songName : `${albumIcon} ${albumName}`}
           </div>
         </div>
@@ -2760,7 +2760,7 @@ function FloatingLyrics({ lyrics, animating = false }) {
               right: spot.right,
               maxWidth: spot.maxWidth,
               fontSize: spot.size,
-              color: '#7c3aed',
+              color: 'var(--brand-text)',
               fontStyle: 'italic',
               lineHeight: 1.5,
               pointerEvents: 'none',
@@ -2796,7 +2796,7 @@ function NoBridgeScreen({ songName, onContinue }) {
         width: 64,
         height: 64,
         borderRadius: '50%',
-        background: '#f3e8ff',
+        background: 'var(--accent-soft)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -2807,10 +2807,10 @@ function NoBridgeScreen({ songName, onContinue }) {
       </div>
 
       {/* Message */}
-      <div style={{ fontSize: 20, fontWeight: 700, color: '#111827', lineHeight: 1.3, marginBottom: 12, maxWidth: 300 }}>
+      <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)', lineHeight: 1.3, marginBottom: 12, maxWidth: 300 }}>
         {songName} has no bridge.
       </div>
-      <div style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6, maxWidth: 280, marginBottom: 40 }}>
+      <div style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.6, maxWidth: 280, marginBottom: 40 }}>
         Bridge score has been combined with Lyric category score.
       </div>
 
@@ -2882,7 +2882,7 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
         // white→lavender gradient still ships.
         background: hasThemedBackdrop
           ? 'transparent'
-          : 'linear-gradient(180deg, #ffffff 0%, #fdf8ff 100%)',
+          : 'linear-gradient(180deg, var(--bg) 0%, #fdf8ff 100%)',
         animation: animating ? 'shuffle-fade-out 0.72s ease forwards' : 'none',
       }}>
         {/* Floating lyrics in background */}
@@ -2907,7 +2907,7 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
           <div style={{
             fontSize: 24,
             fontWeight: 700,
-            color: isDarkTheme ? '#f3f4f6' : '#111827',
+            color: isDarkTheme ? '#f3f4f6' : 'var(--text)',
             lineHeight: 1.3,
             marginBottom: 14,
             maxWidth: 300,
@@ -2928,7 +2928,7 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
           </div>
 
           {/* Question */}
-          <div style={{ fontSize: 15, color: isDarkTheme ? '#cbd5e1' : '#9ca3af', marginBottom: 52 }}>
+          <div style={{ fontSize: 15, color: isDarkTheme ? '#cbd5e1' : 'var(--text-3)', marginBottom: 52 }}>
             If this came on shuffle right now...
           </div>
 
@@ -2977,12 +2977,12 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: 10,
-                background: '#f9fafb',
-                border: prevSkip ? '1.5px solid #a855f7' : '1.5px solid #e5e7eb',
+                background: 'var(--surface-2)',
+                border: prevSkip ? '1.5px solid var(--brand)' : '1.5px solid var(--border)',
                 borderRadius: 22,
                 padding: '24px 30px',
                 cursor: animating ? 'default' : 'pointer',
-                color: prevSkip ? '#5b21b6' : '#6b7280',
+                color: prevSkip ? '#5b21b6' : 'var(--text-2)',
                 fontSize: 15,
                 fontWeight: 600,
                 minWidth: 114,
@@ -2995,9 +2995,9 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
             >
               {/* Skip-forward: two chevrons + a bar */}
               <svg width={46} height={46} viewBox="0 0 24 24" fill="none">
-                <polygon points="4,5 11,12 4,19" fill="#9ca3af" />
-                <polygon points="11,5 18,12 11,19" fill="#d1d5db" />
-                <rect x="19.5" y="5" width="2" height="14" rx="1" fill="#9ca3af" />
+                <polygon points="4,5 11,12 4,19" fill="var(--text-3)" />
+                <polygon points="11,5 18,12 11,19" fill="var(--control-off)" />
+                <rect x="19.5" y="5" width="2" height="14" rx="1" fill="var(--text-3)" />
               </svg>
               Skip
             </button>
@@ -3034,13 +3034,13 @@ function YesNoPicker({ currentRating, onRate }) {
       <button
         onClick={() => onRate(1)}
         style={{
-          background: '#f9fafb',
-          border: '1.5px solid #e5e7eb',
+          background: 'var(--surface-2)',
+          border: '1.5px solid var(--border)',
           borderRadius: 16,
           padding: '20px 44px',
           fontSize: 17,
           fontWeight: 700,
-          color: '#6b7280',
+          color: 'var(--text-2)',
           cursor: 'pointer',
           opacity: currentRating === 5 ? 0.5 : 1,
           WebkitTapHighlightColor: 'transparent',
@@ -3301,8 +3301,8 @@ export default function QuickScore({
     background: albumBackground
       ? albumBackground
       : (currentCat && currentCat.id !== 'replay'
-          ? (CAT_BACKGROUNDS[currentCat.id] ?? '#ffffff')
-          : '#ffffff'),
+          ? (CAT_BACKGROUNDS[currentCat.id] ?? 'var(--bg)')
+          : 'var(--bg)'),
     zIndex: 1000,
     display: 'flex',
     flexDirection: 'column',
@@ -3344,7 +3344,7 @@ export default function QuickScore({
             albumIcon={albumIcon}
             albumName={albumName}
             topSongs={scored}
-            accent={albumTheme.textTuning?.accent ?? '#7c3aed'}
+            accent={albumTheme.textTuning?.accent ?? 'var(--brand-text)'}
             onClose={onClose}
           />
         </div>
@@ -3429,7 +3429,7 @@ export default function QuickScore({
       {/* Progress bar */}
       <div style={{
         height: 4,
-        background: isDarkTheme ? 'rgba(168,85,247,0.18)' : '#f3e8ff',
+        background: isDarkTheme ? 'rgba(168,85,247,0.18)' : 'var(--accent-soft)',
         flexShrink: 0,
         position: 'relative',
         zIndex: 10,
@@ -3437,7 +3437,7 @@ export default function QuickScore({
         <div
           style={{
             height: '100%',
-            background: isReputationTheme ? '#67e8f9' : isShowgirlTheme ? '#fbbf24' : '#a855f7',
+            background: isReputationTheme ? '#67e8f9' : isShowgirlTheme ? '#fbbf24' : 'var(--brand)',
             width: `${progress}%`,
             transition: 'width 0.25s ease',
             borderRadius: '0 2px 2px 0',
@@ -3456,7 +3456,7 @@ export default function QuickScore({
         zIndex: 10,
       }}>
         <div style={{ width: 60 }} />
-        <div style={{ fontSize: 12, color: isDarkTheme ? '#cbd5e1' : '#9ca3af' }}>
+        <div style={{ fontSize: 12, color: isDarkTheme ? '#cbd5e1' : 'var(--text-3)' }}>
           {isSingleSong ? '\u00a0' : `Song ${songPos + 1} of ${songs.length}`}
         </div>
         <button
@@ -3469,12 +3469,12 @@ export default function QuickScore({
           }}
           style={{
             background: isDarkTheme ? 'rgba(255,255,255,0.08)' : 'none',
-            border: isDarkTheme ? '0.5px solid rgba(255,255,255,0.18)' : '0.5px solid #e5e7eb',
+            border: isDarkTheme ? '0.5px solid rgba(255,255,255,0.18)' : '0.5px solid var(--border)',
             borderRadius: 8,
             padding: '5px 12px',
             cursor: 'pointer',
             fontSize: 13,
-            color: isDarkTheme ? '#e5e7eb' : '#6b7280',
+            color: isDarkTheme ? '#e5e7eb' : 'var(--text-2)',
           }}
         >
           ✕ Exit
@@ -3565,7 +3565,7 @@ export default function QuickScore({
                     ? '#fffbeb'
                     : isDarkTheme
                       ? '#f3f4f6'
-                      : '#111827'),
+                      : 'var(--text)'),
             lineHeight: 1.3,
             marginBottom: currentCat?.id === 'lyrics' ? 16 : 32,
             maxWidth: 320,
@@ -3609,7 +3609,7 @@ export default function QuickScore({
                                 ? '#1c1917' // bold black on parchment
                                 : isShowgirlTheme
                                   ? '#fbbf24' // bright gold on magenta
-                                  : '#a855f7'),
+                                  : 'var(--brand-text)'),
             textTransform: 'uppercase',
             letterSpacing: '0.12em',
             marginBottom: 4,
@@ -3718,11 +3718,11 @@ export default function QuickScore({
               style={{
                 padding: '9px 22px',
                 borderRadius: 22,
-                border: '1px solid #e5e7eb',
-                background: '#ffffff',
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
                 fontSize: 13,
                 fontWeight: 500,
-                color: '#6b7280',
+                color: 'var(--text-2)',
                 cursor: isFirstStep ? 'default' : 'pointer',
                 opacity: isFirstStep ? 0.3 : 1,
               }}
@@ -3735,11 +3735,11 @@ export default function QuickScore({
                 style={{
                   padding: '9px 22px',
                   borderRadius: 22,
-                  border: '1px solid #e5e7eb',
-                  background: '#ffffff',
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface)',
                   fontSize: 13,
                   fontWeight: 500,
-                  color: '#6b7280',
+                  color: 'var(--text-2)',
                   cursor: 'pointer',
                 }}
               >
@@ -3757,12 +3757,12 @@ export default function QuickScore({
       {/* Bottom progress bar + label */}
       <div style={{ padding: '0 20px 20px', flexShrink: 0, position: 'relative', zIndex: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: '#7c3aed' }}>{Math.round(progress)}% complete</span>
-          <span style={{ fontSize: 12, color: '#9ca3af' }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--brand-text)' }}>{Math.round(progress)}% complete</span>
+          <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
             {songs.length - songPos} {songs.length - songPos === 1 ? 'song' : 'songs'} left on {albumName}
           </span>
         </div>
-        <div style={{ height: 8, background: '#f3e8ff', borderRadius: 99 }}>
+        <div style={{ height: 8, background: 'var(--accent-soft)', borderRadius: 99 }}>
           <div style={{
             height: '100%',
             background: 'linear-gradient(90deg, #a855f7, #7c3aed)',
@@ -3786,16 +3786,16 @@ export default function QuickScore({
           padding: '0 32px',
         }}>
           <div style={{
-            background: '#ffffff',
+            background: 'var(--surface)',
             borderRadius: 16,
             padding: '24px',
             width: '100%',
             maxWidth: 320,
           }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 8 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
               Stop rating?
             </div>
-            <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 20 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6, marginBottom: 20 }}>
               Your ratings so far are saved. You can pick up where you left off any time.
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
@@ -3805,11 +3805,11 @@ export default function QuickScore({
                   flex: 1,
                   padding: '11px',
                   borderRadius: 10,
-                  border: '0.5px solid #e5e7eb',
-                  background: '#ffffff',
+                  border: '0.5px solid var(--border)',
+                  background: 'var(--surface)',
                   fontSize: 14,
                   fontWeight: 500,
-                  color: '#6b7280',
+                  color: 'var(--text-2)',
                   cursor: 'pointer',
                 }}
               >
@@ -3822,7 +3822,7 @@ export default function QuickScore({
                   padding: '11px',
                   borderRadius: 10,
                   border: 'none',
-                  background: '#111827',
+                  background: 'var(--text)',
                   fontSize: 14,
                   fontWeight: 600,
                   color: '#ffffff',
