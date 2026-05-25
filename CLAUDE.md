@@ -193,6 +193,17 @@ Use **Major impact** when a primary funnel step is meaningfully harder/easier; *
 
 Mention these considerations in your response *before* writing code, as a brief consultant note. The user is non-technical and explicitly relies on Claude to flag flow problems they might miss. Don't assume — surface the trade-off and let them decide.
 
+## Bracket planning folder (content, not app code)
+The top-level `bracket-planning/` folder holds the editorial plan for the weekly
+community bracket: the 12-week launch calendar (`bracket-planning/README.md`) and a
+per-category top-25 song shortlist in `bracket-planning/categories/` as each is built.
+It is **not part of the running app** — nothing in `src/` imports from it, and Vite
+never builds it. It exists so the bracket content plan survives across chat sessions
+(and so a future bracket-song-picker skill can pick it up). The per-category process,
+hard rules for song selection, and Phase-2 shelved categories all live in that README.
+When Clay talks about "the bracket calendar," "weekly bracket categories," or "which
+songs go in week N," look here first. Judging is grounded in `taylor_swift_lyrics.txt`.
+
 ## Claude Design folder (reference only — not part of the app)
 The top-level `Claude Design/` folder holds UI design handoffs produced by a separate AI design tool. It is **not part of the running app** — nothing in `src/` imports from it, and Vite never builds it.
 
@@ -292,14 +303,16 @@ src/
     useBrackets.js         — all bracket state: personal brackets, weekly community bracket, daily matchup
                              localStorage keys: 'eras_brackets', 'eras_weekly_bracket', 'eras_daily_bracket'
                              weeklyState synced to Firestore field 'weeklyBracket' on users/{uid}
-                             FIRESTORE CONSTRAINT: rounds is an array-of-arrays → Firestore rejects nested arrays.
-                               Fix: serialize rounds as JSON.stringify(rounds) before writing to Firestore;
-                               parse back with JSON.parse when reading. See recordWeeklyVote + Firestore sync effect.
-                             STALE CLOSURE: recordWeeklyVote ignores the roundIndex/matchupIndex params passed in;
-                               reads w.currentRound / w.currentMatchupIndex from weeklyStateRef.current instead.
-                               weeklyStateRef is updated every render: weeklyStateRef.current = weeklyState.
-                             FIRESTORE SYNC GUARD: on login, Firestore weeklyBracket only overwrites local state
-                               if Firestore has MORE votes than local (prevents stale cloud read from reverting votes).
+                             WEEKLY (redesigned v0.22.0): state is { weekNumber, categoryId, categoryName,
+                               seed, contestants, personalVotes, revealsSeen } — NO rounds/votes/winner. The
+                               community's 4-round outcome is DERIVED on the fly from (contestants, seed) via
+                               computeCommunityBracket() in weeklySchedule.js; votes don't advance the bracket,
+                               they only fill personalVotes (feeds Crowd Match). All fields are Firestore-safe
+                               (no nested arrays) so the old JSON.stringify(rounds) workaround is GONE.
+                               recordWeeklyVote(round, matchup, winner) logs a personal pick (uses the params);
+                               markWeeklyRevealSeen(round) records watched reveals. SYNC GUARD on login: cloud
+                               overwrites local only if it has ≥ as many personalVotes (no stale-revert).
+                             PERSONAL brackets still use recordWinner + the rounds/currentRound model (unchanged).
     useSettings.js         — app-wide settings; localStorage 'eras_settings' + Firestore sync
                              DEFAULTS: { showCategoryBars: true, confirmQuickScoreExit: true }
     useTermsAcceptance.js  — Watches the signed-in user's termsAcceptedVersion via onSnapshot.
@@ -608,7 +621,7 @@ Live under **Settings → Account → Delete my account**. Implemented entirely 
 - **GitHub:** private repo at `https://github.com/claytillman767/eras-ranker`
 - **Vercel:** auto-deploys on every push to `main`; live at `https://eras-ranker.vercel.app`
 - **Custom domain:** `https://erasranker.com` — already configured in Vercel and pointing to the same deployment as the `*.vercel.app` URL
-- **Local path:** `C:\Users\clayt\dev\eras-ranker` (moved out of OneDrive to avoid git conflicts)
+- **Local path:** `C:\Users\clayt\dev\eras-ranker` (moved out of OneDrive to avoid git conflicts). A SECOND clone of the same repo also exists at `C:\Users\Clay\Documents\GitHub\eras-ranker` (different machine / Windows user `Clay`). Both point at the same `claytillman767/eras-ranker` remote and `main` — just be aware which clone a given session is operating in before running git.
 - **`.env`** contains (all gitignored, never commit):
   - `GENIUS_API_TOKEN` — Python lyrics scripts only, not needed at runtime
   - `VITE_FIREBASE_*` — Firebase config keys
@@ -925,20 +938,22 @@ so this is parked indefinitely unless a new audio provider is added.
 
 ### Bracket Feature — Architecture Notes
 
-#### Weekly bracket data model
-- State shape: `{ weekNumber, categoryName, seed, status, currentRound, currentMatchupIndex, contestants, rounds, votes, winner }`
-- `rounds` is an array of rounds; each round is an array of matchup objects `{ song1, song2, winner }`
-- `votes` is `[{ roundIndex, matchupIndex, winnerId }]` — tracks which matchups have been voted on
-- localStorage key: `eras_weekly_bracket`; Firestore field: `weeklyBracket` on `users/{uid}`
-- **Firestore nested-array constraint:** `rounds` must be serialized as `JSON.stringify(rounds)` before writing to Firestore, and `JSON.parse`d after reading. This is handled in `recordWeeklyVote` (write) and the Firestore sync `useEffect` (read) in `useBrackets.js`.
+#### Weekly bracket data model (redesigned v0.22.0 — paced multi-day Option A)
+- State shape: `{ weekNumber, categoryId, categoryName, seed, contestants, personalVotes, revealsSeen }`
+  - `contestants` — 16 songs in round-1 order. `personalVotes` — `{ "${round}_${matchup}": "albumId_songIndex" }`, every pick the user casts. `revealsSeen` — `{ [roundIndex]: true }`.
+- The COMMUNITY's 4-round outcome is **not stored** — it's recomputed deterministically from `(contestants, seed)` via `computeCommunityBracket()` in `src/constants/weeklySchedule.js`. Votes never change who advances (Option A: everyone sees the same survivors); they only feed the personal ledger + Crowd Match (`crowdMatch()`).
+- Round gating (which round is open/closed, countdowns, the Mon→Sun cadence) lives in `weeklySchedule.js`: `ROUND_UNLOCK_DAY`, `currentRoundIndex`, `isRoundOpen`, `isChampionRevealed`, `nextDrop`. The unlock interval is a config dial (tighten to daily later).
+- UI: `src/components/brackets/weekly/WeeklyExperience.jsx` is a full-screen overlay (launched from the bracket Landing) that runs a 5-screen state machine — `WeeklyHome` (hero), `WeeklyVote`, `WeeklyReveal` (+ hand-off), `WeeklyLocked`, `WeeklyChampion` (animated replay + a Canvas `drawWeeklyChampionCard` 1080×1080 share image). Shared primitives: `WeeklyParts.jsx`; era tiles via `getEra()`/`ERA_TILES` in `eraColors.js`.
+- localStorage key: `eras_weekly_bracket`; Firestore field: `weeklyBracket`. All fields are Firestore-safe (no nested arrays).
+- `WinnerReveal.jsx` and `WeeklyBracket.jsx` are now **dead/unused** (the old one-sitting flow). Personal + daily brackets are unchanged.
 
-#### Why the weekly bracket had a hard-to-find advancement bug
-Firestore's `setDoc` throws **synchronously** when data contains nested arrays. The `.catch()` on the returned Promise only handles async rejections — it doesn't catch a sync throw. So if the user is logged in, the sync throw aborted `recordWeeklyVote` before `setWeeklyState` could run, causing the same matchup to reload. The fix wraps the `setDoc` call in `try/catch` and serializes `rounds` to avoid the error entirely.
+#### The old weekly "advancement bug" — no longer applicable
+The pre-redesign model stored `rounds` (an array-of-arrays) and `JSON.stringify`-serialized it to dodge Firestore's nested-array rejection; a synchronous `setDoc` throw could abort `recordWeeklyVote` and reload the same matchup. The redesigned model stores no nested arrays at all, so that class of bug can't recur. (Kept for history.)
 
 ### Bracket Feature — Remaining Work
 
-#### Community bracket vote tallies (Firestore counters)
-**Current state:** The "X% of Swifties agree" feedback shown after each bracket vote is simulated using a seeded deterministic random function (`getCommunityVotePercent` in `bracketCategories.js`). Every user sees the same percentages for the same matchup — there is no real aggregation.
+#### Community bracket vote tallies (Firestore counters) — the Phase B go-live blocker
+**Current state:** The redesigned weekly bracket (v0.22.0) derives its community split + survivors deterministically from the week seed via `communityPercent()` / `computeCommunityBracket()` in `weeklySchedule.js` (the winning side varies per matchup but is the SAME for every user). The legacy `getCommunityVotePercent` in `bracketCategories.js` still backs the daily matchup / old surfaces. Either way there is **no real aggregation** — so until this is built, every user sees the same outcome. This is the real blocker before the weekly bracket can go live for a real audience.
 
 **What needs to be built:**
 - A shared Firestore collection (e.g. `bracketVotes/{weekNumber}_r{round}_m{matchup}`) with atomic counter increments for song1 and song2
