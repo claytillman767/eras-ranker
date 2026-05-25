@@ -26,7 +26,7 @@ This is a **commercial product**, not a hobby or fan project. Treat every decisi
 Every user-facing decision should be evaluated against these three conversion goals, in this order. Each step builds on the previous one — completing one makes the next one a natural offer.
 
 1. **Account login (Google sign-in)** — the backbone. Required for cross-device sync, Pro billing, and identity. Pushed via the dedicated GoogleLoginPromo screen that appears right after the Welcome tour for anyone not yet signed in, with "Sign in with Google" as the primary CTA and "Not now" as the bypass.
-2. **The unlock ($3.99 one-time — DECIDED)** — the revenue. The one-time unlock adds the 8 extra rating categories, custom categories, and build-your-own personal brackets. CSV export is FREE for everyone (data portability) — Settings → Data → Download CSV. Community weekly/daily brackets are FREE forever (they feed the engagement flywheel — never gate them). Pushed softly via the VibeCheckIntro on first Vibe Check and the PaywallCard in Categories. **The model is a ONE-TIME UNLOCK, not a subscription — see "## Revenue & launch model" below for the full decision, tier split, and 7-day launch plan. Do not propose a subscription or gate community bracket voting.**
+2. **The unlock ($3.99 one-time — DECIDED)** — the revenue. The one-time unlock adds the 8 extra rating categories, custom categories, and build-your-own personal brackets. CSV export is FREE for everyone (data portability) — Settings → Data → Download CSV. The community weekly bracket is FREE forever (it feeds the engagement flywheel — never gate it). Pushed softly via the VibeCheckIntro on first Vibe Check and the PaywallCard in Categories. **The model is a ONE-TIME UNLOCK, not a subscription — see "## Revenue & launch model" below for the full decision, tier split, and 7-day launch plan. Do not propose a subscription or gate community bracket voting.**
 3. **Sharing to social media** — viral growth. The shareable card unlocks once a user fully ranks at least one album (RankingCard / AlbumCompleteCard).
 
 **Stance the app takes:** the natural path is *Login → Pro → Share*. Any other path is an "avoidance" — always allowed, but never framed as the obvious thing to do. Skip buttons exist, but they sit in secondary positioning (smaller, lower contrast, farther from the primary CTA).
@@ -40,7 +40,7 @@ This SUPERSEDES the older "Payment provider — Lemon Squeezy plan" decisions fu
 **The decision:**
 - **One-time unlock, NOT a subscription. $3.99 one time.** Reasons: bursty usage (rank albums over a weekend, then quiet), one-person shop avoiding ongoing-service obligation, terrible sub-$1 recurring economics. Post-Spotify Pro is too thin to sustain a recurring charge. **Do NOT re-propose a subscription.**
 - **Tip jar = "buy me a coffee" only** — a goodwill/learning gesture, NOT a revenue strategy. Phase-1 revenue is ≈$0 by design.
-- **Community weekly + daily brackets stay FREE forever.** They are the engagement/data flywheel ("Fan's Picks"). Gating participation — even cheaply — strangles the thing that makes it valuable. Only *personal/custom* brackets are paid.
+- **The community weekly bracket stays FREE forever.** It is the engagement/data flywheel ("Fan's Picks"). Gating participation — even cheaply — strangles the thing that makes it valuable. Only *personal/custom* brackets are paid. (The daily matchup was cut entirely — not at launch.)
 - **No pay-what-you-want slider** (floor-anchors to ~$3, contaminates the price signal, adds checkout friction). Flat price + an optional "add a coffee" top-up is the chosen shape.
 
 **Free vs. $3.99 one-time unlock — the tier split:**
@@ -48,7 +48,7 @@ This SUPERSEDES the older "Payment provider — Lemon Squeezy plan" decisions fu
 | Free forever | Behind the $3.99 unlock |
 |---|---|
 | All 5 default rating categories, Vibe Check | The 8 extra rating categories |
-| Community weekly bracket + daily matchup | Custom categories |
+| Community weekly bracket | Custom categories |
 | Rankings, basic shareable card, public profile, CSV export | Build-your-own personal brackets |
 | "Buy me a coffee" tip jar | Premium era-themed share cards (planned) |
 
@@ -59,7 +59,7 @@ The Lemon Squeezy billing backend already EXISTS (`api/lemon-webhook.js`, `api/c
 
 1. Webhook: handle `order_created` (grant) + `order_refunded` (revoke); keep existing subscription handling intact (additive, reversible).
 2. Reprice every Pro surface to "$3.99 — one-time": `PaywallCard.jsx` (drop the Monthly/Annual PlanPicker), `VibeCheckIntro.jsx`, Settings membership/ProModal. Then run the `pro-funnel-auditor` subagent.
-3. Gate personal-bracket creation (`createBracket` in `Brackets.jsx`/`BracketBuilder.jsx`) behind `isPro`; leave weekly/daily untouched.
+3. Gate personal-bracket creation (`createBracket` in `Brackets.jsx`/`BracketBuilder.jsx`) behind `isPro`; leave the weekly community bracket untouched.
 4. Tip-jar surface (external "buy me a coffee" link is simplest; gate behind a config constant so it hides when unset).
 5. Legal: privacy policy + terms must cover Lemon Squeezy as payment processor → MATERIAL change → bump `LEGAL_VERSION` + re-accept modal fires.
 
@@ -83,7 +83,7 @@ does NOT relax the general rule: future material changes with a real user
 base still owe the §11 email.
 
 **Brackets-in-launch — RESOLVED (2026-05-18): brackets are ON.**
-`BRACKETS_ENABLED = true`. Community weekly/daily voting is FREE; building
+`BRACKETS_ENABLED = true`. Community weekly voting is FREE; building
 your own personal bracket is gated behind the unlock (BracketLocked screen
 in Brackets.jsx). The unlock now advertises THREE perks (8 extra rating
 categories, custom categories, custom brackets) — perk copy was updated +
@@ -300,8 +300,9 @@ src/
     usePro.js              — accepts user param; reads/writes localStorage + Firestore (pro field)
     useManualOrder.js      — accepts user param; reads/writes localStorage + Firestore (manualOrder field)
     useAlbumModes.js       — accepts user param; reads/writes localStorage + Firestore (albumModes field)
-    useBrackets.js         — all bracket state: personal brackets, weekly community bracket, daily matchup
-                             localStorage keys: 'eras_brackets', 'eras_weekly_bracket', 'eras_daily_bracket'
+    useBrackets.js         — all bracket state: personal brackets + the weekly community bracket
+                             localStorage keys: 'eras_brackets', 'eras_weekly_bracket'
+                             (The daily matchup was removed entirely in v0.23.0 — not shipping at launch.)
                              weeklyState synced to Firestore field 'weeklyBracket' on users/{uid}
                              WEEKLY (redesigned v0.22.0): state is { weekNumber, categoryId, categoryName,
                                seed, contestants, personalVotes, revealsSeen } — NO rounds/votes/winner. The
@@ -945,7 +946,7 @@ so this is parked indefinitely unless a new audio provider is added.
 - Round gating (which round is open/closed, countdowns, the Mon→Sun cadence) lives in `weeklySchedule.js`: `ROUND_UNLOCK_DAY`, `currentRoundIndex`, `isRoundOpen`, `isChampionRevealed`, `nextDrop`. The unlock interval is a config dial (tighten to daily later).
 - UI: `src/components/brackets/weekly/WeeklyExperience.jsx` is a full-screen overlay (launched from the bracket Landing) that runs a 5-screen state machine — `WeeklyHome` (hero), `WeeklyVote`, `WeeklyReveal` (+ hand-off), `WeeklyLocked`, `WeeklyChampion` (animated replay + a Canvas `drawWeeklyChampionCard` 1080×1080 share image). Shared primitives: `WeeklyParts.jsx`; era tiles via `getEra()`/`ERA_TILES` in `eraColors.js`.
 - localStorage key: `eras_weekly_bracket`; Firestore field: `weeklyBracket`. All fields are Firestore-safe (no nested arrays).
-- `WinnerReveal.jsx` and `WeeklyBracket.jsx` are now **dead/unused** (the old one-sitting flow). Personal + daily brackets are unchanged.
+- `WinnerReveal.jsx` and `WeeklyBracket.jsx` are now **dead/unused** (the old one-sitting flow); personal brackets are unchanged. The daily matchup (`DailyMatchup.jsx`, `eras_daily_bracket`, `recordDailyVote`) was removed entirely in v0.23.0 — not shipping at launch.
 
 #### The old weekly "advancement bug" — no longer applicable
 The pre-redesign model stored `rounds` (an array-of-arrays) and `JSON.stringify`-serialized it to dodge Firestore's nested-array rejection; a synchronous `setDoc` throw could abort `recordWeeklyVote` and reload the same matchup. The redesigned model stores no nested arrays at all, so that class of bug can't recur. (Kept for history.)
@@ -953,7 +954,7 @@ The pre-redesign model stored `rounds` (an array-of-arrays) and `JSON.stringify`
 ### Bracket Feature — Remaining Work
 
 #### Community bracket vote tallies (Firestore counters) — the Phase B go-live blocker
-**Current state:** The redesigned weekly bracket (v0.22.0) derives its community split + survivors deterministically from the week seed via `communityPercent()` / `computeCommunityBracket()` in `weeklySchedule.js` (the winning side varies per matchup but is the SAME for every user). The legacy `getCommunityVotePercent` in `bracketCategories.js` still backs the daily matchup / old surfaces. Either way there is **no real aggregation** — so until this is built, every user sees the same outcome. This is the real blocker before the weekly bracket can go live for a real audience.
+**Current state:** The redesigned weekly bracket (v0.22.0) derives its community split + survivors deterministically from the week seed via `communityPercent()` / `computeCommunityBracket()` in `weeklySchedule.js` (the winning side varies per matchup but is the SAME for every user). The legacy `getCommunityVotePercent` in `bracketCategories.js` is now unused (it backed the removed daily matchup + the dead `WeeklyBracket.jsx` — safe to delete in a later cleanup). Either way there is **no real aggregation** — so until this is built, every user sees the same outcome. This is the real blocker before the weekly bracket can go live for a real audience.
 
 **What needs to be built:**
 - A shared Firestore collection (e.g. `bracketVotes/{weekNumber}_r{round}_m{matchup}`) with atomic counter increments for song1 and song2

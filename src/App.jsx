@@ -44,7 +44,7 @@ function getLegalPath() {
 }
 
 // Brackets are part of the launch unlock (decided 2026-05-18). Community
-// weekly/daily voting is FREE; building your own personal bracket is gated
+// weekly voting is FREE; building your own personal bracket is gated
 // behind the one-time unlock (see Brackets.jsx). Set false to hide the tab.
 const BRACKETS_ENABLED = true;
 

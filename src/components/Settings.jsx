@@ -59,7 +59,7 @@ export default function Settings({
   function handleClearBracketData() {
     setConfirmState({
       title: 'Clear all bracket data?',
-      body: 'This deletes your personal brackets, weekly votes, and daily matchup.',
+      body: 'This deletes your personal brackets and weekly votes.',
       confirmLabel: 'Clear data',
       destructive: true,
       onConfirm: doClearBracketData,
@@ -67,7 +67,7 @@ export default function Settings({
   }
 
   async function doClearBracketData() {
-    ['eras_brackets', 'eras_weekly_bracket', 'eras_daily_bracket']
+    ['eras_brackets', 'eras_weekly_bracket']
       .forEach(k => localStorage.removeItem(k));
 
     if (user) {
@@ -567,7 +567,7 @@ export default function Settings({
             Clear bracket data
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5, marginBottom: 12 }}>
-            Wipes personal brackets, weekly votes, and the daily matchup so you can replay the flow. Your ratings are not touched.
+            Wipes personal brackets and weekly votes so you can replay the flow. Your ratings are not touched.
           </div>
           <button
             onClick={handleClearBracketData}

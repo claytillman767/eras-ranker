@@ -45,7 +45,6 @@ const isNewWeeklyShape = (w) => !!(w && w.contestants && w.personalVotes);
 
 const STORAGE_KEY = 'eras_brackets';
 const WEEKLY_KEY = 'eras_weekly_bracket';
-const DAILY_KEY = 'eras_daily_bracket';
 
 function loadFromStorage(key) {
   try {
@@ -68,7 +67,6 @@ function makeBracketId() {
 export function useBrackets(user) {
   const [brackets, setBrackets] = useState(() => loadFromStorage(STORAGE_KEY) || []);
   const [weeklyState, setWeeklyState] = useState(() => loadFromStorage(WEEKLY_KEY) || null);
-  const [dailyState, setDailyState] = useState(() => loadFromStorage(DAILY_KEY) || null);
 
   // Ref that always points to the latest weeklyState — used by recordWeeklyVote
   // to avoid stale closures without using a functional updater (which crashed in StrictMode).
@@ -120,8 +118,8 @@ export function useBrackets(user) {
     setBrackets(next);
   }, [user]);
 
-  // Initialize weekly + daily on mount so they're ready before the user taps anything.
-  // This avoids calling state-setters from the render phase (which React forbids).
+  // Initialize the weekly bracket on mount so it's ready before the user taps
+  // anything. This avoids calling state-setters from the render phase.
   useEffect(() => {
     const wk = getCurrentWeekNumber();
 
@@ -133,25 +131,6 @@ export function useBrackets(user) {
       const next = freshWeekly(wk);
       if (!next) return prev;
       saveToStorage(WEEKLY_KEY, next);
-      return next;
-    });
-
-    // Daily — reset if it's a new day
-    const today = Math.floor(Date.now() / 86400000).toString();
-    setDailyState(prev => {
-      if (prev && prev.dayKey === today) return prev;
-      const seed = parseInt(today) * 777;
-      const generated = generateBracket('most-devastating', 'all', seed);
-      if (!generated) return prev;
-      const next = {
-        dayKey: today,
-        contestants: generated.contestants,
-        matchups: generated.rounds[0].slice(0, 3),
-        currentIndex: 0,
-        votes: [],
-        done: false,
-      };
-      saveToStorage(DAILY_KEY, next);
       return next;
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -281,33 +260,6 @@ export function useBrackets(user) {
     setWeeklyState(next);
   }, [user]);
 
-  // ── Daily bracket ───────────────────────────────────────────────────────────
-
-  const todayKey = Math.floor(Date.now() / 86400000).toString();
-
-  const recordDailyVote = useCallback((matchupIndex, winner) => {
-    const d = dailyState;
-    if (!d) return;
-
-    const matchups = d.matchups.map((m, i) => {
-      if (i !== matchupIndex) return m;
-      return { ...m, winner };
-    });
-
-    const newIndex = matchupIndex + 1;
-    const done = newIndex >= matchups.length;
-
-    const next = {
-      ...d,
-      matchups,
-      currentIndex: newIndex,
-      done,
-      votes: [...(d.votes || []), { matchupIndex, winnerId: `${winner.albumId}_${winner.songIndex}` }],
-    };
-    saveToStorage(DAILY_KEY, next);
-    setDailyState(next);
-  }, [dailyState]);
-
   return {
     brackets,
     createBracket,
@@ -319,9 +271,5 @@ export function useBrackets(user) {
     weeklyState,
     recordWeeklyVote,
     markWeeklyRevealSeen,
-    // Daily
-    dailyState,
-    recordDailyVote,
-    todayKey,
   };
 }

@@ -15,10 +15,6 @@ const STYLE = `
 }
 `;
 
-const DAILY_DISMISS_KEY = 'eras_daily_matchup_dismissed_date';
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 // Sunday 8pm CT (≈ Monday 02:00 UTC for CST). Approximation matches BracketHome.
 function getNextSundayReveal() {
@@ -97,7 +93,6 @@ export default function Landing({
   weekNumber,
   weeklyState,
   weeklyCategoryName,
-  dailyState,
   personalInProgress,    // single in-progress personal bracket, or null
   recentlyCrowned,       // array of recently completed brackets (most-recent first)
 
@@ -105,7 +100,6 @@ export default function Landing({
   onOpenWeekly,
   onContinuePersonal,
   onBuildPersonal,
-  onOpenDaily,
   onOpenCrowned,
 }) {
   const revealMs = getNextSundayReveal();
@@ -140,15 +134,6 @@ export default function Landing({
     ? personalInProgress.contestants.length - 1
     : 0;
 
-  // Daily-matchup card dismissal — local-only, resets at midnight
-  const [dailyDismissed, setDailyDismissed] = useState(
-    () => localStorage.getItem(DAILY_DISMISS_KEY) === todayStr()
-  );
-  function dismissDaily() {
-    localStorage.setItem(DAILY_DISMISS_KEY, todayStr());
-    setDailyDismissed(true);
-  }
-
   return (
     <>
       <style>{STYLE}</style>
@@ -156,59 +141,6 @@ export default function Landing({
         animation: 'landing-fade-in 0.3s ease-out',
         paddingBottom: 24,
       }}>
-
-        {/* ── Daily Matchup ──────────────────────────────────────────────── */}
-        {dailyState && !dailyDismissed && (
-          <div style={{
-            marginBottom: 12,
-            borderRadius: 12,
-            padding: '12px 14px',
-            background: '#1a1a2e',
-            color: '#ffffff',
-            display: 'flex', alignItems: 'center', gap: 12,
-          }}>
-            <div style={{ fontSize: 22, lineHeight: 1 }}>☀</div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{
-                fontSize: 15, fontWeight: 500, color: '#fbbf24',
-              }}>Daily Matchup</div>
-              <div style={{ fontSize: 10, color: '#94a3b8' }}>
-                {dailyState.done
-                  ? '✓ Done · come back tomorrow'
-                  : 'One quick vote · 3 rounds · ~30 sec'}
-              </div>
-            </div>
-            {!dailyState.done && (
-              <button
-                onClick={onOpenDaily}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: 14,
-                  border: 'none',
-                  background: '#fbbf24',
-                  color: '#1a1a2e',
-                  fontSize: 12, fontWeight: 700,
-                  cursor: 'pointer', flexShrink: 0,
-                }}
-              >Play</button>
-            )}
-            <button
-              onClick={dismissDaily}
-              aria-label="Dismiss for today"
-              title="Dismiss for today"
-              style={{
-                width: 24, height: 24, borderRadius: 12,
-                border: 'none',
-                background: 'rgba(255,255,255,0.08)',
-                color: '#94a3b8',
-                cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 13, lineHeight: 1, padding: 0,
-                flexShrink: 0,
-              }}
-            >✕</button>
-          </div>
-        )}
 
         {/* ── Weekly Hero ───────────────────────────────────────────────── */}
         {weeklyState && (

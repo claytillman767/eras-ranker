@@ -7,7 +7,6 @@ import Tree from './Tree';
 import Matchup from './Matchup';
 import RoundTransition from './RoundTransition';
 import BracketResults from './BracketResults';
-import DailyMatchup from './DailyMatchup';
 import BracketBuilder from './BracketBuilder';
 import WeeklyExperience from './weekly/WeeklyExperience';
 
@@ -15,10 +14,9 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
   const {
     brackets, createBracket, recordWinner, getBracket,
     weeklyState, recordWeeklyVote, markWeeklyRevealSeen,
-    dailyState, recordDailyVote,
   } = useBrackets(user);
 
-  // Screens: 'landing' | 'builder' | 'tree' | 'matchup' | 'transition' | 'results' | 'weekly' | 'daily' | 'locked'
+  // Screens: 'landing' | 'builder' | 'tree' | 'matchup' | 'transition' | 'results' | 'weekly' | 'locked'
   const [screen, setScreen] = useState('landing');
   const [activeBracketId, setActiveBracketId] = useState(null);
   const [transitionRound, setTransitionRound] = useState(null);
@@ -61,8 +59,8 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
   }
 
   // Open the BracketBuilder picker (category → scope → size).
-  // Building your OWN bracket is part of the one-time unlock. Community
-  // weekly + daily brackets stay free (they feed the engagement flywheel).
+  // Building your OWN bracket is part of the one-time unlock. The community
+  // weekly bracket stays free (it feeds the engagement flywheel).
   function buildPersonal() {
     if (!isPro) { setScreen('locked'); return; }
     setScreen('builder');
@@ -190,37 +188,24 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
     );
   }
 
-  if (screen === 'daily' && dailyState) {
-    return (
-      <DailyMatchup
-        dailyState={dailyState}
-        onVote={recordDailyVote}
-        onClose={() => setScreen('landing')}
-        onKeepGoing={() => { setScreen('landing'); buildPersonal(); }}
-      />
-    );
-  }
-
   // Default: Landing
   return (
     <Landing
       weekNumber={weekNumber}
       weeklyState={weeklyState}
       weeklyCategoryName={weeklyCategoryName}
-      dailyState={dailyState}
       personalInProgress={personalInProgress}
       recentlyCrowned={recentlyCrowned}
       onOpenWeekly={openWeekly}
       onContinuePersonal={continuePersonal}
       onBuildPersonal={buildPersonal}
-      onOpenDaily={() => setScreen('daily')}
       onOpenCrowned={openCrowned}
     />
   );
 }
 
 // Shown when a non-unlocked user tries to BUILD their own bracket.
-// Community weekly + daily brackets are never gated — only the
+// The community weekly bracket is never gated — only the
 // build-your-own flow lives behind the one-time unlock.
 //
 // Mirrors PaywallCard's pattern: the primary CTA is always tappable.
@@ -410,8 +395,8 @@ function BracketLocked({ onClose, user, signIn, unlockPro }) {
                 textAlign: 'center',
                 lineHeight: 1.5,
               }}>
-                Weekly community bracket and daily matchup<br />
-                stay free, always.
+                The weekly community bracket<br />
+                stays free, always.
               </div>
             </div>
           ) : (

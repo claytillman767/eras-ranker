@@ -16,6 +16,17 @@ Newest entries go at the top.
 
 ---
 
+## 0.23.0 — 2026-05-25
+
+### Removed
+- **The daily matchup is gone from the Brackets tab.** The quick "one vote,
+  3 rounds" daily card has been removed — it won't be part of the app at
+  launch. The Brackets tab now opens straight to the weekly community bracket,
+  with build-your-own brackets below it. Nothing else on the tab changed, and
+  your ratings, weekly votes, and personal brackets are untouched.
+
+---
+
 ## 0.22.0 — 2026-05-25
 
 ### Changed
