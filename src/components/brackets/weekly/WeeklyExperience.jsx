@@ -20,6 +20,7 @@ import {
   currentRoundIndex, isRoundOpen, isChampionRevealed, nextDrop,
   roundUnlockMs, championRevealMs, ROUND_UNLOCK_DAY, CHAMPION_DAY, TOTAL_ROUNDS, dayOffset,
 } from '../../../constants/weeklySchedule';
+import { getNow, subscribeDevClock } from '../../../constants/devClock';
 import { ARENA_BG } from './WeeklyParts';
 import WeeklyHome, { weeklyHeroState } from './WeeklyHome';
 import WeeklyVote from './WeeklyVote';
@@ -52,12 +53,15 @@ export default function WeeklyExperience({
   const [voteIdx, setVoteIdx] = useState(0);
   const [revealRound, setRevealRound] = useState(0);
   const [revealDone, setRevealDone] = useState(false);
-  const [nowTick, setNowTick] = useState(Date.now());
+  const [nowTick, setNowTick] = useState(getNow());
 
-  // Tick once a minute so countdowns + round unlocks update live without churn.
+  // Tick once a minute so countdowns + round unlocks update live without churn,
+  // and update immediately when the admin time-travel panel changes the clock.
   useEffect(() => {
-    const id = setInterval(() => setNowTick(Date.now()), 30000);
-    return () => clearInterval(id);
+    const tick = () => setNowTick(getNow());
+    const id = setInterval(tick, 30000);
+    const unsub = subscribeDevClock(tick);
+    return () => { clearInterval(id); unsub(); };
   }, []);
 
   const wk = weeklyState?.weekNumber ?? 0;

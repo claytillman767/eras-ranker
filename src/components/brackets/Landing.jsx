@@ -3,6 +3,7 @@ import { getEraColors } from '../../constants/eraColors';
 import { ALL_ALBUMS } from '../../data/albums';
 import { BRACKET_CATEGORIES } from '../../constants/bracketCategories';
 import { computeCommunityBracket, currentRoundIndex, isChampionRevealed, TOTAL_ROUNDS } from '../../constants/weeklySchedule';
+import { getNow } from '../../constants/devClock';
 
 const STYLE = `
 @keyframes landing-pulse-dot {
@@ -28,10 +29,10 @@ function getNextSundayReveal() {
 }
 
 function CountdownTimer({ targetMs }) {
-  const [remaining, setRemaining] = useState(Math.max(0, targetMs - Date.now()));
+  const [remaining, setRemaining] = useState(Math.max(0, targetMs - getNow()));
 
   useEffect(() => {
-    const id = setInterval(() => setRemaining(Math.max(0, targetMs - Date.now())), 1000);
+    const id = setInterval(() => setRemaining(Math.max(0, targetMs - getNow())), 1000);
     return () => clearInterval(id);
   }, [targetMs]);
 
@@ -110,8 +111,8 @@ export default function Landing({
   // comes from the Mon→Sun schedule. We peek the first matchup of the open round.
   const weeklyReady = !!(weeklyState && weeklyState.contestants && weeklyState.personalVotes);
   const weeklyCommunity = weeklyReady ? computeCommunityBracket(weeklyState.contestants, weeklyState.seed) : null;
-  const weeklyCurRound = weeklyReady ? Math.min(currentRoundIndex(Date.now(), weeklyState.weekNumber), TOTAL_ROUNDS - 1) : 0;
-  const weeklyComplete = weeklyReady ? isChampionRevealed(Date.now(), weeklyState.weekNumber) : false;
+  const weeklyCurRound = weeklyReady ? Math.min(currentRoundIndex(getNow(), weeklyState.weekNumber), TOTAL_ROUNDS - 1) : 0;
+  const weeklyComplete = weeklyReady ? isChampionRevealed(getNow(), weeklyState.weekNumber) : false;
   const weeklyRoundMatchups = weeklyCommunity ? weeklyCommunity.rounds[weeklyCurRound] : null;
   const weeklyMatchup = weeklyRoundMatchups ? weeklyRoundMatchups[0] : null;
   const weeklyMatchupsInRound = weeklyRoundMatchups ? weeklyRoundMatchups.length : 0;

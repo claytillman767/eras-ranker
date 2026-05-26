@@ -17,6 +17,18 @@ export const DEV_EMAILS = [
   // so dev tools (UAT mode toggle, mock unlock) work again.
 ];
 
+// Admin accounts (by Firestore uid) that see the admin time-travel panel in
+// Settings. Kept separate from DEV_EMAILS so it does NOT re-enable the UAT
+// toggle / mock-unlock dev tools — the time-travel panel only shifts the
+// bracket view on the admin's own device.
+export const ADMIN_UIDS = [
+  'OXwJOBuLLpggGIS76UjcnnxCvo43', // clay.tillman7@gmail.com
+];
+
+export function isAdminUid(uid) {
+  return !!uid && ADMIN_UIDS.includes(uid);
+}
+
 const ONBOARDING_FLAG_KEYS = [
   'eras_welcome_seen',
   'eras_vibecheck_intro_seen',

@@ -8,7 +8,10 @@ import { TIP_JAR_URL } from '../data/tipJar';
 import CategoriesEditor from './CategoriesEditor';
 import ConfirmModal from './ConfirmModal';
 import DeleteAccountModal from './DeleteAccountModal';
-import { isDevEmail, isUatMode, setUatMode, clearOnboardingFlags } from '../uat';
+import { isDevEmail, isUatMode, setUatMode, clearOnboardingFlags, isAdminUid } from '../uat';
+import { getNow, setOffset, advanceMs, resetClock, useDevClock } from '../constants/devClock';
+import { weekStartMs, MS_PER_DAY, dayOffset, currentRoundIndex, isChampionRevealed } from '../constants/weeklySchedule';
+import { getCurrentWeekNumber, getWeeklyCategoryName } from '../constants/bracketCategories';
 
 // Settings tab — app-wide display and behaviour preferences.
 export default function Settings({
@@ -354,6 +357,9 @@ export default function Settings({
 
       {/* Dev-only UAT panel — only the developer email sees this row */}
       {isDevEmail(user?.email) && <UatToggle user={user} isPro={isPro} />}
+
+      {/* Admin-only time-travel panel — step through the weekly bracket screens */}
+      {isAdminUid(user?.uid) && <AdminTimeTravel />}
 
       {/* ── Membership section (signed-in only) ──
           The Sign-in hero up top covers the "what Pro unlocks" pitch when
@@ -1254,6 +1260,91 @@ function PerkRow({ perk }) {
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{perk.label}</div>
         <div style={{ fontSize: 11, color: 'var(--text-2)', lineHeight: 1.4 }}>{perk.desc}</div>
+      </div>
+    </div>
+  );
+}
+
+// Admin-only time-travel panel (gated by uid in the parent). Shifts the dev
+// clock (devClock.js) so the weekly bracket jumps to a chosen day of the
+// current week — letting an admin step through the later screens (results
+// reveal, locked/waiting, the Sunday champion) without waiting for the real
+// Mon→Sun schedule. The offset only changes the bracket view on this device;
+// it grants nothing and writes nothing to the server.
+function AdminTimeTravel() {
+  const { offset } = useDevClock(); // re-render whenever the clock changes
+  const now = getNow();
+  const wk = getCurrentWeekNumber();
+  const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const d = dayOffset(now, wk);
+  const champ = isChampionRevealed(now, wk);
+  const round = currentRoundIndex(now, wk) + 1;
+  const stateLabel = champ ? '👑 Champion crowned' : `Round ${round} of 4 open`;
+
+  // Land at noon UTC of the chosen day of the current week (safely inside it).
+  const jumpToDay = (day) => {
+    const target = weekStartMs(wk) + day * MS_PER_DAY + 12 * 60 * 60 * 1000;
+    setOffset(target - Date.now());
+  };
+
+  const MILESTONES = [
+    { label: 'R1 vote', sub: 'Mon', day: 0 },
+    { label: 'R1 results + R2', sub: 'Wed', day: 2 },
+    { label: 'R2 results + R3', sub: 'Fri', day: 4 },
+    { label: 'R3 results + Final', sub: 'Sat', day: 5 },
+    { label: '👑 Champion', sub: 'Sun', day: 6 },
+  ];
+
+  const pill = {
+    appearance: 'none', cursor: 'pointer', fontFamily: 'inherit',
+    border: '1px solid #fcd34d', background: '#fff', color: '#92400e',
+    borderRadius: 999, padding: '7px 12px', fontSize: 12, fontWeight: 700,
+  };
+
+  return (
+    <div style={{
+      background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: 12,
+      padding: '14px 16px', marginBottom: 24,
+    }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+        Admin · Bracket time travel
+      </div>
+      <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.45, marginBottom: 10 }}>
+        Jump the weekly bracket to any day of the week to test every screen, then open the
+        Brackets tab to see it. Only shifts the bracket clock on this device.
+      </div>
+
+      <div style={{
+        fontSize: 12, color: 'var(--text)', background: '#fff',
+        border: '0.5px solid #fde68a', borderRadius: 8, padding: '8px 10px', marginBottom: 12,
+      }}>
+        <div><b>{DAYS[d]}</b> · {stateLabel}</div>
+        <div style={{ color: 'var(--text-2)', marginTop: 2 }}>
+          {getWeeklyCategoryName(wk)} · effective {new Date(now).toLocaleString()}
+        </div>
+        {offset !== 0 && (
+          <div style={{ color: '#92400e', marginTop: 2 }}>
+            clock shifted {offset > 0 ? '+' : ''}{Math.round((offset / MS_PER_DAY) * 10) / 10}d from real time
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+        {MILESTONES.map(m => (
+          <button key={m.day} onClick={() => jumpToDay(m.day)}
+            style={{ ...pill, background: d === m.day ? '#fcd34d' : '#fff' }}>
+            {m.label} <span style={{ opacity: 0.6, fontWeight: 600 }}>· {m.sub}</span>
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        <button onClick={() => advanceMs(-MS_PER_DAY)} style={pill}>− 1 day</button>
+        <button onClick={() => advanceMs(MS_PER_DAY)} style={pill}>+ 1 day</button>
+        <button onClick={() => advanceMs(6 * 60 * 60 * 1000)} style={pill}>+ 6 h</button>
+        <button onClick={resetClock} style={{ ...pill, borderColor: '#d1d5db', color: 'var(--text-2)' }}>
+          Reset to now
+        </button>
       </div>
     </div>
   );
