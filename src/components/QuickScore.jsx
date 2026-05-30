@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useFeedbackScreen } from '../context/FeedbackScreen';
 import { getBridgeLyrics, getSnippetLyrics, hasBridge } from '../data/lyricsAccess';
 import { DEFAULT_CATEGORIES } from '../data/categories';
 import { getAlbumTheme } from '../themes/albumThemes';
@@ -3151,6 +3152,15 @@ export default function QuickScore({
 
   const currentSong = songsWithCats[songPos];
   const currentCat = currentSong?.cats[catPos];
+
+  // Report this overlay to the Feedback button — notes dropped while scoring
+  // point at QuickScore.jsx, with the live album · song · category as detail.
+  useFeedbackScreen(
+    'quickscore',
+    currentSong
+      ? `${albumName ? `${albumName} · ` : ''}${currentSong.name}${currentCat ? ` · ${currentCat.name}` : ''}`
+      : (albumName ?? null),
+  );
 
   const currentRating =
     currentSong && currentCat

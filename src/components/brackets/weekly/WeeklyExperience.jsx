@@ -15,6 +15,7 @@
 // (brief §7). The core loop (vote open round → reveal → next) is fully wired.
 
 import { useMemo, useState, useEffect } from 'react';
+import { useFeedbackScreen } from '../../../context/FeedbackScreen';
 import {
   computeCommunityBracket, crowdMatch, crowdMatchTier, songId,
   currentRoundIndex, isRoundOpen, isChampionRevealed, nextDrop,
@@ -50,6 +51,9 @@ export default function WeeklyExperience({
   onClose, onBuildOwn,
 }) {
   const [screen, setScreen] = useState('home'); // home | vote | reveal | locked | champion
+
+  // Deep feedback tag — which weekly sub-screen the user is on.
+  useFeedbackScreen(`weekly_${screen}`, null);
   const [voteIdx, setVoteIdx] = useState(0);
   const [revealRound, setRevealRound] = useState(0);
   const [revealDone, setRevealDone] = useState(false);

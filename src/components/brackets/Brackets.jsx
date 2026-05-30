@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useFeedbackScreen } from '../../context/FeedbackScreen';
 import { useBrackets } from '../../hooks/useBrackets';
 import { getCurrentWeekNumber, getWeeklyCategoryName, BRACKET_CATEGORIES } from '../../constants/bracketCategories';
 import { SignInRequiredStep } from '../Settings';
@@ -41,6 +42,16 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
       setScreen('results');
     }
   }, [activeBracket?.status, screen]);
+
+  // Report the current bracket screen to the Feedback button (deep tags).
+  useFeedbackScreen(
+    ({
+      landing: 'bracket_landing', builder: 'bracket_builder', tree: 'bracket_tree',
+      matchup: 'bracket_matchup', transition: 'bracket_transition',
+      results: 'bracket_results', locked: 'bracket_locked', weekly: 'weekly_experience',
+    })[screen] ?? 'brackets',
+    weekLabel || null,
+  );
 
   function backToLanding() {
     setActiveBracketId(null);

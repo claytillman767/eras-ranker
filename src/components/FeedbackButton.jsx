@@ -1,19 +1,84 @@
 import { useState } from 'react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import { useCurrentFeedbackScreen } from '../context/FeedbackScreen';
+import { resolveScreen } from '../data/screenRegistry';
+import { isAdminUid } from '../uat';
 
 // Floating "send feedback" button + modal. Visible across the main app for
 // any signed-in user. Submissions land in the `feedback` Firestore
 // collection, which is write-only from the client — the developer reads
 // them via the Firebase console.
+//
+// Each submission is stamped with WHERE the user was: a screen key, a
+// human label, a live detail string, and the source FILE(S) behind that
+// screen (from src/data/screenRegistry.js). That makes a note dropped from
+// anywhere in the app self-describing — paste it to Claude Code and it
+// already knows which file to open. The current screen comes from the
+// FeedbackScreen context (deep overlays self-report) and falls back to the
+// base key App.jsx passes for the top-level tab.
 
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev';
 const MAX_LEN = 1500;
 
-export default function FeedbackButton({ user, screen }) {
-  const [open, setOpen]   = useState(false);
-  const [text, setText]   = useState('');
-  const [state, setState] = useState('idle'); // 'idle' | 'sending' | 'sent' | 'error'
+// Local mirror of every submission made ON THIS DEVICE, so the dev export
+// can rebuild a ready-to-paste list without needing Firestore reads
+// (feedback is write-only by security rule).
+const LOG_KEY = 'eras_feedback_log';
+const LOG_CAP = 100;
+
+function appendLocalLog(entry) {
+  try {
+    const raw = localStorage.getItem(LOG_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    arr.push(entry);
+    while (arr.length > LOG_CAP) arr.shift();
+    localStorage.setItem(LOG_KEY, JSON.stringify(arr));
+  } catch { /* localStorage unavailable — skip the mirror */ }
+}
+
+function readLocalLog() {
+  try {
+    return JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
+
+// Build a single ready-to-paste block for Claude Code from the local log.
+function buildExportText() {
+  const arr = readLocalLog();
+  if (!arr.length) return '';
+  const blocks = arr.map(e => {
+    const head = e.screenDetail ? `${e.screenLabel} — ${e.screenDetail}` : e.screenLabel;
+    const files = (e.sourceFiles && e.sourceFiles.length)
+      ? e.sourceFiles.join(', ')
+      : '(none mapped)';
+    return [
+      `### Feedback — ${head}`,
+      `Screen key: ${e.screenKey}`,
+      `Files: ${files}`,
+      `When: ${e.createdAtLocal}   App: ${e.appVersion}   URL: ${e.url}`,
+      '',
+      e.message,
+    ].join('\n');
+  });
+  return blocks.join('\n\n---\n\n');
+}
+
+export default function FeedbackButton({ user, baseScreenKey, baseDetail }) {
+  const [open, setOpen]     = useState(false);
+  const [text, setText]     = useState('');
+  const [state, setState]   = useState('idle'); // 'idle' | 'sending' | 'sent' | 'error'
+  const [copied, setCopied] = useState(false);
+
+  // Resolve the current location: a deep overlay's self-report wins, else the
+  // base key App passes for the active tab.
+  const ctx = useCurrentFeedbackScreen();
+  const screenKey    = ctx?.key ?? baseScreenKey ?? 'unknown';
+  const screenDetail = ctx?.detail ?? baseDetail ?? null;
+  const { label: screenLabel, files: sourceFiles } = resolveScreen(screenKey);
+  const isDev = isAdminUid(user?.uid);
 
   // Signed-in only — feedback is tied to a real account so we can follow
   // up if needed. The button just hides for anonymous users.
@@ -24,20 +89,30 @@ export default function FeedbackButton({ user, screen }) {
     const message = text.trim();
     if (!message || !db || state === 'sending') return;
     setState('sending');
+
+    const payload = {
+      message:     message.slice(0, MAX_LEN),
+      screen:      screenLabel,   // legacy field name kept for back-compat
+      screenKey,
+      screenLabel,
+      screenDetail,
+      sourceFiles,
+      uid:         user.uid,
+      email:       user.email       ?? null,
+      displayName: user.displayName ?? null,
+      userAgent:   typeof navigator !== 'undefined' ? navigator.userAgent : '',
+      appVersion:  APP_VERSION,
+      url:         typeof window !== 'undefined'
+        ? `${window.location.pathname}${window.location.search}`
+        : '',
+    };
+
+    // Mirror locally first so the dev export keeps the note even if the
+    // Firestore write fails (offline, rules, etc.).
+    appendLocalLog({ ...payload, createdAtLocal: new Date().toISOString() });
+
     try {
-      await addDoc(collection(db, 'feedback'), {
-        message:     message.slice(0, MAX_LEN),
-        screen:      screen ?? 'unknown',
-        uid:         user.uid,
-        email:       user.email       ?? null,
-        displayName: user.displayName ?? null,
-        userAgent:   typeof navigator !== 'undefined' ? navigator.userAgent : '',
-        appVersion:  APP_VERSION,
-        url:         typeof window !== 'undefined'
-          ? `${window.location.pathname}${window.location.search}`
-          : '',
-        createdAt: serverTimestamp(),
-      });
+      await addDoc(collection(db, 'feedback'), { ...payload, createdAt: serverTimestamp() });
       setState('sent');
       setText('');
       setTimeout(() => {
@@ -50,11 +125,29 @@ export default function FeedbackButton({ user, screen }) {
     }
   }
 
+  async function handleExport() {
+    const out = buildExportText();
+    if (!out) { setCopied(false); return; }
+    try {
+      await navigator.clipboard.writeText(out);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard blocked — fall back to a prompt the user can copy from.
+      try { window.prompt('Copy your feedback log for Claude Code:', out); } catch { /* noop */ }
+    }
+  }
+
   function close() {
     if (state === 'sending') return;
     setOpen(false);
     setState('idle');
   }
+
+  const sentFrom = screenLabel
+    ? `Sent from: ${screenLabel}${screenDetail ? ` — ${screenDetail}` : ''}`
+    : '';
+  const logCount = isDev ? readLocalLog().length : 0;
 
   return (
     <>
@@ -171,7 +264,7 @@ export default function FeedbackButton({ user, screen }) {
                   fontSize: 11,
                   color: 'var(--text-3)',
                 }}>
-                  <span>{screen ? `Sent from: ${screen}` : ''}</span>
+                  <span>{sentFrom}</span>
                   <span>{text.length}/{MAX_LEN}</span>
                 </div>
 
@@ -223,6 +316,32 @@ export default function FeedbackButton({ user, screen }) {
                     {state === 'sending' ? 'Sending…' : 'Send'}
                   </button>
                 </div>
+
+                {/* Developer-only: copy every note logged on this device as one
+                    ready-to-paste block for Claude Code. Gated by admin uid. */}
+                {isDev && (
+                  <button
+                    type="button"
+                    onClick={handleExport}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      marginTop: 12,
+                      padding: '8px',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-3)',
+                      fontSize: 12,
+                      fontWeight: 500,
+                      cursor: logCount ? 'pointer' : 'default',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {copied
+                      ? '✓ Copied — paste into Claude Code'
+                      : `Dev · copy ${logCount} note${logCount === 1 ? '' : 's'} for Claude Code`}
+                  </button>
+                )}
               </>
             )}
           </form>

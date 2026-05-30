@@ -16,6 +16,15 @@ Newest entries go at the top.
 
 ---
 
+## [0.24.0] - 2026-05-30
+
+### Added
+- Feedback notes now record exactly which screen they came from — including deep spots like Vibe Check scoring (with the live album, song, and category), each bracket sub-screen, and the weekly bracket flow — so a note dropped anywhere in the app is self-describing.
+- Developer-only export in the feedback box (admin account only): copies every note left on this device as one ready-to-paste list, each tagged with the source file(s) behind that screen, for handing straight to Claude Code.
+
+### Changed
+- The "Sent from" line in the feedback box now shows the precise screen and detail as you type.
+
 ## 0.23.0 — 2026-05-25
 
 ### Removed
