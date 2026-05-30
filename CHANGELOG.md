@@ -16,6 +16,13 @@ Newest entries go at the top.
 
 ---
 
+## 0.24.2 — 2026-05-30
+
+### Fixed
+- Pro users no longer see the Vibe Check intro screen (which advertises Pro perks they already have) on a new device or after clearing browser data.
+
+---
+
 ## 0.24.1 — 2026-05-30
 
 ### Changed

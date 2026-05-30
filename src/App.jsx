@@ -241,8 +241,9 @@ export default function App() {
     const albumId = pendingAlbumId;
     setPendingAlbumId(null); // close the AlbumModeModal either way
 
-    // First Vibe Check ever? Show the Vibe Check intro before launching QuickScore.
-    if (!hasSeenVibeCheckIntro()) {
+    // First Vibe Check ever? Show the intro (which upsells Pro). Skip it
+    // entirely for Pro users — they already have everything it advertises.
+    if (!hasSeenVibeCheckIntro() && !isPro) {
       setPendingVibeCheckAlbumId(albumId);
       return;
     }
