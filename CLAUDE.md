@@ -193,16 +193,33 @@ Use **Major impact** when a primary funnel step is meaningfully harder/easier; *
 
 Mention these considerations in your response *before* writing code, as a brief consultant note. The user is non-technical and explicitly relies on Claude to flag flow problems they might miss. Don't assume — surface the trade-off and let them decide.
 
-## Bracket planning folder (content, not app code)
-The top-level `bracket-planning/` folder holds the editorial plan for the weekly
-community bracket: the 12-week launch calendar (`bracket-planning/README.md`) and a
-per-category top-25 song shortlist in `bracket-planning/categories/` as each is built.
-It is **not part of the running app** — nothing in `src/` imports from it, and Vite
-never builds it. It exists so the bracket content plan survives across chat sessions
-(and so a future bracket-song-picker skill can pick it up). The per-category process,
-hard rules for song selection, and Phase-2 shelved categories all live in that README.
-When Clay talks about "the bracket calendar," "weekly bracket categories," or "which
-songs go in week N," look here first. Judging is grounded in `taylor_swift_lyrics.txt`.
+## Bracket planning — the `bracket-picker` subagent (content, not app code)
+The weekly community bracket has a dedicated editorial subagent. **When Clay wants to
+build, score, or rerun a bracket category — or talk about "the bracket calendar,"
+"weekly bracket categories," "which songs go in week N," seeding, or rotation — use the
+`bracket-picker` subagent at [.claude/agents/bracket-picker.md](.claude/agents/bracket-picker.md).**
+That file is the single source of truth for the picking rules, the per-category process
+(scope + criteria + user guidance gate → candidate surfacing → criteria scoring → top-25),
+the lyrics-file parsing notes, the rotation/rematch strategy, and seeding. Read it first;
+if anything elsewhere disagrees with it, it wins.
+
+It is **editorial only — it NEVER touches `src/` or any app code.** It reads/writes only
+the planning files and the lyrics source.
+
+Companion files (all under the repo, none built by Vite, nothing in `src/` imports them):
+- [.claude/agents/bracket-picker.md](.claude/agents/bracket-picker.md) — the subagent spec (the HOW).
+- `.claude/agents/bracket-picker-memory/feedback-ledger.md` — append-only record of Clay's
+  corrections; the subagent reads it at the start of every run and writes to it on every
+  correction. This is how it improves over time.
+- `bracket-planning/README.md` — the 12-week launch calendar + per-week status (the WHAT/WHEN).
+- `bracket-planning/categories/<NN>-<slug>.md` — the finalized top-25 per category as each is built.
+- `bracket-planning/results/results.json` — completed-bracket outcomes (winner, margins),
+  read on a rerun for rematch framing. Populated by a Firebase export that is a documented
+  FUTURE build-out (manual first) — see the subagent's "For Claude Code: the results export"
+  section. May not exist yet.
+
+Judging is grounded in `taylor_swift_lyrics.txt`. To invoke: ask for a category by name or
+week (e.g. "build the Best Breakup bracket" / "do week 2"), and the subagent runs its process.
 
 ## Claude Design folder (reference only — not part of the app)
 The top-level `Claude Design/` folder holds UI design handoffs produced by a separate AI design tool. It is **not part of the running app** — nothing in `src/` imports from it, and Vite never builds it.
@@ -622,7 +639,26 @@ Live under **Settings → Account → Delete my account**. Implemented entirely 
 - **GitHub:** private repo at `https://github.com/claytillman767/eras-ranker`
 - **Vercel:** auto-deploys on every push to `main`; live at `https://eras-ranker.vercel.app`
 - **Custom domain:** `https://erasranker.com` — already configured in Vercel and pointing to the same deployment as the `*.vercel.app` URL
-- **Local path:** `C:\Users\clayt\dev\eras-ranker` (moved out of OneDrive to avoid git conflicts). A SECOND clone of the same repo also exists at `C:\Users\Clay\Documents\GitHub\eras-ranker` (different machine / Windows user `Clay`). Both point at the same `claytillman767/eras-ranker` remote and `main` — just be aware which clone a given session is operating in before running git.
+- **Local path — TWO PCs, detect which one you're on.** Clay works on this repo from
+  two different Windows machines, each with a different clone location and Windows
+  username. Both are clones of the same `claytillman767/eras-ranker` remote tracking
+  `main` — only the local folder path differs. NEVER hardcode one path; detect which
+  machine the current session is on and use that root.
+
+  | PC | Windows user | Repo root |
+  |----|--------------|-----------|
+  | Desktop (dev box) | `clayt` | `C:\Users\clayt\dev\eras-ranker` (kept out of OneDrive to avoid git conflicts) |
+  | Laptop / other | `Clay` | `C:\Users\Clay\Documents\GitHub\eras-ranker` |
+
+  **How to tell which PC you're on:** use the root that actually resolves. With the
+  Filesystem connector, `list_allowed_directories` returns the active repo root —
+  use whatever it reports. In a Claude Code terminal, the working directory (or
+  `%USERNAME%` / `$env:USERNAME` → `clayt` vs `Clay`) tells you. Rule of thumb: if
+  `C:\Users\clayt\...` doesn't exist you're on the laptop (`C:\Users\Clay\Documents\GitHub\...`),
+  and vice-versa. Every relative path inside the repo (`src/`, `bracket-planning/`,
+  `taylor_swift_lyrics.txt`, etc.) is identical on both — only the root prefix changes.
+  The `cd` line in the "## Stack" dev-server snippet shows the desktop path as an
+  example; swap in the laptop root when on that machine.
 - **`.env`** contains (all gitignored, never commit):
   - `GENIUS_API_TOKEN` — Python lyrics scripts only, not needed at runtime
   - `VITE_FIREBASE_*` — Firebase config keys
