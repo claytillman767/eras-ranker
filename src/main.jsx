@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
+import { FeedbackScreenProvider } from './context/FeedbackScreen.jsx'
 import { isUatMode, clearOnboardingFlags } from './uat.js'
 
 // UAT-as-new-user mode — when the developer toggle in Settings is on, every
@@ -97,7 +98,9 @@ async function render() {
   createRoot(document.getElementById('root')).render(
     <StrictMode>
       <ErrorBoundary>
-        <Root />
+        <FeedbackScreenProvider>
+          <Root />
+        </FeedbackScreenProvider>
       </ErrorBoundary>
     </StrictMode>,
   );

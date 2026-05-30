@@ -295,21 +295,28 @@ export default function App() {
   const userInitial = user?.displayName?.charAt(0)?.toUpperCase() ?? '?';
   const userFirstName = user?.displayName?.split(' ')[0] ?? 'there';
 
-  // Plain-English label of where the user is right now — attached to any
-  // feedback they submit so we know which screen the comment is about.
+  // Where the user is right now — stamped onto any feedback they submit so a
+  // note points Claude Code at the right screen + source file. App supplies the
+  // BASE key for the top-level tabs; deeper overlays (QuickScore, the bracket
+  // flows) refine it at runtime via useFeedbackScreen. Keys map to labels +
+  // files in src/data/screenRegistry.js.
   const selectedAlbumName = selectedAlbumId
     ? ALL_ALBUMS.find(a => a.id === selectedAlbumId)?.name ?? selectedAlbumId
     : null;
-  const currentScreen =
-    pendingVibeCheckAlbumId !== null ? 'Vibe Check Intro' :
-    pendingAlbumId         !== null ? 'Album mode picker' :
-    activeTab === 'home'              ? 'Home' :
-    activeTab === 'albums'            ? 'Albums grid' :
-    activeTab === 'rate'              ? `Album: ${selectedAlbumName ?? 'unknown'}` :
-    activeTab === 'brackets'          ? 'Brackets' :
-    activeTab === 'rankings'          ? 'Rankings' :
-    activeTab === 'settings'          ? 'Settings' :
-    activeTab;
+  const baseScreenKey =
+    pendingVibeCheckAlbumId !== null ? 'vibecheck_intro' :
+    pendingAlbumId         !== null ? 'album_mode_picker' :
+    activeTab === 'home'              ? 'home' :
+    activeTab === 'albums'            ? 'albums' :
+    activeTab === 'rate'              ? 'songlist' :
+    activeTab === 'brackets'          ? 'brackets' :
+    activeTab === 'rankings'          ? 'rankings' :
+    activeTab === 'settings'          ? 'settings' :
+    'home';
+  const baseScreenDetail =
+    (baseScreenKey === 'songlist' || baseScreenKey === 'album_mode_picker')
+      ? (selectedAlbumName ?? null)
+      : null;
 
   return (
     <div style={{
@@ -615,7 +622,7 @@ export default function App() {
 
       {/* Floating "send feedback" button — visible across the main app for
           any signed-in user. Submissions land in Firestore `feedback`. */}
-      <FeedbackButton user={user} screen={currentScreen} />
+      <FeedbackButton user={user} baseScreenKey={baseScreenKey} baseDetail={baseScreenDetail} />
     </div>
   );
 }
