@@ -24,7 +24,7 @@ import ProfileView from './components/ProfileView';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import Terms from './components/Terms';
 import UpdatedTermsModal from './components/UpdatedTermsModal';
-import FeedbackButton from './components/FeedbackButton';
+import { FeedbackModal, FeedbackLauncher } from './components/FeedbackButton';
 import { ALL_ALBUMS } from './data/albums';
 
 // Hand-rolled URL routing. The app is otherwise tab-driven, so adding
@@ -348,6 +348,9 @@ export default function App() {
             The Eras Ranker
           </div>
 
+          {/* Right cluster: feedback launcher (signed-in only) + auth control */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {user && <FeedbackLauncher variant="header" />}
           {authLoading ? (
             <div style={{ width: 32, height: 32 }} />
           ) : user ? (
@@ -455,6 +458,7 @@ export default function App() {
               Sign in
             </button>
           )}
+          </div>
         </div>
 
         {/* Tab bar */}
@@ -620,9 +624,10 @@ export default function App() {
         )}
       </div>
 
-      {/* Floating "send feedback" button — visible across the main app for
-          any signed-in user. Submissions land in Firestore `feedback`. */}
-      <FeedbackButton user={user} baseScreenKey={baseScreenKey} baseDetail={baseScreenDetail} />
+      {/* Shared feedback modal (signed-in only). Opened by the FeedbackLauncher
+          in the header and inside each full-screen overlay's top bar, via the
+          FeedbackScreen context. Submissions land in Firestore `feedback`. */}
+      <FeedbackModal user={user} baseScreenKey={baseScreenKey} baseDetail={baseScreenDetail} />
     </div>
   );
 }

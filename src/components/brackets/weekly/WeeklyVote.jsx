@@ -10,6 +10,7 @@
 // vote, no separate confirm button.)
 
 import { useState, useRef, useEffect } from 'react';
+import { FeedbackLauncher } from '../../FeedbackButton';
 import { getEra } from '../../../constants/eraColors';
 import {
   ArenaBg, Eyebrow, ProgressDots,
@@ -119,13 +120,16 @@ export default function WeeklyVote({
         position: 'relative', zIndex: 2, padding: '60px 20px 0',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
-        <button onClick={onClose} style={{
-          appearance: 'none', cursor: 'pointer',
-          width: 36, height: 36, borderRadius: 18,
-          background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)',
-          color: '#fff',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 600,
-        }}>×</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button onClick={onClose} style={{
+            appearance: 'none', cursor: 'pointer',
+            width: 36, height: 36, borderRadius: 18,
+            background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)',
+            color: '#fff',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 600,
+          }}>×</button>
+          <FeedbackLauncher variant="overlay" />
+        </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
           <Eyebrow color={GOLD_LT}>Round {roundNumber} · {categoryName}</Eyebrow>
           <ProgressDots total={totalMatchups} current={matchupIndex} dark />
@@ -181,26 +185,12 @@ export default function WeeklyVote({
           onTap={() => choose('right')} />
       </div>
 
-      {/* bottom: live count + skip */}
+      {/* bottom: skip */}
       <div style={{
         position: 'absolute', left: 0, right: 0, bottom: 40,
         zIndex: 2, padding: '0 24px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 16 }}>
-          {liveLabel && (
-            <>
-              <span style={{
-                width: 7, height: 7, borderRadius: 4, background: '#ff5470',
-                boxShadow: '0 0 8px #ff547066',
-                animation: 'weeklyPulse 1.6s ease-in-out infinite',
-              }} />
-              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', fontWeight: 500 }}>
-                <b style={{ color: '#fff' }}>{liveLabel}</b> Swifties voting now
-              </span>
-            </>
-          )}
-        </div>
         {onSkip && (
           <button onClick={onSkip} disabled={!!picked} style={{
             appearance: 'none', border: 'none', background: 'transparent',

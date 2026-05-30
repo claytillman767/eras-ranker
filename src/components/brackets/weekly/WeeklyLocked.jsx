@@ -8,6 +8,7 @@
 // the canonical price + perk copy. We intentionally DON'T repeat the price here
 // (one source of truth → no cross-surface drift).
 
+import { FeedbackLauncher } from '../../FeedbackButton';
 import {
   ArenaBg, Eyebrow, GOLD_LT, fontUI, fontDisplay,
 } from './WeeklyParts';
@@ -45,7 +46,7 @@ export default function WeeklyLocked({
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700,
         }}>‹</button>
         <Eyebrow color={GOLD_LT}>{categoryName} · Week {weekNumber}</Eyebrow>
-        <div style={{ width: 36 }} />
+        <FeedbackLauncher variant="overlay" />
       </div>
 
       {/* big lock */}

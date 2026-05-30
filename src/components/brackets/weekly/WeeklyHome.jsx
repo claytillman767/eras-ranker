@@ -12,6 +12,7 @@
 // `heroState` is one of: 'roundLive' | 'waiting' | 'resultsReady' | 'urgent'
 // | 'finale'. A pure selector (weeklyHeroState) is exported for the wiring step.
 
+import { FeedbackLauncher } from '../../FeedbackButton';
 import { getEra } from '../../../constants/eraColors';
 import {
   SongTile, Eyebrow,
@@ -323,6 +324,7 @@ export default function WeeklyHome({
           )}
           <div style={{ width: 30, height: 30, borderRadius: 9, background: `linear-gradient(150deg, ${PURPLE}, ${PURPLE_DEEP})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#fff', boxShadow: '0 4px 12px rgba(124,58,237,0.35)' }}>♪</div>
           <div style={{ fontFamily: fontDisplay, fontSize: 22, color: PURPLE_DEEP, letterSpacing: -0.3 }}>Eras Ranker</div>
+          <div style={{ marginLeft: 'auto' }}><FeedbackLauncher variant="header" /></div>
         </div>
       )}
       <div style={{ padding: showHeader ? '0 16px 28px' : '20px 16px 28px', display: 'flex', flexDirection: 'column', gap: 14 }}>

@@ -13,6 +13,7 @@
 // + the user's Crowd Match. A "song" is { name, albumId, songIndex }.
 
 import { useEffect, useRef, useState, useMemo } from 'react';
+import { FeedbackLauncher } from '../../FeedbackButton';
 import { getEra } from '../../../constants/eraColors';
 import {
   ArenaBg, SongTile, Eyebrow,
@@ -322,6 +323,9 @@ export default function WeeklyChampion({
         width: 36, height: 36, borderRadius: 18, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700,
       }}>×</button>
+      <div style={{ position: 'absolute', top: 58, left: 18, zIndex: 5 }}>
+        <FeedbackLauncher variant="overlay" />
+      </div>
 
       <div style={{ position: 'relative', zIndex: 3, padding: '70px 24px 0', textAlign: 'center' }}>
         <Eyebrow color={GOLD_LT}>Sunday · Week {weekNumber} · {categoryName}</Eyebrow>

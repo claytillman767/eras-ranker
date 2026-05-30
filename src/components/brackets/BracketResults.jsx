@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { FeedbackLauncher } from '../FeedbackButton';
 import { getEraColors } from '../../constants/eraColors';
 import { BRACKET_CATEGORIES } from '../../constants/bracketCategories';
 import { ALBUMS } from '../../data/albums';
@@ -274,6 +275,10 @@ export default function BracketResults({ bracket, onTryAnother, onClose }) {
         maxWidth: 700,
         margin: '0 auto',
       }}>
+        {/* Feedback launcher — pinned top-left so it never overlaps content */}
+        <div style={{ position: 'absolute', top: 14, left: 14, zIndex: 5 }}>
+          <FeedbackLauncher variant="overlay" />
+        </div>
         <div style={{
           padding: '40px 20px 40px',
           maxWidth: 440,
