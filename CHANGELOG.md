@@ -16,7 +16,7 @@ Newest entries go at the top.
 
 ---
 
-## [0.24.0] - 2026-05-30
+## 0.24.0 — 2026-05-30
 
 ### Added
 - Feedback notes now record exactly which screen they came from — including deep spots like Vibe Check scoring (with the live album, song, and category), each bracket sub-screen, and the weekly bracket flow — so a note dropped anywhere in the app is self-describing.
