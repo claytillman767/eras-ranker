@@ -14,6 +14,10 @@ let _seq = 0;
 
 export function FeedbackScreenProvider({ children }) {
   const [entries, setEntries] = useState({});
+  // Whether the feedback modal is open. Held here (not in a launcher) so any
+  // launcher icon — header or an overlay top bar — can open the one shared
+  // modal, which renders once at the app root.
+  const [open, setOpen] = useState(false);
 
   const register = useCallback((id, key, detail) => {
     setEntries(prev => ({ ...prev, [id]: { key, detail, seq: ++_seq } }));
@@ -28,13 +32,16 @@ export function FeedbackScreenProvider({ children }) {
     });
   }, []);
 
+  const openFeedback  = useCallback(() => setOpen(true), []);
+  const closeFeedback = useCallback(() => setOpen(false), []);
+
   let current = null;
   for (const id in entries) {
     if (!current || entries[id].seq > current.seq) current = entries[id];
   }
 
   return (
-    <Ctx.Provider value={{ current, register, unregister }}>
+    <Ctx.Provider value={{ current, register, unregister, open, openFeedback, closeFeedback }}>
       {children}
     </Ctx.Provider>
   );
@@ -59,4 +66,15 @@ export function useFeedbackScreen(key, detail = null) {
 export function useCurrentFeedbackScreen() {
   const ctx = useContext(Ctx);
   return ctx?.current ?? null;
+}
+
+// Open/close controls for the shared feedback modal. `open` reflects the
+// modal's current state. Returns no-op openers when used outside the provider.
+export function useFeedbackControls() {
+  const ctx = useContext(Ctx);
+  return {
+    open: ctx?.open ?? false,
+    openFeedback: ctx?.openFeedback ?? (() => {}),
+    closeFeedback: ctx?.closeFeedback ?? (() => {}),
+  };
 }

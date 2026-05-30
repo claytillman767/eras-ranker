@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { FeedbackLauncher } from '../FeedbackButton';
 import { ALL_ALBUMS } from '../../data/albums';
 import { getEraColors } from '../../constants/eraColors';
 import { getSnippetLyrics, getBridgeLyrics } from '../../data/lyricsAccess';
@@ -250,18 +251,21 @@ export default function Matchup({
           flexShrink: 0,
         }}>
           <div style={{ fontSize: 16, fontWeight: 500 }}>{weekLabel}</div>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            style={{
-              width: 26, height: 26, borderRadius: 13,
-              border: '1px solid var(--text)',
-              background: 'transparent',
-              cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 12, color: 'var(--text)', padding: 0, lineHeight: 1,
-            }}
-          >✕</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <FeedbackLauncher variant="header" />
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              style={{
+                width: 26, height: 26, borderRadius: 13,
+                border: '1px solid var(--text)',
+                background: 'transparent',
+                cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 12, color: 'var(--text)', padding: 0, lineHeight: 1,
+              }}
+            >✕</button>
+          </div>
         </div>
 
         {/* Round dots + label */}

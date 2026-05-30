@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { FeedbackLauncher } from '../FeedbackButton';
 import { BRACKET_CATEGORIES, BRACKET_SIZES, bracketSize } from '../../constants/bracketCategories';
 import { ALL_ALBUMS, SONGS } from '../../data/albums';
 import { getEraColors } from '../../constants/eraColors';
@@ -136,7 +137,9 @@ export default function BracketBuilder({ onClose, onStart }) {
         <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>
           {step === 'category' ? 'Build a Bracket' : 'Across which songs?'}
         </div>
-        <div style={{ width: 40 }} />
+        <div style={{ width: 40, display: 'flex', justifyContent: 'flex-end' }}>
+          <FeedbackLauncher variant="header" />
+        </div>
       </div>
 
       {/* Body */}

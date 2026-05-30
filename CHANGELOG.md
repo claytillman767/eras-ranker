@@ -16,6 +16,17 @@ Newest entries go at the top.
 
 ---
 
+## 0.24.1 — 2026-05-30
+
+### Changed
+- The "Send feedback" button moved from a floating circle into the app header (next to your account), and into the top bar of each full-screen view (Vibe Check scoring, the bracket screens, the weekly bracket). It no longer floats on top of other buttons.
+
+### Fixed
+- On the weekly Round 1 voting screen, the feedback button no longer covers the "skip" link on desktop.
+- Removed the "X Swifties voting now" line from the weekly voting screen.
+
+---
+
 ## 0.24.0 — 2026-05-30
 
 ### Added

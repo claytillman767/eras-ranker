@@ -16,6 +16,7 @@
 //   userPick — 'left' | 'right' | null  (what this user voted; null = didn't)
 
 import { useRef, useState, useEffect } from 'react';
+import { FeedbackLauncher } from '../../FeedbackButton';
 import { getEra } from '../../../constants/eraColors';
 import {
   ArenaBg, Eyebrow, SongRow, SongTile, VoteBar,
@@ -41,12 +42,15 @@ function RevealFrame({ children, matchupIndex, totalMatchups, tally, roundNumber
         position: 'relative', zIndex: 2, padding: '60px 20px 0',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
-        <button onClick={onClose} style={{
-          appearance: 'none', cursor: 'pointer', color: '#fff',
-          width: 36, height: 36, borderRadius: 18,
-          background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 600,
-        }}>×</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button onClick={onClose} style={{
+            appearance: 'none', cursor: 'pointer', color: '#fff',
+            width: 36, height: 36, borderRadius: 18,
+            background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 600,
+          }}>×</button>
+          <FeedbackLauncher variant="overlay" />
+        </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
           <Eyebrow color={GOLD_LT}>Round {roundNumber} · Results</Eyebrow>
           <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 500 }}>

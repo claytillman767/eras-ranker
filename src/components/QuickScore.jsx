@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useFeedbackScreen } from '../context/FeedbackScreen';
+import { FeedbackLauncher } from './FeedbackButton';
 import { getBridgeLyrics, getSnippetLyrics, hasBridge } from '../data/lyricsAccess';
 import { DEFAULT_CATEGORIES } from '../data/categories';
 import { getAlbumTheme } from '../themes/albumThemes';
@@ -3465,7 +3466,9 @@ export default function QuickScore({
         position: 'relative',
         zIndex: 10,
       }}>
-        <div style={{ width: 60 }} />
+        <div style={{ width: 60, display: 'flex', alignItems: 'center' }}>
+          <FeedbackLauncher variant="overlay" />
+        </div>
         <div style={{ fontSize: 12, color: isDarkTheme ? '#cbd5e1' : 'var(--text-3)' }}>
           {isSingleSong ? '\u00a0' : `Song ${songPos + 1} of ${songs.length}`}
         </div>
