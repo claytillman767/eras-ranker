@@ -63,6 +63,10 @@ export default function BracketBuilder({ onClose, onStart }) {
   const [scope, setScope] = useState('all'); // 'all' | albumId
   const [size, setSize] = useState(16);      // desired bracket size
   const [startError, setStartError] = useState(null);
+  // When the user picks "Or write your own", they type a free-form name and
+  // we run the underlying mechanic on the full song pool (no filter). The
+  // typed name is what shows on the matchup/results screens.
+  const [customName, setCustomName] = useState('');
 
   // Personal categories only — the weekly one runs on its own schedule.
   const categories = useMemo(
@@ -82,6 +86,20 @@ export default function BracketBuilder({ onClose, onStart }) {
 
   function handlePickCategory(id) {
     setCategoryId(id);
+    // Picking a curated category clears any in-progress custom name so the
+    // two paths don't get tangled.
+    setCustomName('');
+    setStep('scope');
+  }
+
+  // The custom-name path: any non-empty name with the full song pool, run
+  // under the no-filter "most-devastating" mechanic. The typed name is what
+  // shows on every downstream screen via customCategoryName.
+  function handlePickCustom(name) {
+    const trimmed = (name || '').trim().slice(0, 60);
+    if (!trimmed) return;
+    setCustomName(trimmed);
+    setCategoryId('most-devastating');
     setStep('scope');
   }
 
@@ -103,7 +121,9 @@ export default function BracketBuilder({ onClose, onStart }) {
     // onStart may return a status string ('ok' | 'locked' | 'failed') so we
     // can show a visible error if the parent couldn't proceed. Older callers
     // that don't return anything still behave the same.
-    const result = onStart(category.id, scope, size);
+    // customName, when set, is the display label for this bracket — passed
+    // as a fourth arg. Parents that only accept three args ignore it.
+    const result = onStart(category.id, scope, size, customName || null);
     if (result === 'failed') {
       setStartError("Something went wrong starting that bracket. Try a different category or scope.");
     }
@@ -156,10 +176,12 @@ export default function BracketBuilder({ onClose, onStart }) {
           <CategoryStep
             categories={categories}
             onPick={handlePickCategory}
+            onPickCustom={handlePickCustom}
           />
         ) : (
           <ScopeStep
             category={category}
+            customName={customName}
             scope={scope}
             setScope={handleSetScope}
             size={size}
@@ -186,11 +208,22 @@ export default function BracketBuilder({ onClose, onStart }) {
 }
 
 // ── Step 1 — Category list ─────────────────────────────────────────────────
-function CategoryStep({ categories, onPick }) {
+function CategoryStep({ categories, onPick, onPickCustom }) {
   return (
     <div>
       <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 14, lineHeight: 1.5 }}>
         Pick the theme. We'll match up songs head-to-head until one wins.
+      </div>
+      {/* "Or write your own" — kept ALONGSIDE the curated recs (feedback
+          chose: keep recs, add custom alongside). Runs with the full song
+          pool; the typed name is what shows on every bracket screen. */}
+      <CustomCategoryCard onSubmit={onPickCustom} />
+      <div style={{
+        fontSize: 11, fontWeight: 600, color: 'var(--text-3)',
+        textTransform: 'uppercase', letterSpacing: '0.08em',
+        margin: '20px 0 10px',
+      }}>
+        Or pick a theme
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {categories.map(cat => {
@@ -248,13 +281,121 @@ function CategoryStep({ categories, onPick }) {
   );
 }
 
+// "Create your own bracket" card — collapsed by default, expands into a
+// labeled name input. Hitting the arrow / pressing Enter routes to the
+// scope step with the typed name as the bracket's display label.
+function CustomCategoryCard({ onSubmit }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const canSubmit = name.trim().length > 0;
+
+  function submit() {
+    if (!canSubmit) return;
+    onSubmit(name);
+  }
+
+  return (
+    <div
+      style={{
+        background: 'var(--surface-2)',
+        border: '0.5px dashed var(--brand)',
+        borderRadius: 14,
+        padding: '14px 14px',
+      }}
+    >
+      {!open ? (
+        <button
+          onClick={() => setOpen(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
+            width: '100%',
+            background: 'transparent',
+            border: 'none',
+            padding: 0,
+            cursor: 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          <div style={{
+            width: 44,
+            height: 44,
+            borderRadius: 12,
+            background: 'var(--accent-soft)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 22,
+            flexShrink: 0,
+          }}>✏️</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>
+              Write your own
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.45 }}>
+              Name a custom bracket — "Best workout song", "Saddest line", whatever.
+            </div>
+          </div>
+          <div style={{ color: 'var(--control-off)', fontSize: 18, flexShrink: 0 }}>›</div>
+        </button>
+      ) : (
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>
+            Name your bracket
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              autoFocus
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') submit(); }}
+              maxLength={60}
+              placeholder="e.g. Best workout song"
+              style={{
+                flex: 1,
+                padding: '10px 12px',
+                borderRadius: 10,
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                color: 'var(--text)',
+                fontSize: 14,
+                outline: 'none',
+              }}
+            />
+            <button
+              onClick={submit}
+              disabled={!canSubmit}
+              style={{
+                padding: '10px 14px',
+                borderRadius: 10,
+                border: 'none',
+                background: canSubmit ? 'var(--brand)' : 'var(--border)',
+                color: canSubmit ? '#ffffff' : 'var(--text-3)',
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: canSubmit ? 'pointer' : 'not-allowed',
+              }}
+            >Continue →</button>
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}>
+            Runs head-to-head across all Taylor songs. Up to 60 characters.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Step 2 — Scope picker + bracket-size picker ────────────────────────────
-function ScopeStep({ category, scope, setScope, size, setSize, allCount, allMaxSize, scopeMaxSize }) {
+function ScopeStep({ category, customName, scope, setScope, size, setSize, allCount, allMaxSize, scopeMaxSize }) {
   if (!category) return null;
 
   return (
     <div>
-      {/* Selected category recap */}
+      {/* Selected category recap — shows the user-typed name when this
+          bracket is a custom one. */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -265,10 +406,14 @@ function ScopeStep({ category, scope, setScope, size, setSize, allCount, allMaxS
         borderRadius: 12,
         marginBottom: 18,
       }}>
-        <div style={{ fontSize: 22 }}>{ICONS[category.id] || '🏆'}</div>
+        <div style={{ fontSize: 22 }}>{customName ? '✏️' : (ICONS[category.id] || '🏆')}</div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{category.name}</div>
-          <div style={{ fontSize: 11, color: 'var(--text-2)' }}>{category.description}</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
+            {customName || category.name}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-2)' }}>
+            {customName ? 'Your custom bracket' : category.description}
+          </div>
         </div>
       </div>
 
@@ -290,8 +435,16 @@ function ScopeStep({ category, scope, setScope, size, setSize, allCount, allMaxS
         Or pick one album
       </div>
 
-      {/* Scope: Album grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+      {/* Scope: Album grid.
+          Uses an auto-fill layout so on desktop the cells stay compact
+          (~110px wide) and most/all 12 albums fit on one screen, while on
+          mobile it still flows to 3 columns. Per feedback: the old fixed
+          3-column layout made each cell huge and hard to scan on desktop. */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
+        gap: 10,
+      }}>
         {ALL_ALBUMS.map(album => {
           const count = eligibleCount(category, album.id);
           const max = bracketSize(count);
@@ -312,6 +465,8 @@ function ScopeStep({ category, scope, setScope, size, setSize, allCount, allMaxS
                 opacity: disabled ? 0.4 : 1,
                 textAlign: 'center',
                 boxShadow: selected ? '0 2px 8px rgba(168,85,247,0.18)' : 'none',
+                maxWidth: 160,
+                justifySelf: 'stretch',
               }}
             >
               <div style={{
@@ -322,7 +477,7 @@ function ScopeStep({ category, scope, setScope, size, setSize, allCount, allMaxS
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: 28,
+                fontSize: 26,
                 marginBottom: 6,
               }}>
                 {album.icon}

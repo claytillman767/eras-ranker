@@ -16,6 +16,18 @@ Newest entries go at the top.
 
 ---
 
+## 0.25.0 — 2026-06-06
+
+### Added
+- **Write your own bracket.** The bracket builder now has a "Write your own" card at the top — type any name ("Best workout song", "Saddest line", whatever), pick a scope and size, and the name shows on every screen for that bracket. Sits alongside the curated themes, doesn't replace them.
+
+### Changed
+- Bracket Landing's weekly hero now reads as a soft status reminder instead of a vanity number. The "Swifties in" pill was replaced with "Round 1 of 4" (or "Crowned" when the week ends), so the hero tells you where in the bracket you are at a glance.
+- The weekly hero's main button is now a direct call-to-action — "Vote Now" when you still owe votes this round, "See Bracket" when you're already in, and "See Results" once the champion is crowned. No more two-tap "See bracket → Vote now."
+- On desktop, the album-scope grid in the bracket builder no longer renders each album as a giant tile. The grid auto-fills with smaller compact cells, so all 12 albums fit on one screen and are much easier to scan.
+
+---
+
 ## 0.24.4 — 2026-06-06
 
 ### Fixed

@@ -104,6 +104,10 @@ export default function Landing({
   onOpenCrowned,
 }) {
   const revealMs = getNextSundayReveal();
+  // Participant count kept around in case a future hero variant wants to show it,
+  // but the "Swifties in" pill was removed (feedback: replace with bracket
+  // progress so the hero is a soft reminder of current status).
+  // eslint-disable-next-line no-unused-vars
   const participants = fakeParticipantCount(weekNumber ?? 0);
 
   // Weekly hero — derived from the redesigned shape (contestants + seed). The
@@ -117,10 +121,28 @@ export default function Landing({
   const weeklyMatchup = weeklyRoundMatchups ? weeklyRoundMatchups[0] : null;
   const weeklyMatchupsInRound = weeklyRoundMatchups ? weeklyRoundMatchups.length : 0;
 
-  // Personal in-progress card — preview the alive contestants
+  // Has the user voted in every matchup of the current open round? Drives the
+  // CTA label — if they still owe votes, the button reads "Vote Now"; if they
+  // already locked in, "See Bracket"; once the week is over, "See Results".
+  // (Feedback: skip the two-tap "See Bracket → Vote Now" sequence.)
+  const currentRoundVotedKeys = weeklyRoundMatchups
+    ? weeklyRoundMatchups.map((_, idx) => `${weeklyCurRound}_${idx}`)
+    : [];
+  const userVotedFullRound = weeklyReady
+    && currentRoundVotedKeys.length > 0
+    && currentRoundVotedKeys.every(k => weeklyState.personalVotes && weeklyState.personalVotes[k]);
+  const ctaLabel = weeklyComplete
+    ? 'See Results →'
+    : userVotedFullRound
+      ? 'See Bracket →'
+      : 'Vote Now →';
+
+  // Personal in-progress card — preview the alive contestants. Custom-named
+  // brackets show the user's typed name instead of the underlying category.
   const personalCat = personalInProgress
     ? BRACKET_CATEGORIES.find(c => c.id === personalInProgress.categoryId)
     : null;
+  const personalCatName = personalInProgress?.customCategoryName || personalCat?.name;
   const personalAlive = personalInProgress ? aliveContestants(personalInProgress) : [];
   const personalSwatchPreview = personalAlive.slice(0, 6);
   const personalSwatchOverflow = Math.max(0, personalAlive.length - 6);
@@ -181,7 +203,9 @@ export default function Landing({
               {weeklyState.contestants.length} songs · everyone votes the same bracket
             </div>
 
-            {/* Stat pills */}
+            {/* Stat pills — the second pill ("Swifties in") was replaced with
+                a quiet bracket-progress reminder per feedback. The first pill
+                stays as the voting countdown. */}
             <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
               <div style={{
                 flex: 1,
@@ -210,17 +234,18 @@ export default function Landing({
                   fontSize: 9, color: '#94a3b8',
                   textTransform: 'uppercase', letterSpacing: '0.08em',
                   marginBottom: 2,
-                }}>Swifties in</div>
-                <div style={{
-                  fontSize: 14, fontWeight: 500, color: '#fde68a',
-                  fontVariantNumeric: 'tabular-nums',
-                }}>
-                  {participants.toLocaleString()}
+                }}>Bracket status</div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: '#fde68a' }}>
+                  {weeklyComplete
+                    ? 'Crowned'
+                    : `Round ${weeklyCurRound + 1} of ${TOTAL_ROUNDS}`}
                 </div>
               </div>
             </div>
 
-            {/* Round / matchup peek */}
+            {/* Matchup peek — kept as a quiet "what's next" visual cue. The
+                round count is now in the pill above, so this row drops the
+                round text and just teases the first matchup. */}
             {!weeklyComplete && weeklyMatchup && (
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 10,
@@ -230,7 +255,7 @@ export default function Landing({
                   fontSize: 10, color: '#cbd5e1',
                   whiteSpace: 'nowrap', flexShrink: 0,
                 }}>
-                  Round {weeklyCurRound + 1} of {TOTAL_ROUNDS} · {weeklyMatchupsInRound} matchups
+                  {weeklyMatchupsInRound} matchup{weeklyMatchupsInRound === 1 ? '' : 's'} this round
                 </span>
                 <span style={{
                   flex: 1, height: 1,
@@ -262,7 +287,7 @@ export default function Landing({
                 cursor: 'pointer',
               }}
             >
-              {weeklyComplete ? 'See winner →' : "See This Week's Bracket →"}
+              {ctaLabel}
             </button>
           </div>
         )}
@@ -290,7 +315,7 @@ export default function Landing({
                 }}>In progress</div>
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-2)', marginBottom: 10 }}>
-                {personalCat?.name ? `${personalCat.name} · ` : ''}
+                {personalCatName ? `${personalCatName} · ` : ''}
                 {personalDoneCount} of {personalTotal} matchups completed
               </div>
               <div style={{
@@ -374,6 +399,7 @@ export default function Landing({
             }}>
               {recentlyCrowned.map((b, i) => {
                 const cat = BRACKET_CATEGORIES.find(c => c.id === b.categoryId);
+                const catName = b.customCategoryName || cat?.name;
                 const winnerColors = b.winner ? getEraColors(b.winner.albumId) : null;
                 const album = b.winner ? ALL_ALBUMS.find(a => a.id === b.winner.albumId) : null;
                 return (
@@ -398,7 +424,7 @@ export default function Landing({
                       marginBottom: 4,
                     }}>{album?.icon || '♛'}</div>
                     <div style={{ fontSize: 9, color: 'var(--text-3)' }}>
-                      {cat?.name ?? 'Bracket'}
+                      {catName ?? 'Bracket'}
                     </div>
                     <div style={{
                       fontSize: 11, fontWeight: 500, color: 'var(--text)',
