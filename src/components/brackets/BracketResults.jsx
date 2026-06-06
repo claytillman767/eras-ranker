@@ -66,7 +66,7 @@ function Confetti() {
 }
 
 // Draw a shareable winner card to a canvas
-function drawResultCard(canvas, bracket, categoryId) {
+function drawResultCard(canvas, bracket, categoryId, categoryNameOverride) {
   if (!canvas || !bracket.winner) return;
   const ctx = canvas.getContext('2d');
   const W = 1080, H = 1080;
@@ -97,7 +97,7 @@ function drawResultCard(canvas, bracket, categoryId) {
   // Category
   ctx.fillStyle = '#d4af37';
   ctx.font = 'bold 36px system-ui, -apple-system, sans-serif';
-  ctx.fillText((cat?.name || categoryId).toUpperCase(), W / 2, 460);
+  ctx.fillText((categoryNameOverride || cat?.name || categoryId).toUpperCase(), W / 2, 460);
 
   // "WINNER" label
   ctx.fillStyle = '#ffffff';
@@ -234,7 +234,7 @@ export default function BracketResults({ bracket, onTryAnother, onClose }) {
 
   useEffect(() => {
     if (canvasRef.current && bracket.winner) {
-      drawResultCard(canvasRef.current, bracket, categoryId);
+      drawResultCard(canvasRef.current, bracket, categoryId, bracket.customCategoryName);
     }
   }, [bracket, categoryId]);
 
@@ -308,7 +308,7 @@ export default function BracketResults({ bracket, onTryAnother, onClose }) {
               marginBottom: 10,
               animation: 'fade-in 0.4s ease 0.2s both',
             }}>
-              {cat?.name?.toUpperCase()} WINNER
+              {(bracket.customCategoryName || cat?.name || 'BRACKET').toUpperCase()} WINNER
             </div>
             <div style={{
               fontSize: 28,

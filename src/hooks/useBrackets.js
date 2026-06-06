@@ -137,7 +137,7 @@ export function useBrackets(user) {
 
   // Create a new personal bracket. `desiredSize` (optional) overrides the
   // default "largest power-of-two that fits" sizing — see BRACKET_SIZES.
-  const createBracket = useCallback((categoryId, scope = 'all', desiredSize) => {
+  const createBracket = useCallback((categoryId, scope = 'all', desiredSize, customCategoryName) => {
     const seed = Date.now();
     const generated = generateBracket(categoryId, scope, seed, desiredSize);
     if (!generated) {
@@ -162,6 +162,9 @@ export function useBrackets(user) {
       rounds: generated.rounds,
       winner: null,
       createdAt: Date.now(),
+      // Optional — when set, every screen displays this instead of the
+      // curated category name. Used by the "Write your own" builder path.
+      ...(customCategoryName ? { customCategoryName } : {}),
     };
 
     persistBrackets([...brackets, bracket]);
