@@ -62,6 +62,7 @@ export default function BracketBuilder({ onClose, onStart }) {
   const [categoryId, setCategoryId] = useState(null);
   const [scope, setScope] = useState('all'); // 'all' | albumId
   const [size, setSize] = useState(16);      // desired bracket size
+  const [startError, setStartError] = useState(null);
 
   // Personal categories only — the weekly one runs on its own schedule.
   const categories = useMemo(
@@ -95,10 +96,17 @@ export default function BracketBuilder({ onClose, onStart }) {
   }
 
   function handleStart() {
-    if (!category) return;
-    if (scopeMaxSize < MIN_BRACKET) return;
-    if (size > scopeMaxSize) return;
-    onStart(category.id, scope, size);
+    setStartError(null);
+    if (!category) { setStartError('Pick a category first.'); return; }
+    if (scopeMaxSize < MIN_BRACKET) { setStartError('Not enough eligible songs for this scope.'); return; }
+    if (size > scopeMaxSize) { setStartError(`Bracket size too large — max is ${scopeMaxSize}.`); return; }
+    // onStart may return a status string ('ok' | 'locked' | 'failed') so we
+    // can show a visible error if the parent couldn't proceed. Older callers
+    // that don't return anything still behave the same.
+    const result = onStart(category.id, scope, size);
+    if (result === 'failed') {
+      setStartError("Something went wrong starting that bracket. Try a different category or scope.");
+    }
   }
 
   return (
@@ -170,6 +178,7 @@ export default function BracketBuilder({ onClose, onStart }) {
           size={size}
           ready={scopeMaxSize >= MIN_BRACKET && size <= scopeMaxSize}
           onStart={handleStart}
+          error={startError}
         />
       )}
     </div>
@@ -436,7 +445,7 @@ function ScopeOption({ active, disabled, onClick, title, meta, icon }) {
 }
 
 // ── Bottom CTA bar ─────────────────────────────────────────────────────────
-function BottomBar({ scope, size, ready, onStart }) {
+function BottomBar({ scope, size, ready, onStart, error }) {
   const scopeLabel = scope === 'all'
     ? 'All Taylor songs'
     : ALL_ALBUMS.find(a => a.id === scope)?.name || '';
@@ -459,6 +468,20 @@ function BottomBar({ scope, size, ready, onStart }) {
           ? `${size} songs · ${rounds} rounds · ~${minutes} min · ${scopeLabel}`
           : 'Pick a scope and bracket size with enough eligible songs'}
       </div>
+      {error && (
+        <div style={{
+          fontSize: 12,
+          color: 'var(--danger-text)',
+          background: 'var(--danger-soft, rgba(239,68,68,0.08))',
+          border: '1px solid var(--danger-text)',
+          borderRadius: 8,
+          padding: '8px 12px',
+          marginBottom: 10,
+          textAlign: 'center',
+        }}>
+          {error}
+        </div>
+      )}
       <button
         onClick={onStart}
         disabled={!ready}

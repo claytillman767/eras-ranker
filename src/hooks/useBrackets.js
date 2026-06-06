@@ -140,7 +140,15 @@ export function useBrackets(user) {
   const createBracket = useCallback((categoryId, scope = 'all', desiredSize) => {
     const seed = Date.now();
     const generated = generateBracket(categoryId, scope, seed, desiredSize);
-    if (!generated) return null;
+    if (!generated) {
+      // Surface why — the picker's "Start" button silently does nothing if we
+      // return null here, which is the symptom reported in feedback.
+      // eslint-disable-next-line no-console
+      console.warn('[createBracket] generateBracket returned null', {
+        categoryId, scope, desiredSize,
+      });
+      return null;
+    }
 
     const bracket = {
       id: makeBracketId(),
