@@ -169,10 +169,12 @@ export function FeedbackModal({ user, baseScreenKey, baseDetail }) {
       await addDoc(collection(db, 'feedback'), { ...payload, createdAt: serverTimestamp() });
       setState('sent');
       setText('');
+      // +2s vs the old 1.5s so the Swiftie pun has time to land. The user can
+      // dismiss earlier via the explicit Close button on the thanks card.
       setTimeout(() => {
         closeFeedback();
         setState('idle');
-      }, 1500);
+      }, 3500);
     } catch (err) {
       console.warn('Feedback save failed:', err);
       setState('error');
@@ -232,15 +234,63 @@ export function FeedbackModal({ user, baseScreenKey, baseDetail }) {
         }}
       >
         {state === 'sent' ? (
-          <div style={{ textAlign: 'center', padding: '12px 0' }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>💌</div>
-            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>
-              Thanks for the feedback!
+          // Paper airplane flies in, then off-stage to the right, then a
+          // Swiftie-flavored line lands. Pun is evocative, not a verbatim
+          // lyric — copyright-safe.
+          <>
+            <style>{`
+              @keyframes feedback-plane-fly {
+                0%   { transform: translate(-180%, 30%) rotate(-18deg); opacity: 0; }
+                18%  { transform: translate(-40%, -10%) rotate(-6deg);  opacity: 1; }
+                55%  { transform: translate(20%, -22%) rotate(2deg);    opacity: 1; }
+                100% { transform: translate(220%, -90%) rotate(20deg);  opacity: 0; }
+              }
+              @keyframes feedback-thanks-rise {
+                from { opacity: 0; transform: translateY(8px); }
+                to   { opacity: 1; transform: translateY(0); }
+              }
+            `}</style>
+            <div style={{ textAlign: 'center', padding: '6px 0 8px', position: 'relative', minHeight: 130 }}>
+              <div style={{
+                position: 'absolute',
+                left: '50%',
+                top: 6,
+                fontSize: 36,
+                lineHeight: 1,
+                animation: 'feedback-plane-fly 2.6s cubic-bezier(.25,.8,.4,1) forwards',
+                transformOrigin: 'center center',
+                willChange: 'transform, opacity',
+                pointerEvents: 'none',
+              }}>✈️</div>
+              <div style={{
+                paddingTop: 56,
+                animation: 'feedback-thanks-rise 0.45s ease 0.6s both',
+              }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>
+                  Filed in the vault. ✨
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 14 }}>
+                  Locked in like a vault track — thanks for sending it.
+                </div>
+                <button
+                  type="button"
+                  onClick={close}
+                  style={{
+                    background: 'var(--surface-2)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 18,
+                    padding: '7px 18px',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: 'var(--text-2)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Close
+                </button>
+              </div>
             </div>
-            <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
-              It'll help shape the app.
-            </div>
-          </div>
+          </>
         ) : (
           <>
             <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>
