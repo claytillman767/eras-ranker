@@ -16,6 +16,13 @@ Newest entries go at the top.
 
 ---
 
+## 0.24.4 — 2026-06-06
+
+### Fixed
+- Song titles on Vibe Check screens for 1989, Fearless, and other albums with pastel/light backdrops are no longer white-on-light when the app is in dark mode. Title, category counter, and prompt text now all flip to a dark color whenever a themed light backdrop is showing, so they stay readable in both light and dark modes.
+
+---
+
 ## 0.24.3 — 2026-06-06
 
 ### Fixed
