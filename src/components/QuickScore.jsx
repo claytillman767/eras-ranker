@@ -2841,7 +2841,7 @@ function NoBridgeScreen({ songName, onContinue }) {
 // ── Shuffle screen — Play/Skip question with song lyrics floating in background ─
 // Lyrics fade in softly, then pulse up and out when the user picks an answer,
 // creating a bridge into the detailed rating questions.
-function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRating = 0, categoryNumber = 1, totalCategories = 1, hasThemedBackdrop = false, isDarkTheme = false }) {
+function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRating = 0, categoryNumber = 1, totalCategories = 1, hasThemedBackdrop = false, isDarkTheme = false, themedTitleColor = null, themedSubColor = null }) {
   const [animating, setAnimating] = useState(false);
 
   // Show the previous pick (if any) by fading the unpicked side. Mirrors
@@ -2905,11 +2905,22 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
             {albumIcon} {albumName}
           </div>
 
-          {/* Song name */}
+          {/* Song name.
+              themedTitleColor is the album's tuned title color (from
+              albumTheme.textTuning.songTitle) — passed in for registry themes.
+              For LIGHT themed backdrops without a registry tuning (Fearless,
+              Lover, etc.) we force a dark color, because `var(--text)` goes
+              WHITE in dark mode and disappears against the pastel backdrop.
+              Reported in feedback as white song titles on 1989 and Fearless. */}
           <div style={{
             fontSize: 24,
             fontWeight: 700,
-            color: isDarkTheme ? '#f3f4f6' : 'var(--text)',
+            color: themedTitleColor
+              || (isDarkTheme
+                ? '#f3f4f6'
+                : hasThemedBackdrop
+                  ? '#1a1a1a'  // light themed backdrop — force dark text
+                  : 'var(--text)'),
             lineHeight: 1.3,
             marginBottom: 14,
             maxWidth: 300,
@@ -2922,7 +2933,12 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
               user sees this is question 1 of N, not a standalone choice. */}
           <div style={{
             fontSize: 12,
-            color: isDarkTheme ? '#cbd5e1' : '#c4b5fd',
+            color: themedSubColor
+              || (isDarkTheme
+                ? '#cbd5e1'
+                : hasThemedBackdrop
+                  ? '#404040'
+                  : '#c4b5fd'),
             marginBottom: 18,
             textShadow: isDarkTheme ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
           }}>
@@ -2930,7 +2946,16 @@ function ShuffleScreen({ song, albumName, albumIcon, lyrics, onPick, currentRati
           </div>
 
           {/* Question */}
-          <div style={{ fontSize: 15, color: isDarkTheme ? '#cbd5e1' : 'var(--text-3)', marginBottom: 52 }}>
+          <div style={{
+            fontSize: 15,
+            color: themedSubColor
+              || (isDarkTheme
+                ? '#cbd5e1'
+                : hasThemedBackdrop
+                  ? '#404040'
+                  : 'var(--text-3)'),
+            marginBottom: 52,
+          }}>
             If this came on shuffle right now...
           </div>
 
@@ -3507,6 +3532,8 @@ export default function QuickScore({
           totalCategories={currentSong?.cats.length ?? 1}
           hasThemedBackdrop={!!albumBackground}
           isDarkTheme={isDarkTheme}
+          themedTitleColor={albumTheme?.textTuning?.songTitle || null}
+          themedSubColor={albumTheme?.textTuning?.subCounter || null}
         />
       ) : (
         /* ── Fading wrapper — covers both NoBridgeScreen and star questions ── */
@@ -3565,7 +3592,11 @@ export default function QuickScore({
             {albumIcon} {albumName}
           </div>
 
-          {/* Song name */}
+          {/* Song name.
+              For any LIGHT themed backdrop (Fearless gold, Lover pastel,
+              etc.) we must NOT use var(--text) — in dark mode that resolves
+              to white and disappears against the pastel backdrop.
+              Reported in feedback as white titles on 1989 and Fearless. */}
           <div style={{
             fontSize: 22,
             fontWeight: isTPDTheme ? 800 : 700,
@@ -3578,7 +3609,9 @@ export default function QuickScore({
                     ? '#fffbeb'
                     : isDarkTheme
                       ? '#f3f4f6'
-                      : 'var(--text)'),
+                      : albumBackground
+                        ? '#1a1a1a'  // light themed backdrop — force dark text
+                        : 'var(--text)'),
             lineHeight: 1.3,
             marginBottom: currentCat?.id === 'lyrics' ? 16 : 32,
             maxWidth: 320,
