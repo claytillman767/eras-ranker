@@ -78,14 +78,28 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
   }
 
   // Called when the builder confirms — actually creates the bracket and
-  // routes into the matchup flow.
+  // routes into the matchup flow. Returns a status string the builder uses
+  // to surface a visible error instead of silently doing nothing (which was
+  // the symptom in user feedback: "pressing start bracket isn't doing
+  // anything"). 'ok' = routed into matchup. 'locked' = routed to paywall.
+  // 'failed' = createBracket couldn't produce a bracket; builder shows
+  // an inline error.
   function handleBuilderStart(categoryId, scope, size) {
-    if (!isPro) { setScreen('locked'); return; }
+    if (!isPro) {
+      // eslint-disable-next-line no-console
+      console.warn('[handleBuilderStart] not Pro — routing to locked', { categoryId, scope, size });
+      setScreen('locked');
+      return 'locked';
+    }
     const id = createBracket(categoryId, scope, size);
     if (id) {
       setActiveBracketId(id);
       setScreen('matchup');
+      return 'ok';
     }
+    // eslint-disable-next-line no-console
+    console.warn('[handleBuilderStart] createBracket returned null', { categoryId, scope, size });
+    return 'failed';
   }
 
   function openCrowned(bracketId) {

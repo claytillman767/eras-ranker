@@ -16,6 +16,13 @@ Newest entries go at the top.
 
 ---
 
+## 0.24.3 — 2026-06-06
+
+### Fixed
+- The "Start bracket" button in the bracket builder used to silently do nothing if anything went wrong behind the scenes. It now shows a clear, in-place error message explaining what happened, so you know whether to try a different category, change the scope, or report it.
+
+---
+
 ## 0.24.2 — 2026-05-30
 
 ### Fixed
