@@ -16,6 +16,13 @@ Newest entries go at the top.
 
 ---
 
+## 0.25.1 — 2026-06-06
+
+### Changed
+- The "thanks for the feedback" screen is now a small Swiftie moment: a paper airplane flies off carrying your note, then the message "Filed in the vault. ✨ — Locked in like a vault track — thanks for sending it." appears. It stays up 2 seconds longer than before, and there's now a Close button on it so you can dismiss it without waiting.
+
+---
+
 ## 0.25.0 — 2026-06-06
 
 ### Added
