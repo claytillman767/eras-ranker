@@ -629,19 +629,21 @@ function MatchupRow({ song, right }) {
   );
 }
 
-function StartConfirm({ name, picked, preview, onEdit, onStart }) {
-  const m = sizeMeta(picked.length);
+function StartConfirm({ name, roster, onEdit, onStart }) {
+  const m = sizeMeta(roster.length);
+  const pairs = [];
+  for (let i = 0; i < roster.length; i += 2) pairs.push([roster[i], roster[i + 1]]);
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 80, background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
       <div style={{ textAlign: 'center', padding: '44px 24px 18px' }}>
         <div style={{ fontSize: 40 }}>🏆</div>
         <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', marginTop: 8 }}>Bracket ready</div>
-        <div style={{ fontSize: 14, color: 'var(--text-2)', marginTop: 4 }}>“{name}” · {picked.length} songs · {m.rounds} rounds</div>
-        <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>Round 1 · {preview.length} matchups</div>
+        <div style={{ fontSize: 14, color: 'var(--text-2)', marginTop: 4 }}>“{name}” · {roster.length} songs · {m.rounds} rounds</div>
+        <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>Round 1 · {pairs.length} matchups</div>
       </div>
       <div style={{ flex: 1, overflow: 'auto', padding: '0 16px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-          {preview.map((p, i) => (
+          {pairs.map((p, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 10, borderRadius: 13, background: 'var(--surface)', border: '1px solid var(--hairline)' }}>
               <MatchupRow song={p[0]} />
               <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-3)', flexShrink: 0 }}>VS</div>
@@ -712,9 +714,11 @@ export default function BracketBuilder({ onClose, onStart }) {
   const [size, setSize] = useState(16);
   const [picked, setPicked] = useState([]);
   const [chosenOpen, setChosenOpen] = useState(false);
-  // When the user taps "Start bracket" we freeze a round-1 preview so it
-  // doesn't reshuffle on every render while the confirm screen is open.
-  const [preview, setPreview] = useState(null);
+  // When the user taps "Start bracket" we freeze the shuffled roster (flat,
+  // round-1 order) so the "Bracket ready" preview is stable AND is the exact
+  // order handed to the engine — the preview is the real bracket, not a
+  // throwaway reshuffle.
+  const [confirmRoster, setConfirmRoster] = useState(null);
   const [startError, setStartError] = useState(null);
   const scrollRef = useRef(null);
   const toTop = () => { if (scrollRef.current) scrollRef.current.scrollTop = 0; };
@@ -735,22 +739,19 @@ export default function BracketBuilder({ onClose, onStart }) {
   const onBack = step === 1 ? onClose : back;
 
   const openConfirm = () => {
-    const songs = picked.map(k => SONG_BY_KEY.get(k)).filter(Boolean);
-    const sh = shuffle(songs);
-    const pairs = [];
-    for (let i = 0; i < sh.length; i += 2) pairs.push([sh[i], sh[i + 1]]);
-    setPreview(pairs);
+    // Shuffle ONCE here. This exact order drives the preview pairs and is the
+    // same order passed to the engine, so what the user sees is what they vote.
+    const songs = shuffle(picked.map(k => SONG_BY_KEY.get(k)).filter(Boolean));
+    setConfirmRoster(songs);
   };
 
   const confirmStart = () => {
     setStartError(null);
-    const contestants = picked
-      .map(k => SONG_BY_KEY.get(k))
-      .filter(Boolean)
-      .map(s => ({ name: s.name, albumId: s.albumId, songIndex: s.songIndex }));
+    const roster = confirmRoster || [];
+    const contestants = roster.map(s => ({ name: s.name, albumId: s.albumId, songIndex: s.songIndex }));
     const result = onStart(categoryId, 'custom', size, custom ? name : null, contestants);
     if (result === 'failed') {
-      setPreview(null);
+      setConfirmRoster(null);
       setStartError('Something went wrong starting that bracket. Try again.');
     }
     // 'ok' routes away to the matchup flow; 'locked' routes to the paywall.
@@ -791,10 +792,10 @@ export default function BracketBuilder({ onClose, onStart }) {
         />
       )}
 
-      {preview && (
+      {confirmRoster && (
         <StartConfirm
-          name={name} picked={picked} preview={preview}
-          onEdit={() => setPreview(null)}
+          name={name} roster={confirmRoster}
+          onEdit={() => setConfirmRoster(null)}
           onStart={confirmStart}
         />
       )}
