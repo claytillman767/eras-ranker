@@ -164,8 +164,10 @@ function buildRound(songs) {
 //
 // `explicitContestants` (optional) — when the user hand-builds a roster in the
 // custom-bracket builder, the chosen songs are passed in directly. We skip the
-// category filter + pool building entirely and just shuffle the given songs
-// into round-1 pairs (matchups are still randomized, same as before). The
+// category filter + pool building entirely and build round-1 pairs from the
+// songs IN THE GIVEN ORDER. The caller (BracketBuilder) is responsible for the
+// one-time shuffle so the "Bracket ready" preview it shows matches the actual
+// bracket exactly — re-shuffling here would make the preview a lie. The
 // category becomes a label only in this path.
 export function generateBracket(categoryId, scope, seed, desiredSize, explicitContestants) {
   const rand = seededRandom(seed);
@@ -173,8 +175,7 @@ export function generateBracket(categoryId, scope, seed, desiredSize, explicitCo
   if (explicitContestants && explicitContestants.length) {
     const size = bracketSize(explicitContestants.length);
     if (size === 0) return null;
-    const shuffled = shuffleWithSeed(explicitContestants, rand);
-    const contestants = shuffled.slice(0, size);
+    const contestants = explicitContestants.slice(0, size);
     return { contestants, rounds: [buildRound(contestants)] };
   }
 

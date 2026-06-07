@@ -16,6 +16,13 @@ Newest entries go at the top.
 
 ---
 
+## 0.27.1 — 2026-06-07
+
+### Fixed
+- The "Bracket ready" preview now shows your **actual** round-1 matchups. Before, the matchups reshuffled when you started voting, so the preview didn't match the real bracket. What you see on the confirmation screen is now exactly what you'll vote on.
+
+---
+
 ## 0.27.0 — 2026-06-07
 
 ### Changed
