@@ -16,7 +16,17 @@ Newest entries go at the top.
 
 ---
 
-## 0.26.1 — 2026-06-07
+## 0.27.0 — 2026-06-07
+
+### Changed
+- **Redesigned the custom bracket builder into a guided 3-step flow** with a progress bar at the top: **Category → Size → Songs.** Cleaner, easier to follow, and clearer about where you are.
+- **Step 1 (Category):** a bold "Write your own" card up top, or pick one of eight quick themes (Best Bridge, Most Romantic, and more) — each with its own icon and a one-line description.
+- **Step 2 (Size):** pick 4, 8, 16, or 32 songs, each showing how many rounds and roughly how long it'll take.
+- **Step 3 (Songs):** a live progress bar and counter, a tappable **"View" list** to review and remove your picks, "Fill remaining" / "Fill all randomly", an album-narrowing randomizer, search, and the song list grouped by album.
+
+### Added
+- A **"Your songs" review sheet** — tap "View" to see your whole roster in order and remove any song before starting.
+- A **"Bracket ready" confirmation screen** that previews your round-1 matchups before you start voting.
 
 ### Changed
 - Sharpened the "Custom brackets" perk line across every upgrade screen to reflect the new builder — now reads "Hand-pick any songs and run your own tournament."
