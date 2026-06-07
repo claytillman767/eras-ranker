@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 
 // Lightweight "where is the user right now?" registry for the Feedback button.
 //
@@ -35,13 +35,29 @@ export function FeedbackScreenProvider({ children }) {
   const openFeedback  = useCallback(() => setOpen(true), []);
   const closeFeedback = useCallback(() => setOpen(false), []);
 
-  let current = null;
-  for (const id in entries) {
-    if (!current || entries[id].seq > current.seq) current = entries[id];
-  }
+  // Highest-seq live entry wins. Recomputed from `entries` only, so the
+  // result is referentially stable as long as `entries` doesn't change.
+  const current = useMemo(() => {
+    let c = null;
+    for (const id in entries) {
+      if (!c || entries[id].seq > c.seq) c = entries[id];
+    }
+    return c;
+  }, [entries]);
+
+  // CRITICAL: memoize the context value. Without this, every provider render
+  // produces a new value object, which makes `ctx` in useFeedbackScreen a new
+  // reference every render. That new ref re-fires useFeedbackScreen's effect
+  // (whose deps include ctx) which calls register → setEntries → re-render →
+  // new value → … → "Maximum update depth exceeded". The render-loop bailout
+  // is what made the bracket builder's Start button look like it did nothing.
+  const value = useMemo(
+    () => ({ current, register, unregister, open, openFeedback, closeFeedback }),
+    [current, register, unregister, open, openFeedback, closeFeedback]
+  );
 
   return (
-    <Ctx.Provider value={{ current, register, unregister, open, openFeedback, closeFeedback }}>
+    <Ctx.Provider value={value}>
       {children}
     </Ctx.Provider>
   );
@@ -55,11 +71,20 @@ export function useFeedbackScreen(key, detail = null) {
   const idRef = useRef(null);
   if (idRef.current === null) idRef.current = `fs_${++_seq}`;
 
+  // Belt-and-suspenders: even with the provider's value memoized, we keep
+  // ctx out of the effect deps via a ref. That way an unrelated provider
+  // re-render can never re-trigger register/unregister churn — only an
+  // actual change in screen `key` or `detail` does.
+  const ctxRef = useRef(ctx);
+  ctxRef.current = ctx;
+
   useEffect(() => {
-    if (!ctx) return undefined;
-    ctx.register(idRef.current, key, detail);
-    return () => ctx.unregister(idRef.current);
-  }, [ctx, key, detail]);
+    const c = ctxRef.current;
+    if (!c) return undefined;
+    const id = idRef.current;
+    c.register(id, key, detail);
+    return () => ctxRef.current?.unregister(id);
+  }, [key, detail]);
 }
 
 // Read the current winning screen entry ({ key, detail }) or null.
