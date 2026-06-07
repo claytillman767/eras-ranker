@@ -16,6 +16,13 @@ Newest entries go at the top.
 
 ---
 
+## 0.26.1 — 2026-06-07
+
+### Changed
+- Sharpened the "Custom brackets" perk line across every upgrade screen to reflect the new builder — now reads "Hand-pick any songs and run your own tournament."
+
+---
+
 ## 0.26.0 — 2026-06-07
 
 ### Changed

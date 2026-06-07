@@ -186,7 +186,7 @@ export default function VibeCheckIntro({
             {
               icon: '🏆',
               title: 'Custom brackets',
-              desc: 'Build your own song tournaments.',
+              desc: 'Hand-pick any songs and run your own tournament.',
             },
           ].map((item, i, arr) => (
             <div

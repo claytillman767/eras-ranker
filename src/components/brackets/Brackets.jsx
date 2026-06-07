@@ -245,7 +245,7 @@ function BracketLocked({ onClose, user, signIn, unlockPro }) {
   const perks = [
     { label: '8 extra rating categories', desc: 'Hook, Vocals, Cry Factor, and more' },
     { label: 'Custom categories',         desc: 'Add your own scoring dimensions' },
-    { label: 'Custom brackets',           desc: 'Build your own song tournaments' },
+    { label: 'Custom brackets',           desc: 'Hand-pick any songs and run your own tournament' },
   ];
 
   function handleUnlock() {
