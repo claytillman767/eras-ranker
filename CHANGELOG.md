@@ -16,6 +16,13 @@ Newest entries go at the top.
 
 ---
 
+## 0.25.2 — 2026-06-07
+
+### Fixed
+- The bracket builder's "Start bracket" button now actually starts the bracket. Behind the scenes, a render-loop bug in the feedback-button context provider was making React give up mid-state-update on Start, which left the bracket created but the screen stuck on the landing view. Fixed at the root — the feedback context now hands stable references to consumers, so the screen routes cleanly from Start → matchup.
+
+---
+
 ## 0.25.1 — 2026-06-06
 
 ### Changed
