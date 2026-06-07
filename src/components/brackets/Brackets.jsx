@@ -86,14 +86,14 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
   // anything"). 'ok' = routed into matchup. 'locked' = routed to paywall.
   // 'failed' = createBracket couldn't produce a bracket; builder shows
   // an inline error.
-  function handleBuilderStart(categoryId, scope, size, customCategoryName) {
+  function handleBuilderStart(categoryId, scope, size, customCategoryName, contestants) {
     if (!isPro) {
       // eslint-disable-next-line no-console
       console.warn('[handleBuilderStart] not Pro — routing to locked', { categoryId, scope, size });
       setScreen('locked');
       return 'locked';
     }
-    const id = createBracket(categoryId, scope, size, customCategoryName);
+    const id = createBracket(categoryId, scope, size, customCategoryName, contestants);
     if (id) {
       setActiveBracketId(id);
       setScreen('matchup');

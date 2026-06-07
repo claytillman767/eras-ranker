@@ -161,7 +161,23 @@ function buildRound(songs) {
 // Generate initial bracket rounds structure. `desiredSize` (optional) lets
 // the caller pick a specific bracket size from BRACKET_SIZES; if omitted or
 // larger than the eligible pool, falls back to the largest size that fits.
-export function generateBracket(categoryId, scope, seed, desiredSize) {
+//
+// `explicitContestants` (optional) — when the user hand-builds a roster in the
+// custom-bracket builder, the chosen songs are passed in directly. We skip the
+// category filter + pool building entirely and just shuffle the given songs
+// into round-1 pairs (matchups are still randomized, same as before). The
+// category becomes a label only in this path.
+export function generateBracket(categoryId, scope, seed, desiredSize, explicitContestants) {
+  const rand = seededRandom(seed);
+
+  if (explicitContestants && explicitContestants.length) {
+    const size = bracketSize(explicitContestants.length);
+    if (size === 0) return null;
+    const shuffled = shuffleWithSeed(explicitContestants, rand);
+    const contestants = shuffled.slice(0, size);
+    return { contestants, rounds: [buildRound(contestants)] };
+  }
+
   const cat = BRACKET_CATEGORIES.find(c => c.id === categoryId);
   let pool = scope === 'all' ? buildAllSongPool() : buildAlbumSongPool(scope);
 
@@ -170,7 +186,6 @@ export function generateBracket(categoryId, scope, seed, desiredSize) {
     pool = pool.filter(s => cat.songFilter(s.albumId, s.songIndex));
   }
 
-  const rand = seededRandom(seed);
   const shuffled = shuffleWithSeed(pool, rand);
   const maxFit = bracketSize(shuffled.length);
   const size = desiredSize && BRACKET_SIZES.includes(desiredSize) && desiredSize <= maxFit

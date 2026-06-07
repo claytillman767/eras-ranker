@@ -137,9 +137,9 @@ export function useBrackets(user) {
 
   // Create a new personal bracket. `desiredSize` (optional) overrides the
   // default "largest power-of-two that fits" sizing — see BRACKET_SIZES.
-  const createBracket = useCallback((categoryId, scope = 'all', desiredSize, customCategoryName) => {
+  const createBracket = useCallback((categoryId, scope = 'all', desiredSize, customCategoryName, explicitContestants) => {
     const seed = Date.now();
-    const generated = generateBracket(categoryId, scope, seed, desiredSize);
+    const generated = generateBracket(categoryId, scope, seed, desiredSize, explicitContestants);
     if (!generated) {
       // Surface why — the picker's "Start" button silently does nothing if we
       // return null here, which is the symptom reported in feedback.

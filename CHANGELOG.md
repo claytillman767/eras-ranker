@@ -16,7 +16,12 @@ Newest entries go at the top.
 
 ---
 
-## 0.25.2 — 2026-06-07
+## 0.26.0 — 2026-06-07
+
+### Changed
+- **Custom brackets now let you pick the exact songs.** Building your own bracket is a whole new flow: name it (or pick a theme name), choose a size (4/8/16/32), then hand-pick the songs you want from a searchable list grouped by album. The theme is now just a label — any song can go in any bracket.
+- **Randomizer with control.** Don't want to pick all of them? Tap "Fill remaining" to randomly top up the empty slots, or "Fill all randomly" for a surprise roster. You can limit the randomizer to specific albums (e.g. only pull from 1989, Red, and Folklore) while still hand-picking anything you like.
+- A live "6 / 16 chosen" counter and a search box make building a roster quick even across 200+ songs.
 
 ### Fixed
 - The bracket builder's "Start bracket" button now actually starts the bracket. Behind the scenes, a render-loop bug in the feedback-button context provider was making React give up mid-state-update on Start, which left the bracket created but the screen stuck on the landing view. Fixed at the root — the feedback context now hands stable references to consumers, so the screen routes cleanly from Start → matchup.
