@@ -46,6 +46,15 @@ const isNewWeeklyShape = (w) => !!(w && w.contestants && w.personalVotes);
 const STORAGE_KEY = 'eras_brackets';
 const WEEKLY_KEY = 'eras_weekly_bracket';
 
+// Cap on how many personal brackets a user can keep at once. All user data
+// (ratings, brackets, weekly votes, billing) lives in a SINGLE Firestore doc
+// with a hard 1 MiB ceiling, and every bracket write re-uploads the whole
+// brackets array — so this is a soft guard against a power user silently
+// blowing the shared doc budget, NOT a hard storage wall. 20 brackets is
+// ~140 KB worst case (32-song brackets), leaving the rest of the doc safe.
+// Bump this freely; delete the guard in createBracket to go unlimited.
+export const MAX_PERSONAL_BRACKETS = 20;
+
 function loadFromStorage(key) {
   try {
     const raw = localStorage.getItem(key);
@@ -179,6 +188,14 @@ export function useBrackets(user) {
   // Create a new personal bracket. `desiredSize` (optional) overrides the
   // default "largest power-of-two that fits" sizing — see BRACKET_SIZES.
   const createBracket = useCallback((categoryId, scope = 'all', desiredSize, customCategoryName, explicitContestants) => {
+    // Backstop for the soft cap. The UI disables the "New bracket" entry at
+    // the limit, so this normally never trips — it just guarantees the array
+    // can't grow past the budget even if a caller bypasses the disabled UI.
+    if (brackets.length >= MAX_PERSONAL_BRACKETS) {
+      // eslint-disable-next-line no-console
+      console.warn('[createBracket] personal bracket limit reached', { count: brackets.length, max: MAX_PERSONAL_BRACKETS });
+      return null;
+    }
     const seed = Date.now();
     const generated = generateBracket(categoryId, scope, seed, desiredSize, explicitContestants);
     if (!generated) {

@@ -94,14 +94,15 @@ export default function Landing({
   weekNumber,
   weeklyState,
   weeklyCategoryName,
-  personalInProgress,    // single in-progress personal bracket, or null
-  recentlyCrowned,       // array of recently completed brackets (most-recent first)
+  personalBrackets,      // all personal brackets, in-progress first then complete
+  maxBrackets,           // soft cap (MAX_PERSONAL_BRACKETS)
+  atBracketLimit,        // true when the user is at the cap
 
   // Callbacks
   onOpenWeekly,
-  onContinuePersonal,
+  onOpenPersonal,
+  onDeletePersonal,
   onBuildPersonal,
-  onOpenCrowned,
 }) {
   const revealMs = getNextSundayReveal();
   // Participant count kept around in case a future hero variant wants to show it,
@@ -137,25 +138,7 @@ export default function Landing({
       ? 'See Bracket →'
       : 'Vote Now →';
 
-  // Personal in-progress card — preview the alive contestants. Custom-named
-  // brackets show the user's typed name instead of the underlying category.
-  const personalCat = personalInProgress
-    ? BRACKET_CATEGORIES.find(c => c.id === personalInProgress.categoryId)
-    : null;
-  const personalCatName = personalInProgress?.customCategoryName || personalCat?.name;
-  const personalAlive = personalInProgress ? aliveContestants(personalInProgress) : [];
-  const personalSwatchPreview = personalAlive.slice(0, 6);
-  const personalSwatchOverflow = Math.max(0, personalAlive.length - 6);
-
-  // Personal progress count
-  const personalDoneCount = personalInProgress
-    ? personalInProgress.rounds.reduce(
-        (sum, round) => sum + round.filter(m => m.winner).length, 0
-      )
-    : 0;
-  const personalTotal = personalInProgress
-    ? personalInProgress.contestants.length - 1
-    : 0;
+  const hasBrackets = personalBrackets && personalBrackets.length > 0;
 
   return (
     <>
@@ -292,157 +275,201 @@ export default function Landing({
           </div>
         )}
 
-        {/* ── My Bracket ─────────────────────────────────────────────────── */}
-        <div style={{
-          marginBottom: 12,
-          borderRadius: 12,
-          padding: '12px 14px',
-          background: 'var(--surface)',
-          border: '1px solid var(--border)',
-        }}>
-          {personalInProgress ? (
-            <>
-              <div style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
-                marginBottom: 4,
-              }}>
-                <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)' }}>
-                  My Bracket
-                </div>
-                <div style={{
-                  fontSize: 10, color: 'var(--text-3)',
-                  textTransform: 'uppercase', letterSpacing: '0.08em',
-                }}>In progress</div>
+        {/* ── My Brackets ────────────────────────────────────────────────── */}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+            margin: '0 2px 8px',
+          }}>
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)' }}>
+              My Brackets
+            </div>
+            {hasBrackets && (
+              <div style={{ fontSize: 11, color: 'var(--text-3)', fontVariantNumeric: 'tabular-nums' }}>
+                {personalBrackets.length} of {maxBrackets}
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-2)', marginBottom: 10 }}>
-                {personalCatName ? `${personalCatName} · ` : ''}
-                {personalDoneCount} of {personalTotal} matchups completed
-              </div>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 4, marginBottom: 12,
-              }}>
-                {personalSwatchPreview.map((song, i) => (
-                  <EraSwatch key={i} albumId={song.albumId} size={14} />
-                ))}
-                {personalSwatchOverflow > 0 && (
-                  <span style={{
-                    fontSize: 10, color: 'var(--text-3)', marginLeft: 4,
-                  }}>+ {personalSwatchOverflow}</span>
-                )}
-              </div>
-              <button
-                onClick={onContinuePersonal}
-                style={{
-                  width: '100%',
-                  padding: '9px 0',
-                  borderRadius: 18,
-                  border: 'none',
-                  background: 'var(--brand)',
-                  color: '#ffffff',
-                  fontSize: 13, fontWeight: 500,
-                  cursor: 'pointer',
-                }}
-              >Continue →</button>
-            </>
+            )}
+          </div>
+
+          {hasBrackets ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {personalBrackets.map(b => (
+                <BracketCard
+                  key={b.id}
+                  bracket={b}
+                  onOpen={() => onOpenPersonal(b.id)}
+                  onDelete={() => onDeletePersonal(b.id)}
+                />
+              ))}
+              <NewBracketButton onClick={onBuildPersonal} atLimit={atBracketLimit} maxBrackets={maxBrackets} />
+            </div>
           ) : (
             // Empty state — invite the user to build their first bracket
-            <>
-              <div style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
-                marginBottom: 4,
-              }}>
-                <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)' }}>
-                  Build your own bracket
-                </div>
+            <div style={{
+              borderRadius: 12,
+              padding: '14px',
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+            }}>
+              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', marginBottom: 4 }}>
+                Build your own bracket
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-2)', marginBottom: 12 }}>
-                Pick 8 or 16 of your favorites and run a head-to-head.
+              <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5, marginBottom: 12 }}>
+                Pick 8, 16, or 32 of your favorites and run a head-to-head tournament.
               </div>
-              <button
-                onClick={onBuildPersonal}
-                style={{
-                  width: '100%',
-                  padding: '9px 0',
-                  borderRadius: 18,
-                  border: 'none',
-                  background: 'var(--brand)',
-                  color: '#ffffff',
-                  fontSize: 13, fontWeight: 500,
-                  cursor: 'pointer',
-                }}
-              >Start →</button>
-            </>
+              <NewBracketButton onClick={onBuildPersonal} atLimit={false} maxBrackets={maxBrackets} label="Start a bracket →" />
+            </div>
           )}
         </div>
-
-        {/* ── Recently Crowned ───────────────────────────────────────────── */}
-        {/* OPEN QUESTION (README §5): "Recently crowned" should source from the
-            community's archived weekly winners — that history isn't stored yet
-            (useBrackets only tracks the current week). Until the archive
-            exists, fall back to the user's own completed personal brackets so
-            the strip isn't always empty. */}
-        {recentlyCrowned && recentlyCrowned.length > 0 && (
-          <div>
-            <div style={{
-              fontSize: 10, color: 'var(--text-3)',
-              textTransform: 'uppercase', letterSpacing: '0.1em',
-              fontWeight: 600,
-              marginBottom: 8,
-            }}>
-              Recently crowned
-            </div>
-            <div style={{
-              display: 'flex',
-              gap: 10,
-              overflowX: 'auto',
-              paddingBottom: 4,
-            }}>
-              {recentlyCrowned.map((b, i) => {
-                const cat = BRACKET_CATEGORIES.find(c => c.id === b.categoryId);
-                const catName = b.customCategoryName || cat?.name;
-                const winnerColors = b.winner ? getEraColors(b.winner.albumId) : null;
-                const album = b.winner ? ALL_ALBUMS.find(a => a.id === b.winner.albumId) : null;
-                return (
-                  <div
-                    key={b.id || i}
-                    onClick={() => onOpenCrowned?.(b.id)}
-                    style={{
-                      flexShrink: 0,
-                      width: 84,
-                      cursor: onOpenCrowned ? 'pointer' : 'default',
-                    }}
-                  >
-                    <div style={{
-                      width: 40, height: 40,
-                      borderRadius: 8,
-                      background: winnerColors
-                        ? `linear-gradient(135deg, ${winnerColors.primary}, ${winnerColors.secondary})`
-                        : 'var(--surface-3)',
-                      border: '1px dashed var(--text-3)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 18,
-                      marginBottom: 4,
-                    }}>{album?.icon || '♛'}</div>
-                    <div style={{ fontSize: 9, color: 'var(--text-3)' }}>
-                      {catName ?? 'Bracket'}
-                    </div>
-                    <div style={{
-                      fontSize: 11, fontWeight: 500, color: 'var(--text)',
-                      lineHeight: 1.2,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}>
-                      {b.winner?.name ?? '—'}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
     </>
+  );
+}
+
+// ── My Brackets list helpers ────────────────────────────────────────────────
+
+function bracketDisplayName(b) {
+  return b.customCategoryName
+    || BRACKET_CATEGORIES.find(c => c.id === b.categoryId)?.name
+    || 'Bracket';
+}
+
+// One row in the My Brackets list. Tapping the card opens it; the trash button
+// stops propagation and asks the parent to confirm a delete.
+function BracketCard({ bracket, onOpen, onDelete }) {
+  const isComplete = bracket.status === 'complete';
+  const name = bracketDisplayName(bracket);
+
+  // Tile: completed brackets show the champion's era color + album icon;
+  // in-progress brackets use the brand gradient + a bracket glyph.
+  const champColors = isComplete && bracket.winner ? getEraColors(bracket.winner.albumId) : null;
+  const champAlbum = isComplete && bracket.winner ? ALL_ALBUMS.find(a => a.id === bracket.winner.albumId) : null;
+
+  // Progress (shown for in-progress brackets only).
+  const done = bracket.rounds.reduce((sum, round) => sum + round.filter(m => m.winner).length, 0);
+  const total = bracket.contestants.length - 1;
+  const totalRounds = Math.round(Math.log2(bracket.contestants.length));
+  const currentRound = Math.min((bracket.currentRound ?? 0) + 1, totalRounds);
+  const alive = isComplete ? [] : aliveContestants(bracket);
+  const alivePreview = alive.slice(0, 6);
+  const aliveOverflow = Math.max(0, alive.length - 6);
+
+  return (
+    <div
+      onClick={onOpen}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        borderRadius: 12, padding: '11px 12px', cursor: 'pointer',
+        background: 'var(--surface)', border: '1px solid var(--border)',
+      }}
+    >
+      {/* Tile */}
+      <div style={{
+        width: 44, height: 44, borderRadius: 11, flexShrink: 0,
+        background: champColors
+          ? `linear-gradient(135deg, ${champColors.primary}, ${champColors.secondary})`
+          : 'linear-gradient(135deg, var(--brand), var(--brand-2))',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 20,
+      }}>
+        {isComplete ? (champAlbum?.icon || '♛') : <BracketGlyph />}
+      </div>
+
+      {/* Body */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontSize: 14.5, fontWeight: 600, color: 'var(--text)',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>{name}</div>
+        {isComplete ? (
+          <div style={{
+            fontSize: 12, color: 'var(--text-2)', marginTop: 2,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>🏆 {bracket.winner?.name || 'Champion crowned'}</div>
+        ) : (
+          <>
+            <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 2 }}>
+              Round {currentRound} of {totalRounds} · {done} of {total} done
+            </div>
+            {alivePreview.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 5 }}>
+                {alivePreview.map((s, i) => <EraSwatch key={i} albumId={s.albumId} size={12} />)}
+                {aliveOverflow > 0 && (
+                  <span style={{ fontSize: 10, color: 'var(--text-3)', marginLeft: 3 }}>+{aliveOverflow}</span>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Delete */}
+      <button
+        onClick={(e) => { e.stopPropagation(); onDelete(); }}
+        aria-label={`Delete ${name}`}
+        style={{
+          flexShrink: 0, width: 34, height: 34, borderRadius: 9,
+          border: 'none', background: 'transparent', cursor: 'pointer',
+          color: 'var(--text-3)', appearance: 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        <TrashGlyph />
+      </button>
+    </div>
+  );
+}
+
+// The persistent "create a bracket" affordance under the list. At the cap it
+// becomes a non-tappable hint instead of a button.
+function NewBracketButton({ onClick, atLimit, maxBrackets, label = '＋ New bracket' }) {
+  if (atLimit) {
+    return (
+      <div style={{
+        borderRadius: 12, border: '1px dashed var(--border)',
+        background: 'var(--surface-2)', padding: '11px 12px', textAlign: 'center',
+      }}>
+        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-2)' }}>
+          Bracket limit reached ({maxBrackets})
+        </div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>
+          Delete one to make a new bracket.
+        </div>
+      </div>
+    );
+  }
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        width: '100%', padding: '12px', borderRadius: 12, cursor: 'pointer',
+        border: '1px dashed var(--brand)', background: 'var(--accent-soft)',
+        color: 'var(--brand-text)', fontSize: 14, fontWeight: 600,
+        fontFamily: 'inherit', appearance: 'none',
+      }}
+    >{label}</button>
+  );
+}
+
+function BracketGlyph() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 5v4a2 2 0 0 0 2 2h4" />
+      <path d="M5 19v-4a2 2 0 0 1 2-2h4" />
+      <path d="M11 11h3a2 2 0 0 0 2-2V6" />
+      <path d="M16 9h3" />
+    </svg>
+  );
+}
+
+function TrashGlyph() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 6h18" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </svg>
   );
 }

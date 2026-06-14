@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useFeedbackScreen } from '../../context/FeedbackScreen';
-import { useBrackets } from '../../hooks/useBrackets';
+import { useBrackets, MAX_PERSONAL_BRACKETS } from '../../hooks/useBrackets';
 import { getCurrentWeekNumber, getWeeklyCategoryName, BRACKET_CATEGORIES } from '../../constants/bracketCategories';
 import { SignInRequiredStep } from '../Settings';
+import ConfirmModal from '../ConfirmModal';
 import Landing from './Landing';
 import Tree from './Tree';
 import Matchup from './Matchup';
@@ -13,7 +14,7 @@ import WeeklyExperience from './weekly/WeeklyExperience';
 
 export default function Brackets({ user, isPro, unlockPro, signIn }) {
   const {
-    brackets, createBracket, recordWinner, getBracket,
+    brackets, createBracket, recordWinner, getBracket, deleteBracket,
     weeklyState, recordWeeklyVote, markWeeklyRevealSeen,
   } = useBrackets(user);
 
@@ -21,11 +22,21 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
   const [screen, setScreen] = useState('landing');
   const [activeBracketId, setActiveBracketId] = useState(null);
   const [transitionRound, setTransitionRound] = useState(null);
+  // Bracket pending deletion (drives the confirm modal), or null.
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   const weekNumber = getCurrentWeekNumber();
   const weeklyCategoryName = getWeeklyCategoryName(weekNumber);
-  const personalInProgress = brackets.find(b => b.status === 'in-progress') || null;
-  const recentlyCrowned = brackets.filter(b => b.status === 'complete').slice(-5).reverse();
+  // All personal brackets for the My Brackets list, in-progress first (newest
+  // first within each group). The weekly community bracket lives separately in
+  // weeklyState and is NOT part of this array.
+  const personalBrackets = [...brackets].sort((a, b) => {
+    const aRank = a.status === 'in-progress' ? 0 : 1;
+    const bRank = b.status === 'in-progress' ? 0 : 1;
+    if (aRank !== bRank) return aRank - bRank;
+    return (b.createdAt || 0) - (a.createdAt || 0);
+  });
+  const atBracketLimit = brackets.length >= MAX_PERSONAL_BRACKETS;
 
   // The weekly community bracket runs through WeeklyExperience now; only
   // personal brackets flow through tree/matchup/results here.
@@ -65,10 +76,22 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
     setScreen('weekly');
   }
 
-  function continuePersonal() {
-    if (!personalInProgress) return;
-    setActiveBracketId(personalInProgress.id);
-    setScreen(personalInProgress.status === 'complete' ? 'results' : 'matchup');
+  // Open a specific personal bracket — completed ones go to results, the rest
+  // resume at the matchup flow.
+  function openPersonal(bracketId) {
+    const b = getBracket(bracketId);
+    if (!b) return;
+    setActiveBracketId(bracketId);
+    setScreen(b.status === 'complete' ? 'results' : 'matchup');
+  }
+
+  // Commit a pending bracket deletion (fired from the confirm modal).
+  function confirmDeletePersonal() {
+    if (!pendingDelete) return;
+    const id = pendingDelete.id;
+    deleteBracket(id);
+    if (activeBracketId === id) backToLanding();
+    setPendingDelete(null);
   }
 
   // Open the BracketBuilder picker (category → scope → size).
@@ -76,6 +99,7 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
   // weekly bracket stays free (it feeds the engagement flywheel).
   function buildPersonal() {
     if (!isPro) { setScreen('locked'); return; }
+    if (atBracketLimit) return; // entry point is disabled in the UI; backstop here
     setScreen('builder');
   }
 
@@ -102,11 +126,6 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
     // eslint-disable-next-line no-console
     console.warn('[handleBuilderStart] createBracket returned null', { categoryId, scope, size });
     return 'failed';
-  }
-
-  function openCrowned(bracketId) {
-    setActiveBracketId(bracketId);
-    setScreen('results');
   }
 
   // Personal-bracket vote (weekly votes go through WeeklyExperience).
@@ -217,17 +236,33 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
 
   // Default: Landing
   return (
-    <Landing
-      weekNumber={weekNumber}
-      weeklyState={weeklyState}
-      weeklyCategoryName={weeklyCategoryName}
-      personalInProgress={personalInProgress}
-      recentlyCrowned={recentlyCrowned}
-      onOpenWeekly={openWeekly}
-      onContinuePersonal={continuePersonal}
-      onBuildPersonal={buildPersonal}
-      onOpenCrowned={openCrowned}
-    />
+    <>
+      <Landing
+        weekNumber={weekNumber}
+        weeklyState={weeklyState}
+        weeklyCategoryName={weeklyCategoryName}
+        personalBrackets={personalBrackets}
+        maxBrackets={MAX_PERSONAL_BRACKETS}
+        atBracketLimit={atBracketLimit}
+        onOpenWeekly={openWeekly}
+        onOpenPersonal={openPersonal}
+        onDeletePersonal={(id) => setPendingDelete(brackets.find(b => b.id === id) || null)}
+        onBuildPersonal={buildPersonal}
+      />
+      {pendingDelete && (
+        <ConfirmModal
+          title="Delete this bracket?"
+          body={`“${pendingDelete.customCategoryName
+            || BRACKET_CATEGORIES.find(c => c.id === pendingDelete.categoryId)?.name
+            || 'This bracket'}” and its progress will be permanently removed. This can’t be undone.`}
+          confirmLabel="Delete bracket"
+          cancelLabel="Keep it"
+          destructive
+          onConfirm={confirmDeletePersonal}
+          onClose={() => setPendingDelete(null)}
+        />
+      )}
+    </>
   );
 }
 
