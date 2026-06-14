@@ -31,17 +31,29 @@ function sizeMeta(n) {
 }
 
 // Theme presets — keyed to the app's real (non-weekly) categories so the
-// stored categoryId stays valid (drives lyricsContext + the bracket label).
-// Emoji + punchy description are presentation only (shown on step 1).
+// stored categoryId stays valid (drives the bracket label). Emoji + punchy
+// description are presentation only (shown on step 1). Only categories with an
+// entry here appear as themes, and they render in BRACKET_CATEGORIES order.
+//
+// Every theme here is NON-LYRIC by design — judged from the song itself, not
+// from a line on screen — because the app's lyric display is off (see
+// bracket-planning/README.md rule 4). The old lyric-based presets (Best Bridge /
+// Opening Line / Closing Line) are intentionally NOT here so they don't surface
+// as themes while lyrics can't be shown.
 const THEME_PRESENTATION = {
-  'best-bridge':      { emoji: '🌉', desc: 'The moment a song cracks wide open' },
-  'most-devastating': { emoji: '💔', desc: 'The ones that wreck you' },
-  'best-opening-line':{ emoji: '✍️', desc: 'First words, first hook' },
-  'most-romantic':    { emoji: '🌹', desc: 'Hopeless, helpless, in love' },
-  'best-vocal':       { emoji: '🎤', desc: 'Pure performance' },
-  'most-underrated':  { emoji: '💎', desc: 'Deserved more than they got' },
-  'best-chorus':      { emoji: '🎶', desc: 'The part you scream in the car' },
-  'best-closing-line':{ emoji: '🎬', desc: 'How to end on a knife' },
+  'best-breakup':     { emoji: '💔', desc: 'For when it’s truly over' },
+  'best-chorus':      { emoji: '🎶', desc: 'The part you scream at concerts' },
+  'most-romantic':    { emoji: '🌹', desc: 'The one you send without context' },
+  'most-devastating': { emoji: '😭', desc: 'The one that makes you pull over' },
+  'best-driving':     { emoji: '🚗', desc: 'Windows down, full volume' },
+  'best-hype':        { emoji: '🔥', desc: 'Pre-game, full-confidence energy' },
+  'best-revenge':     { emoji: '😈', desc: 'Petty, unbothered, iconic' },
+  'best-dance':       { emoji: '🪩', desc: 'The one that fills the floor' },
+  'best-summer':      { emoji: '☀️', desc: 'Top down, August heat' },
+  'best-fall':        { emoji: '🍂', desc: 'Scarf season, all the feelings' },
+  'best-vocal':       { emoji: '🎤', desc: 'Where her voice does the impossible' },
+  'most-underrated':  { emoji: '💎', desc: 'The ones that deserved more' },
+  'most-iconic':      { emoji: '👑', desc: 'The ones that define her' },
 };
 
 const THEMES = BRACKET_CATEGORIES
