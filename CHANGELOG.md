@@ -16,6 +16,13 @@ Newest entries go at the top.
 
 ---
 
+## 0.29.1 — 2026-06-14
+
+### Fixed
+- **"Stop rating?" Exit button now readable in dark mode.** When you tapped Exit partway through a Vibe Check while using the dark theme, the "Exit" button on the confirmation pop-up showed white text on a near-white button, making the word almost invisible. Its text now adapts to the theme so it's clearly legible in both light and dark mode.
+
+---
+
 ## 0.29.0 — 2026-06-14
 
 ### Changed
