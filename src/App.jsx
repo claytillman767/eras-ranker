@@ -534,6 +534,7 @@ export default function App() {
             selectedAlbumId={selectedAlbumId}
             getAlbumScore={getAlbumScore}
             getRatedCount={getRatedCount}
+            getAlbumMode={getAlbumMode}
             activeCategories={activeCategories}
           />
         )}

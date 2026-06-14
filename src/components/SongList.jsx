@@ -155,6 +155,7 @@ export default function SongList({
   // long before the album is fully ranked.
   const ratedSongCount = sortedSongs.filter(s => s.score !== null).length;
   const totalSongCount = sortedSongs.length;
+  const unscoredCount = totalSongCount - ratedSongCount;
 
   // Detect whether the current manual order already matches score order
   const isRankedByScore = hasAnyScore &&
@@ -287,8 +288,9 @@ export default function SongList({
           albumIcon={album.icon}
           getCompositeScore={getCompositeScore}
           activeCategories={activeCategories}
+          manualOrder={manualOrder}
           onClose={() => setShowShareCard(false)}
-          mode="partial"
+          mode={albumMode === 'manual' ? 'manual' : 'partial'}
         />
       )}
 
@@ -333,36 +335,69 @@ export default function SongList({
             getRatedCount={getRatedCount}
             activeCategories={activeCategories}
             onBack={onBack}
-            isLover={isLover}
+            albumMode={albumMode}
           />
 
       {/* ── Action buttons ── */}
-      <div style={{ padding: '0 16px 14px' }}>
-        <button
-          onClick={() => {
-            const firstUnscored = displaySongs.findIndex(s => s.score === null);
-            setQuickScoreSongs({
-              songs: displaySongs,
-              initialSongPos: firstUnscored === -1 ? 0 : firstUnscored,
-            });
-          }}
-          style={{
-            display: 'block',
-            width: '100%',
-            marginBottom: 8,
-            padding: '12px',
-            borderRadius: 10,
-            border: 'none',
-            background: accent.primary,
-            color: '#ffffff',
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: 'pointer',
-            boxShadow: `0 1px 2px ${accent.primaryShadow}`,
-          }}
-        >
-          ★ Vibe Check
-        </button>
+      <div style={{ padding: '14px 16px 14px' }}>
+        {albumMode === 'manual' ? (
+          // Manual mode emphasises dragging; scoring is offered as a
+          // secondary "switch" so it never competes with the sort gesture.
+          <button
+            onClick={() => {
+              const firstUnscored = displaySongs.findIndex(s => s.score === null);
+              setQuickScoreSongs({
+                songs: displaySongs,
+                initialSongPos: firstUnscored === -1 ? 0 : firstUnscored,
+              });
+            }}
+            style={{
+              display: 'block',
+              width: '100%',
+              marginBottom: 8,
+              padding: '10px 12px',
+              borderRadius: 8,
+              border: `0.5px solid ${accent.softBorder}`,
+              background: accent.soft,
+              color: accent.text,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            🎧 Score them instead →
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              const firstUnscored = displaySongs.findIndex(s => s.score === null);
+              setQuickScoreSongs({
+                songs: displaySongs,
+                initialSongPos: firstUnscored === -1 ? 0 : firstUnscored,
+              });
+            }}
+            style={{
+              display: 'block',
+              width: '100%',
+              marginBottom: 8,
+              padding: '12px',
+              borderRadius: 10,
+              border: 'none',
+              background: accent.primary,
+              color: '#ffffff',
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: `0 1px 2px ${accent.primaryShadow}`,
+            }}
+          >
+            ★ {unscoredCount === 0
+              ? 'Re-run Vibe Check'
+              : ratedSongCount === 0
+                ? 'Start Vibe Check'
+                : `Continue Vibe Check · ${unscoredCount} left`}
+          </button>
+        )}
 
         {hasAnyScore && (
           <button
@@ -384,10 +419,11 @@ export default function SongList({
           </button>
         )}
 
-        {/* Share rankings — appears as soon as the user has ≥ 2 rated songs
-            so the SHARING FUNNEL doesn't have to wait for full album completion.
-            Sits below "Rank by score" with the same secondary-button styling. */}
-        {ratedSongCount >= 2 && (
+        {/* Share — in manual mode the hand-sorted order IS the ranking, so the
+            share is always offered. In score mode it appears once the user has
+            ≥ 2 rated songs so the SHARING FUNNEL doesn't wait for full
+            completion. Sits below "Rank by score" with secondary styling. */}
+        {(albumMode === 'manual' || ratedSongCount >= 2) && (
           <button
             onClick={() => setShowShareCard(true)}
             style={{
@@ -412,7 +448,9 @@ export default function SongList({
               <polyline points="16 6 12 2 8 6" />
               <line x1="12" y1="2" x2="12" y2="15" />
             </svg>
-            Share rankings ({ratedSongCount} of {totalSongCount})
+            {albumMode === 'manual'
+              ? 'Share my ranking'
+              : `Share rankings (${ratedSongCount} of ${totalSongCount})`}
           </button>
         )}
       </div>

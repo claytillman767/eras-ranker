@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ALL_ALBUMS, SONGS } from '../data/albums';
-import { drawAlbumSpotlightCard } from './RankingCard';
+import { drawAlbumSpotlightCard, drawManualRankingCard } from './RankingCard';
 
 // Full-screen overlay shown when a user finishes ranking every song in an album,
 // OR when they tap "Share rankings" on the album screen with ≥ 2 songs rated.
@@ -16,6 +16,7 @@ export default function AlbumCompleteCard({
   albumIcon,
   getCompositeScore,
   activeCategories,
+  manualOrder,
   onClose,
   mode = 'complete',
 }) {
@@ -29,36 +30,42 @@ export default function AlbumCompleteCard({
 
   useEffect(() => {
     const album = ALL_ALBUMS.find(a => a.id === albumId);
-
-    // Top songs for this specific album, sorted by score
-    const topSongs = songList
-      .map((name, i) => ({ name, score: getCompositeScore(albumId, i, activeCategories) }))
-      .filter(s => s.score !== null)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3);
-
-    // Album score = average of all song scores
-    const allScores = songList
-      .map((_, i) => getCompositeScore(albumId, i, activeCategories))
-      .filter(s => s !== null);
-    const albumScore = allScores.length > 0
-      ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length)
-      : 0;
-
     const canvas = document.createElement('canvas');
     canvas.width  = 1080;
     canvas.height = 1080;
-    drawAlbumSpotlightCard(
-      canvas.getContext('2d'),
-      {
-        name:      albumName,
-        icon:      albumIcon,
-        year:      album?.year ?? '',
-        songCount: songList.length,
-        score:     albumScore,
-      },
-      topSongs
-    );
+    const ctx = canvas.getContext('2d');
+    const meta = {
+      name:      albumName,
+      icon:      albumIcon,
+      year:      album?.year ?? '',
+      songCount: songList.length,
+    };
+
+    if (mode === 'manual') {
+      // Manual ("Sort It Yourself") share — the hand-sorted order IS the
+      // ranking, so render a no-score list in the user's order.
+      const order = (manualOrder && manualOrder.length)
+        ? manualOrder
+        : songList.map((_, i) => i);
+      const orderedSongs = order.map(i => songList[i]).filter(Boolean);
+      drawManualRankingCard(ctx, meta, orderedSongs);
+    } else {
+      // Score-based spotlight (complete / partial).
+      const topSongs = songList
+        .map((name, i) => ({ name, score: getCompositeScore(albumId, i, activeCategories) }))
+        .filter(s => s.score !== null)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+
+      const allScores = songList
+        .map((_, i) => getCompositeScore(albumId, i, activeCategories))
+        .filter(s => s !== null);
+      const albumScore = allScores.length > 0
+        ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length)
+        : 0;
+
+      drawAlbumSpotlightCard(ctx, { ...meta, score: albumScore }, topSongs);
+    }
     setCardDataUrl(canvas.toDataURL('image/png'));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -125,7 +132,9 @@ export default function AlbumCompleteCard({
           <div style={{ fontSize: 14, color: 'var(--brand-text)', marginTop: 4, letterSpacing: '0.04em' }}>
             {mode === 'complete'
               ? 'fully ranked ✦'
-              : `${ratedCount} of ${songList.length} songs rated`}
+              : mode === 'manual'
+                ? 'my order ✦'
+                : `${ratedCount} of ${songList.length} songs rated`}
           </div>
         </div>
 
