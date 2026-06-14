@@ -16,6 +16,13 @@ Newest entries go at the top.
 
 ---
 
+## 0.31.0 — 2026-06-14
+
+### Added
+- **Give your custom brackets an icon.** When you build your own bracket, you can now pick an emoji for it from a set of music- and Taylor-themed icons. Your chosen icon shows on the bracket's card in your My Brackets list and on the "Bracket ready" screen, so each tournament is easy to tell apart at a glance. Theme brackets (Best Breakup, Best Chorus, etc.) automatically use their theme icon.
+
+---
+
 ## 0.30.0 — 2026-06-14
 
 ### Added

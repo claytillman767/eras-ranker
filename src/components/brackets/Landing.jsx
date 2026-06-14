@@ -372,7 +372,9 @@ function BracketCard({ bracket, onOpen, onDelete }) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 20,
       }}>
-        {isComplete ? (champAlbum?.icon || '♛') : <BracketGlyph />}
+        {/* The bracket's own emoji wins; older brackets with none fall back to
+            the champion's album icon (complete) or the generic bracket glyph. */}
+        {bracket.emoji ? bracket.emoji : (isComplete ? (champAlbum?.icon || '♛') : <BracketGlyph />)}
       </div>
 
       {/* Body */}

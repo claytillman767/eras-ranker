@@ -60,6 +60,12 @@ const THEMES = BRACKET_CATEGORIES
   .filter(c => !c.isWeekly && THEME_PRESENTATION[c.id])
   .map(c => ({ id: c.id, name: c.name, ...THEME_PRESENTATION[c.id] }));
 
+// Curated icon set for personalising a "Write your own" bracket. Kept short and
+// tasteful so the picker stays one tidy grid; the stored value is just the
+// chosen emoji string. Theme brackets reuse their own theme emoji instead.
+const BRACKET_EMOJIS = ['🏆','👑','🥇','🔥','✨','⭐','🌟','🎵','🎶','🎤','🎸','💿','💔','❤️','💖','🤍','💜','🦋','🐍','🌙','🍂','🌹','💃','🌈'];
+const DEFAULT_BRACKET_EMOJI = '🏆';
+
 // Albums that actually have songs, each with its songs pre-keyed.
 const ALBUM_SECTIONS = ALL_ALBUMS
   .map(a => ({
@@ -233,9 +239,10 @@ function RecapChip({ name }) {
 function NameScreen({ onPick }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
+  const [emoji, setEmoji] = useState(DEFAULT_BRACKET_EMOJI);
   const inputRef = useRef(null);
   useEffect(() => { if (editing && inputRef.current) inputRef.current.focus(); }, [editing]);
-  const go = () => { const v = draft.trim().slice(0, 60); if (v) onPick({ categoryId: 'most-devastating', name: v, custom: true }); };
+  const go = () => { const v = draft.trim().slice(0, 60); if (v) onPick({ categoryId: 'most-devastating', name: v, custom: true, emoji }); };
 
   return (
     <div style={{ padding: '18px 16px 28px' }}>
@@ -268,6 +275,10 @@ function NameScreen({ onPick }) {
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--brand)', marginBottom: 8 }}>Name your bracket</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div aria-hidden style={{
+                width: 40, height: 40, borderRadius: 11, flexShrink: 0, fontSize: 22, lineHeight: 1,
+                background: 'var(--accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>{emoji}</div>
               <input
                 ref={inputRef}
                 value={draft}
@@ -287,6 +298,29 @@ function NameScreen({ onPick }) {
               </button>
             </div>
             <div style={{ textAlign: 'right', fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}>{draft.length}/60</div>
+
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--text-3)', margin: '10px 0 8px' }}>Pick an icon</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+              {BRACKET_EMOJIS.map(e => {
+                const sel = e === emoji;
+                return (
+                  <button
+                    key={e}
+                    type="button"
+                    onClick={() => setEmoji(e)}
+                    aria-label={`Use ${e} icon`}
+                    aria-pressed={sel}
+                    style={{
+                      width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+                      fontSize: 19, lineHeight: 1, cursor: 'pointer', appearance: 'none', fontFamily: 'inherit',
+                      background: sel ? 'var(--accent-soft)' : 'var(--surface-2)',
+                      border: sel ? '2px solid var(--brand)' : '1px solid var(--border)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >{e}</button>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -296,7 +330,7 @@ function NameScreen({ onPick }) {
         {THEMES.map((t, i) => (
           <div
             key={t.id}
-            onClick={() => onPick({ categoryId: t.id, name: t.name, custom: false })}
+            onClick={() => onPick({ categoryId: t.id, name: t.name, custom: false, emoji: t.emoji })}
             style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '13px 15px', cursor: 'pointer', borderTop: i ? '1px solid var(--hairline)' : 'none' }}
           >
             <div style={{ width: 38, height: 38, borderRadius: 11, background: 'var(--accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19, flexShrink: 0 }}>{t.emoji}</div>
@@ -641,14 +675,14 @@ function MatchupRow({ song, right }) {
   );
 }
 
-function StartConfirm({ name, roster, onEdit, onStart }) {
+function StartConfirm({ name, emoji, roster, onEdit, onStart }) {
   const m = sizeMeta(roster.length);
   const pairs = [];
   for (let i = 0; i < roster.length; i += 2) pairs.push([roster[i], roster[i + 1]]);
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 80, background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
       <div style={{ textAlign: 'center', padding: '44px 24px 18px' }}>
-        <div style={{ fontSize: 40 }}>🏆</div>
+        <div style={{ fontSize: 40 }}>{emoji || '🏆'}</div>
         <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', marginTop: 8 }}>Bracket ready</div>
         <div style={{ fontSize: 14, color: 'var(--text-2)', marginTop: 4 }}>“{name}” · {roster.length} songs · {m.rounds} rounds</div>
         <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>Round 1 · {pairs.length} matchups</div>
@@ -723,6 +757,7 @@ export default function BracketBuilder({ onClose, onStart }) {
   const [categoryId, setCategoryId] = useState('most-devastating');
   const [name, setName] = useState('');
   const [custom, setCustom] = useState(false);
+  const [emoji, setEmoji] = useState(DEFAULT_BRACKET_EMOJI);
   const [size, setSize] = useState(16);
   const [picked, setPicked] = useState([]);
   const [chosenOpen, setChosenOpen] = useState(false);
@@ -735,10 +770,11 @@ export default function BracketBuilder({ onClose, onStart }) {
   const scrollRef = useRef(null);
   const toTop = () => { if (scrollRef.current) scrollRef.current.scrollTop = 0; };
 
-  const pickName = ({ categoryId, name, custom }) => {
+  const pickName = ({ categoryId, name, custom, emoji }) => {
     setCategoryId(categoryId);
     setName(name);
     setCustom(custom);
+    setEmoji(emoji || DEFAULT_BRACKET_EMOJI);
     setPicked([]);
     setStep(2);
     toTop();
@@ -763,7 +799,7 @@ export default function BracketBuilder({ onClose, onStart }) {
     const contestants = roster.map(s => ({ name: s.name, albumId: s.albumId, songIndex: s.songIndex }));
     let result;
     try {
-      result = onStart(categoryId, 'custom', size, custom ? name : null, contestants);
+      result = onStart(categoryId, 'custom', size, custom ? name : null, contestants, emoji);
     } catch (err) {
       // Belt-and-suspenders: never let an unexpected throw leave the user
       // stuck on "Bracket ready" with no feedback — surface the inline error.
@@ -815,7 +851,7 @@ export default function BracketBuilder({ onClose, onStart }) {
 
       {confirmRoster && (
         <StartConfirm
-          name={name} roster={confirmRoster}
+          name={name} emoji={emoji} roster={confirmRoster}
           onEdit={() => setConfirmRoster(null)}
           onStart={confirmStart}
         />
