@@ -16,6 +16,19 @@ Newest entries go at the top.
 
 ---
 
+## 0.28.0 — 2026-06-14
+
+### Added
+- **New bracket categories — all built to play without lyrics on screen.** The custom bracket builder now offers a fresh set of fun, instantly-recognizable themes you judge from the song itself: **Best Breakup Song, Best Driving Song, Best Hype Song, Best Revenge Song, Best Dance Floor Song, Best Summer Song, Best Fall Song,** and **Most Iconic Song** — alongside the returning Best Chorus, Most Romantic, Most Devastating, Best Vocal, and Most Underrated.
+
+### Changed
+- The weekly community bracket now rotates through these same vibe-based categories, so every week's matchup is something you can vote on at a glance.
+
+### Removed
+- Dropped the three lyric-only themes (Best Bridge, Best Opening Line, Best Closing Line) from the builder and weekly rotation for now — they're hard to judge fairly while song lyrics aren't shown in the app. They'll return once lyrics can be displayed.
+
+---
+
 ## 0.27.1 — 2026-06-07
 
 ### Fixed

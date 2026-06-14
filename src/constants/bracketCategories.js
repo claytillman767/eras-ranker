@@ -2,9 +2,132 @@ import { SONGS } from '../data/albums';
 import { hasBridge } from '../data/lyricsAccess';
 
 // Bracket categories — each defines a head-to-head competition theme.
-// lyricsContext: which lyric section is most relevant to show during matchups.
+// lyricsContext: which lyric section is most relevant to show during matchups
+//   ('none' = no lyric needed; the theme is judged from the song itself).
 // songFilter: optional fn(albumId, songIndex) => bool to restrict which songs qualify.
+//
+// CATEGORY POLICY (see bracket-planning/README.md, rule 4): the app's on-screen
+// lyric display is OFF for copyright reasons (LYRICS_DISPLAY_ENABLED = false in
+// src/data/lyricsAccess.js). So every LAUNCH category must be judgeable from the
+// song itself — its vibe, mood, or what you'd use it for — NOT from a specific
+// line you'd have to read. The featured set below is all "vibe/situational" and
+// works from memory. The lyric-dependent categories (Best Bridge / Opening Line /
+// Closing Line) are kept further down for Phase 2 (when lyrics can be shown) but
+// are deliberately NOT featured as builder themes and NOT in the weekly rotation.
 export const BRACKET_CATEGORIES = [
+  // ── Featured themes — non-lyric, judged from memory of the song ──────────────
+  // Order here is the order they appear as themes in the custom bracket builder.
+  {
+    id: 'best-breakup',
+    name: 'Best Breakup Song',
+    description: 'For when it’s truly over',
+    lyricsContext: 'none',
+    estimatedMinutes: 8,
+    songFilter: null,
+  },
+  {
+    id: 'best-chorus',
+    name: 'Best Chorus',
+    description: 'The part you scream at concerts',
+    lyricsContext: 'none',
+    estimatedMinutes: 7,
+    songFilter: null,
+  },
+  {
+    id: 'most-romantic',
+    name: 'Most Romantic Song',
+    description: 'The one you send without context',
+    lyricsContext: 'none',
+    estimatedMinutes: 8,
+    songFilter: null,
+  },
+  {
+    id: 'most-devastating',
+    name: 'Most Devastating Song',
+    description: 'The one that makes you pull over your car',
+    lyricsContext: 'none',
+    estimatedMinutes: 9,
+    songFilter: null,
+  },
+  {
+    id: 'best-driving',
+    name: 'Best Driving Song',
+    description: 'Windows down, volume all the way up',
+    lyricsContext: 'none',
+    estimatedMinutes: 8,
+    songFilter: null,
+  },
+  {
+    id: 'best-hype',
+    name: 'Best Hype Song',
+    description: 'Pre-game, gym, full-confidence energy',
+    lyricsContext: 'none',
+    estimatedMinutes: 8,
+    songFilter: null,
+  },
+  {
+    id: 'best-revenge',
+    name: 'Best Revenge Song',
+    description: 'Petty, unbothered, and iconic',
+    lyricsContext: 'none',
+    estimatedMinutes: 8,
+    songFilter: null,
+  },
+  {
+    id: 'best-dance',
+    name: 'Best Dance Floor Song',
+    description: 'The one that fills the floor',
+    lyricsContext: 'none',
+    estimatedMinutes: 8,
+    songFilter: null,
+  },
+  {
+    id: 'best-summer',
+    name: 'Best Summer Song',
+    description: 'Top down, windows open, August heat',
+    lyricsContext: 'none',
+    estimatedMinutes: 8,
+    songFilter: null,
+  },
+  {
+    id: 'best-fall',
+    name: 'Best Fall Song',
+    description: 'Scarf season and all the feelings',
+    lyricsContext: 'none',
+    estimatedMinutes: 8,
+    songFilter: null,
+  },
+  {
+    id: 'best-vocal',
+    name: 'Best Vocal Performance',
+    description: 'Where her voice does something impossible',
+    lyricsContext: 'none',
+    estimatedMinutes: 9,
+    songFilter: null,
+  },
+  {
+    id: 'most-underrated',
+    name: 'Most Underrated Song',
+    description: 'The ones that deserved more',
+    lyricsContext: 'none',
+    estimatedMinutes: 8,
+    songFilter: null,
+  },
+  {
+    id: 'most-iconic',
+    name: 'Most Iconic Song',
+    description: 'The ones that define her',
+    lyricsContext: 'none',
+    estimatedMinutes: 8,
+    songFilter: null,
+  },
+
+  // ── Phase 2 — lyric-dependent (need on-screen lyrics) ───────────────────────
+  // Kept so any bracket/plan that already references these ids still resolves,
+  // and so they're ready the moment LYRICS_DISPLAY_ENABLED flips on. They are
+  // intentionally absent from THEME_PRESENTATION (so they don't show as builder
+  // themes) and from WEEKLY_CATEGORY_NAMES (so the weekly rotation never asks
+  // users to vote on a lyric the app can't currently display).
   {
     id: 'best-bridge',
     name: 'Best Bridge',
@@ -14,49 +137,9 @@ export const BRACKET_CATEGORIES = [
     songFilter: (albumId, songIndex) => hasBridge(albumId, songIndex),
   },
   {
-    id: 'most-devastating',
-    name: 'Most Devastating Song',
-    description: 'The one that makes you pull over your car',
-    lyricsContext: 'snippet',
-    estimatedMinutes: 9,
-    songFilter: null,
-  },
-  {
     id: 'best-opening-line',
     name: 'Best Opening Line',
     description: 'First impressions that never leave',
-    lyricsContext: 'snippet',
-    estimatedMinutes: 7,
-    songFilter: null,
-  },
-  {
-    id: 'most-romantic',
-    name: 'Most Romantic Song',
-    description: 'The one you send without context',
-    lyricsContext: 'snippet',
-    estimatedMinutes: 8,
-    songFilter: null,
-  },
-  {
-    id: 'best-vocal',
-    name: 'Best Vocal Performance',
-    description: "Where her voice does something impossible",
-    lyricsContext: 'snippet',
-    estimatedMinutes: 9,
-    songFilter: null,
-  },
-  {
-    id: 'most-underrated',
-    name: 'Most Underrated Song',
-    description: 'The ones that deserved more',
-    lyricsContext: 'snippet',
-    estimatedMinutes: 8,
-    songFilter: null,
-  },
-  {
-    id: 'best-chorus',
-    name: 'Best Chorus',
-    description: 'The part you scream at concerts',
     lyricsContext: 'snippet',
     estimatedMinutes: 7,
     songFilter: null,
@@ -69,27 +152,37 @@ export const BRACKET_CATEGORIES = [
     estimatedMinutes: 7,
     songFilter: null,
   },
+
+  // ── Weekly community pick ───────────────────────────────────────────────────
   {
     id: 'weekly-pick',
     name: 'Weekly Community Pick',
     description: 'A new category every Monday — the whole community votes',
-    lyricsContext: 'snippet',
+    lyricsContext: 'none',
     estimatedMinutes: 10,
     songFilter: null,
     isWeekly: true,
   },
 ];
 
-// Rotating weekly category names (cycles through these each week)
+// Rotating weekly category names (cycles through these each week). Every name
+// here MUST exactly match a BRACKET_CATEGORIES entry above (weeklyCategoryIdForWeek
+// resolves name → id). All non-lyric so the live weekly bracket works with the
+// lyric display off. Ordering leads with the famous-song-stacked, argument-starting
+// openers (see bracket-planning/README.md launch calendar).
 export const WEEKLY_CATEGORY_NAMES = [
-  'Best Bridge',
-  'Most Devastating Song',
-  'Best Opening Line',
-  'Most Romantic Song',
-  'Best Vocal Performance',
-  'Most Underrated Song',
+  'Best Breakup Song',
   'Best Chorus',
-  'Best Closing Line',
+  'Most Romantic Song',
+  'Most Devastating Song',
+  'Best Driving Song',
+  'Best Hype Song',
+  'Best Revenge Song',
+  'Best Dance Floor Song',
+  'Best Summer Song',
+  'Best Fall Song',
+  'Most Underrated Song',
+  'Most Iconic Song',
 ];
 
 // Seed a pseudo-random number generator from a number (for deterministic community votes)
