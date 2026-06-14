@@ -3871,7 +3871,7 @@ export default function QuickScore({
                   background: 'var(--text)',
                   fontSize: 14,
                   fontWeight: 600,
-                  color: '#ffffff',
+                  color: 'var(--surface)',
                   cursor: 'pointer',
                 }}
               >

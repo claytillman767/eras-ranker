@@ -64,6 +64,38 @@ function makeBracketId() {
   return `bracket_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 }
 
+// ── Firestore-safe encoding for personal brackets ─────────────────────────
+// A personal bracket's `rounds` is an array-of-arrays (each round is an array
+// of matchups). Firestore REJECTS nested arrays and throws SYNCHRONOUSLY from
+// setDoc() — before the returned promise exists, so a trailing .catch() never
+// sees it. That uncaught synchronous throw used to bubble up through
+// createBracket and silently kill the "Start voting" tap for signed-in users
+// (the bracket never advanced and no error showed). We JSON-encode `rounds`
+// only for the cloud write and decode it on read; localStorage and in-memory
+// state always keep the real nested-array shape every bracket screen expects.
+// (The weekly bracket was redesigned to drop nested arrays; personal brackets
+// keep the rounds model, so they need this targeted encoding instead.)
+// Decoding is backward-compatible: a bracket whose `rounds` is already an
+// array (e.g. legacy data) is returned untouched.
+function encodeBracketForCloud(b) {
+  if (!b || typeof b.rounds === 'string') return b;
+  return { ...b, rounds: JSON.stringify(b.rounds ?? []) };
+}
+function decodeBracketFromCloud(b) {
+  if (!b || typeof b.rounds !== 'string') return b;
+  try {
+    return { ...b, rounds: JSON.parse(b.rounds) };
+  } catch {
+    return { ...b, rounds: [] };
+  }
+}
+function encodeBracketsForCloud(list) {
+  return Array.isArray(list) ? list.map(encodeBracketForCloud) : list;
+}
+function decodeBracketsFromCloud(list) {
+  return Array.isArray(list) ? list.map(decodeBracketFromCloud) : list;
+}
+
 export function useBrackets(user) {
   const [brackets, setBrackets] = useState(() => loadFromStorage(STORAGE_KEY) || []);
   const [weeklyState, setWeeklyState] = useState(() => loadFromStorage(WEEKLY_KEY) || null);
@@ -78,13 +110,15 @@ export function useBrackets(user) {
     if (!user) return;
     getDoc(doc(db, 'users', user.uid)).then(snap => {
       if (snap.exists() && snap.data().brackets) {
-        const cloud = snap.data().brackets;
+        const cloud = decodeBracketsFromCloud(snap.data().brackets);
         setBrackets(cloud);
         saveToStorage(STORAGE_KEY, cloud);
       } else {
         const local = loadFromStorage(STORAGE_KEY) || [];
         if (local.length > 0) {
-          setDoc(doc(db, 'users', user.uid), { brackets: local }, { merge: true }).catch(() => {});
+          try {
+            setDoc(doc(db, 'users', user.uid), { brackets: encodeBracketsForCloud(local) }, { merge: true }).catch(() => {});
+          } catch { /* cloud migration is best-effort; local data is unaffected */ }
         }
       }
       if (snap.exists() && snap.data().weeklyBracket) {
@@ -113,7 +147,14 @@ export function useBrackets(user) {
   const persistBrackets = useCallback((next) => {
     saveToStorage(STORAGE_KEY, next);
     if (user) {
-      setDoc(doc(db, 'users', user.uid), { brackets: next }, { merge: true }).catch(() => {});
+      // setDoc validates its data SYNCHRONOUSLY and throws on anything invalid
+      // (e.g. a nested array) BEFORE returning a promise, so the trailing
+      // .catch() can't protect us. Wrap the whole call so a cloud-write failure
+      // can never abort the local-first state update below — which is exactly
+      // what used to leave "Start voting" doing nothing for signed-in users.
+      try {
+        setDoc(doc(db, 'users', user.uid), { brackets: encodeBracketsForCloud(next) }, { merge: true }).catch(() => {});
+      } catch { /* local state + storage still update; cloud syncs on a later write */ }
     }
     setBrackets(next);
   }, [user]);

@@ -761,7 +761,16 @@ export default function BracketBuilder({ onClose, onStart }) {
     setStartError(null);
     const roster = confirmRoster || [];
     const contestants = roster.map(s => ({ name: s.name, albumId: s.albumId, songIndex: s.songIndex }));
-    const result = onStart(categoryId, 'custom', size, custom ? name : null, contestants);
+    let result;
+    try {
+      result = onStart(categoryId, 'custom', size, custom ? name : null, contestants);
+    } catch (err) {
+      // Belt-and-suspenders: never let an unexpected throw leave the user
+      // stuck on "Bracket ready" with no feedback — surface the inline error.
+      // eslint-disable-next-line no-console
+      console.error('[confirmStart] onStart threw', err);
+      result = 'failed';
+    }
     if (result === 'failed') {
       setConfirmRoster(null);
       setStartError('Something went wrong starting that bracket. Try again.');
