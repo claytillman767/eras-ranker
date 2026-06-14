@@ -16,6 +16,18 @@ Newest entries go at the top.
 
 ---
 
+## 0.29.0 — 2026-06-14
+
+### Changed
+- **Albums tab redesign.** Every album is now a vibrant, full-color era tile with its emoji, and a status badge at a glance — a gold score badge when an album is fully ranked, a progress count while you're partway through, a "✋ sorted" tag for hand-sorted albums, or "NEW" if you haven't started. A two-up stat strip up top shows how many eras you've ranked and how many songs you've scored.
+- **Album screen header redesign.** Opening an album now greets you with a full era-color header — big album score, progress bar, and your current #1 song — with a clear pill showing whether you're in Vibe Check or Sort-It-Yourself mode. The "Vibe Check" button now reads "Start", "Continue · N left", or "Re-run" depending on where you are.
+- **Smoother "choose how to rank" sheet.** The first-time picker (Vibe Check vs. Sort It Yourself) now slides up from the bottom as a sheet.
+
+### Added
+- **Share your hand-sorted albums.** Albums you arrange yourself (Sort It Yourself) now have their own shareable card showing your ranking in order — so sharing isn't just for scored albums anymore.
+
+---
+
 ## 0.28.0 — 2026-06-14
 
 ### Added

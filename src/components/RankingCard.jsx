@@ -298,7 +298,193 @@ export function drawAlbumSpotlightCard(ctx, { name, icon, year, songCount, score
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('Rank your eras at eras-ranker.vercel.app', W / 2, ctaTopY + ctaH / 2);
+  ctx.fillText('Rank your eras at erasranker.com', W / 2, ctaTopY + ctaH / 2);
+  ctx.textBaseline = 'alphabetic';
+}
+
+// ── Card C2 — Manual Ranking ──────────────────────────────────────────────────
+// Fires when a "Sort It Yourself" album is shared. Same branded look as the
+// Album Spotlight card, but there are no scores — the hand-sorted order IS the
+// ranking, so it shows a numbered top list with no score column or score chip.
+
+export function drawManualRankingCard(ctx, { name, icon, year, songCount }, orderedSongs) {
+  const W = 1080, H = 1080, PAD = 68;
+
+  // Background
+  ctx.fillStyle = '#0d0618';
+  ctx.fillRect(0, 0, W, H);
+
+  const topGlow = ctx.createRadialGradient(W / 2, 0, 0, W / 2, 0, 680);
+  topGlow.addColorStop(0, '#2a1a55');
+  topGlow.addColorStop(1, 'rgba(13,6,24,0)');
+  ctx.fillStyle = topGlow;
+  ctx.fillRect(0, 0, W, H);
+
+  const tileHaloY = 328;
+  const tileHalo = ctx.createRadialGradient(W / 2, tileHaloY, 0, W / 2, tileHaloY, 270);
+  tileHalo.addColorStop(0, 'rgba(168,85,247,0.35)');
+  tileHalo.addColorStop(1, 'rgba(168,85,247,0)');
+  ctx.fillStyle = tileHalo;
+  ctx.fillRect(0, 0, W, H);
+
+  // Logo lockup (top-left)
+  const markSize = 52;
+  const markCX = PAD + markSize / 2;
+  const markCY = 84;
+  logoMark(ctx, markCX, markCY, markSize);
+
+  const textX = markCX + markSize / 2 + 16;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.font = '400 30px Georgia, "Times New Roman", serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('The Eras Ranker', textX, markCY + 9);
+
+  ctx.font = '500 12px "Courier New", monospace';
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.fillText('ALBUM · MY ORDER', textX, markCY + 28);
+
+  // "✦ Sorted by hand" badge (top-right)
+  ctx.font = '500 12px "Courier New", monospace';
+  const badgeLabel = '✦  Sorted by hand';
+  const badgePadX = 14, badgeH = 34;
+  const badgeTextW = ctx.measureText(badgeLabel).width;
+  const badgeW = badgeTextW + badgePadX * 2;
+  const badgeX = W - PAD - badgeW;
+  const badgeY = markCY - badgeH / 2;
+
+  rrect(ctx, badgeX, badgeY, badgeW, badgeH, badgeH / 2);
+  ctx.fillStyle = 'rgba(168,85,247,0.09)';
+  ctx.fill();
+  rrect(ctx, badgeX, badgeY, badgeW, badgeH, badgeH / 2);
+  ctx.strokeStyle = 'rgba(168,85,247,0.33)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.fillStyle = '#a78bfa';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(badgeLabel, badgeX + badgeW / 2, badgeY + badgeH / 2);
+  ctx.textBaseline = 'alphabetic';
+
+  // Album tile
+  const tileSize = 360;
+  const tileX = (W - tileSize) / 2;
+  const tileY = 148;
+  const tileR = 28;
+  const tileCX = tileX + tileSize / 2;
+  const tileCY = tileY + tileSize / 2;
+
+  const tileGrad = ctx.createLinearGradient(tileX, tileY, tileX + tileSize, tileY + tileSize);
+  tileGrad.addColorStop(0, '#2a1a4d');
+  tileGrad.addColorStop(1, '#150a28');
+
+  ctx.save();
+  ctx.shadowColor = 'rgba(168,85,247,0.45)';
+  ctx.shadowBlur = 60;
+  rrect(ctx, tileX, tileY, tileSize, tileSize, tileR);
+  ctx.fillStyle = tileGrad;
+  ctx.fill();
+  ctx.restore();
+
+  rrect(ctx, tileX, tileY, tileSize, tileSize, tileR);
+  ctx.fillStyle = tileGrad;
+  ctx.fill();
+
+  for (const [r, alpha] of [[95, 0.12], [155, 0.08], [210, 0.05]]) {
+    ctx.beginPath();
+    ctx.arc(tileCX, tileCY, r, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(168,85,247,${alpha})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  rrect(ctx, tileX, tileY, tileSize, tileSize, tileR);
+  ctx.strokeStyle = 'rgba(255,255,255,0.09)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = '168px serif';
+  ctx.fillText(icon, tileCX, tileCY + 8);
+  ctx.textBaseline = 'alphabetic';
+
+  // Year · song count
+  const metaY = tileY + tileSize + 38;
+  ctx.font = '500 14px "Courier New", monospace';
+  ctx.fillStyle = '#a78bfa';
+  ctx.textAlign = 'center';
+  ctx.fillText(year ? `${year} · ${songCount} songs` : `${songCount} songs`, W / 2, metaY);
+
+  // Album name (italic serif, dynamic font size)
+  const nameSize = fitFontSize(
+    ctx, name,
+    s => `italic 400 ${s}px Georgia, "Times New Roman", serif`,
+    W - PAD * 2 - 40, 68, 28
+  );
+  ctx.font = `italic 400 ${nameSize}px Georgia, "Times New Roman", serif`;
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  const nameY = metaY + 18 + Math.round(nameSize * 0.82);
+  ctx.fillText(name, W / 2, nameY);
+
+  // Top songs (no score column) — in the user's hand-sorted order.
+  const songsHeaderY = nameY + 40;
+  ctx.font = '500 11px "Courier New", monospace';
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.textAlign = 'left';
+  ctx.fillText('MY RANKING', PAD, songsHeaderY);
+
+  const songs = (orderedSongs || []).slice(0, 5);
+  const songRowH = 52;
+
+  for (let i = 0; i < songs.length; i++) {
+    const rowY = songsHeaderY + 14 + i * songRowH;
+
+    ctx.beginPath();
+    ctx.moveTo(PAD, rowY);
+    ctx.lineTo(W - PAD, rowY);
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    const rowMidY = rowY + songRowH / 2 + 4;
+
+    ctx.font = '500 13px "Courier New", monospace';
+    ctx.fillStyle = '#a78bfa';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`0${i + 1}`.slice(-2), PAD, rowMidY);
+
+    ctx.font = '400 24px Georgia, serif';
+    ctx.fillStyle = '#ffffff';
+    const songNameMaxW = W - PAD * 2 - 52;
+    ctx.fillText(truncate(ctx, songs[i], songNameMaxW), PAD + 44, rowMidY);
+  }
+  ctx.textBaseline = 'alphabetic';
+
+  // CTA pill
+  const ctaTopY = songsHeaderY + 14 + songs.length * songRowH + 22;
+  const ctaH = 58;
+
+  ctx.save();
+  ctx.shadowColor = 'rgba(168,85,247,0.45)';
+  ctx.shadowBlur = 28;
+  rrect(ctx, PAD, ctaTopY, W - PAD * 2, ctaH, ctaH / 2);
+  ctx.fillStyle = '#a855f7';
+  ctx.fill();
+  ctx.restore();
+
+  rrect(ctx, PAD, ctaTopY, W - PAD * 2, ctaH, ctaH / 2);
+  ctx.fillStyle = '#a855f7';
+  ctx.fill();
+
+  ctx.font = '600 17px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Rank your eras at erasranker.com', W / 2, ctaTopY + ctaH / 2);
   ctx.textBaseline = 'alphabetic';
 }
 
@@ -484,7 +670,7 @@ export function drawMosaicCard(ctx, albumRankings) {
 
   ctx.font = '600 22px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = '#ffffff';
-  ctx.fillText('eras-ranker.vercel.app', PAD + 28, fMidY + 12);
+  ctx.fillText('erasranker.com', PAD + 28, fMidY + 12);
 
   // CTA button
   const btnLabel = 'Try it →';
@@ -616,7 +802,7 @@ export function drawCard(ctx, songs) {
   ctx.font = `400 18px system-ui, -apple-system, sans-serif`;
   ctx.fillStyle = 'rgba(255,255,255,0.15)';
   ctx.textAlign = 'center';
-  ctx.fillText('eras-ranker.vercel.app', W / 2, H - 22);
+  ctx.fillText('erasranker.com', W / 2, H - 22);
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
