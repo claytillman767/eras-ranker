@@ -19,6 +19,7 @@ Newest entries go at the top.
 ## 0.29.1 — 2026-06-14
 
 ### Fixed
+- **Custom brackets now start when you tap "Start voting".** For signed-in users, building your own bracket and tapping "Start voting" did nothing — the screen just sat on "Bracket ready" with no error. Saving the bracket to the cloud was hitting a storage limitation and silently failing in a way that stopped the bracket from opening. Brackets now save correctly and the voting round opens right away.
 - **"Stop rating?" Exit button now readable in dark mode.** When you tapped Exit partway through a Vibe Check while using the dark theme, the "Exit" button on the confirmation pop-up showed white text on a near-white button, making the word almost invisible. Its text now adapts to the theme so it's clearly legible in both light and dark mode.
 
 ---
