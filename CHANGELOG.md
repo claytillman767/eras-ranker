@@ -16,7 +16,15 @@ Newest entries go at the top.
 
 ---
 
-## 0.29.1 — 2026-06-14
+## 0.30.0 — 2026-06-14
+
+### Added
+- **Keep multiple custom brackets at once.** The Brackets screen now has a "My Brackets" list: every personal bracket you build lives there as its own card showing its progress (or 🏆 champion once it's done), and a "＋ New bracket" button is always available so you can start another without finishing or clearing the one you have. Tap any card to jump back into it.
+- **Delete a bracket.** Each bracket card has a trash button with a quick confirm, so you can clear out one you don't want without wiping everything.
+
+### Changed
+- **Brackets screen layout.** The single "My Bracket" slot and the separate "Recently crowned" strip are replaced by one unified, scannable "My Brackets" list (in-progress brackets first, then your finished ones). The weekly community bracket is unchanged at the top.
+- You can keep up to 20 personal brackets at a time; at the limit, the app asks you to delete one before making another.
 
 ### Fixed
 - **Custom brackets now start when you tap "Start voting".** For signed-in users, building your own bracket and tapping "Start voting" did nothing — the screen just sat on "Bracket ready" with no error. Saving the bracket to the cloud was hitting a storage limitation and silently failing in a way that stopped the bracket from opening. Brackets now save correctly and the voting round opens right away.
