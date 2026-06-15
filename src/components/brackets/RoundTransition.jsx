@@ -1,20 +1,25 @@
+// Custom-bracket round transition — shown between rounds. Restyled to the
+// weekly arena look: navy arena background, gold "round complete" eyebrow,
+// era-tile survivor chips, a gold pill CTA. The "Did you know?" trivia card is
+// kept — it's a nice beat in the solo flow.
+
 import { useState, useEffect } from 'react';
-import { getEraColors } from '../../constants/eraColors';
-import { ALBUMS } from '../../data/albums';
+import { getEra } from '../../constants/eraColors';
+import { ArenaBg, GoldButton, Eyebrow, GOLD_LT, fontUI, fontDisplay } from './weekly/WeeklyParts';
 
 const TRANSITION_STYLE = `
-@keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes rt-fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-@keyframes survivor-pop {
-  0% { opacity: 0; transform: scale(0.8); }
-  60% { transform: scale(1.05); }
+@keyframes rt-survivor-pop {
+  0%   { opacity: 0; transform: scale(0.8); }
+  60%  { transform: scale(1.05); }
   100% { opacity: 1; transform: scale(1); }
 }
 `;
 
-// Fun trivia facts keyed loosely by song name fragments
+// Fun trivia facts keyed loosely by song name fragments.
 const TRIVIA = [
   { match: 'All Too Well', fact: '"All Too Well (10 Minute Version)" is Taylor\'s longest officially released song and won the Grammy for Best Song Written for Visual Media.' },
   { match: 'Cruel Summer', fact: '"Cruel Summer" was written in 2019 but became a global phenomenon four years later after the Eras Tour.' },
@@ -37,33 +42,27 @@ function pickTrivia(survivors) {
       }
     }
   }
-  // Default fun fact
   return 'Taylor Swift has sold over 200 million records worldwide — more than any other artist in the 21st century.';
 }
 
-function MiniSongChip({ song }) {
-  const colors = getEraColors(song.albumId);
-  const album = ALBUMS.find(a => a.id === song.albumId);
+function SurvivorChip({ song }) {
+  const era = getEra(song.albumId);
   return (
     <div style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: 6,
-      background: `linear-gradient(135deg, ${colors.primary}22, ${colors.secondary}44)`,
-      border: `1.5px solid ${colors.primary}55`,
-      borderRadius: 20,
-      padding: '6px 12px',
-      fontSize: 12,
-      fontWeight: 600,
-      color: '#f1f5f9',
-      animation: 'survivor-pop 0.4s ease-out both',
+      display: 'inline-flex', alignItems: 'center', gap: 7,
+      background: `linear-gradient(135deg, ${era.tile}33, ${era.deep}55)`,
+      border: `1px solid ${era.tile}66`,
+      borderRadius: 999, padding: '5px 12px 5px 6px',
+      animation: 'rt-survivor-pop 0.4s ease-out both',
     }}>
-      <span>{album?.icon}</span>
       <span style={{
-        maxWidth: 150,
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
+        width: 22, height: 22, borderRadius: 7, flexShrink: 0,
+        background: `linear-gradient(140deg, ${era.tile}, ${era.deep})`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13,
+      }}>{era.emoji}</span>
+      <span style={{
+        fontSize: 12, fontWeight: 600, color: '#fff',
+        maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>{song.name}</span>
     </div>
   );
@@ -71,7 +70,7 @@ function MiniSongChip({ song }) {
 
 export default function RoundTransition({ bracket, completedRoundIndex, onContinue }) {
   const [entered, setEntered] = useState(false);
-  useEffect(() => { setTimeout(() => setEntered(true), 80); }, []);
+  useEffect(() => { const t = setTimeout(() => setEntered(true), 80); return () => clearTimeout(t); }, []);
 
   const completedRound = bracket.rounds[completedRoundIndex];
   const survivors = completedRound?.map(m => m.winner).filter(Boolean) || [];
@@ -80,126 +79,84 @@ export default function RoundTransition({ bracket, completedRoundIndex, onContin
   const trivia = pickTrivia(survivors);
 
   return (
-    <>
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 200,
+      maxWidth: 700, margin: '0 auto',
+      color: '#fff', fontFamily: fontUI,
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      overflowY: 'auto',
+    }}>
       <style>{TRANSITION_STYLE}</style>
+      <ArenaBg />
+
       <div style={{
-        position: 'fixed',
-        inset: 0,
-        background: '#0f172a',
-        zIndex: 200,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        maxWidth: 700,
-        margin: '0 auto',
-        padding: '40px 20px 24px',
-        overflowY: 'auto',
+        position: 'relative', zIndex: 2,
+        width: '100%', maxWidth: 460, padding: '52px 22px 28px',
+        opacity: entered ? 1 : 0,
+        transform: entered ? 'none' : 'translateY(16px)',
+        transition: 'all 0.4s ease',
       }}>
-        <div style={{
-          opacity: entered ? 1 : 0,
-          transform: entered ? 'none' : 'translateY(16px)',
-          transition: 'all 0.4s ease',
-          width: '100%',
-          maxWidth: 440,
-        }}>
 
-          {/* Round complete badge */}
+        {/* Round complete header */}
+        <div style={{ textAlign: 'center', marginBottom: 26 }}>
           <div style={{
-            textAlign: 'center',
-            marginBottom: 28,
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            background: 'rgba(212,175,55,0.14)',
+            border: '1px solid rgba(245,217,122,0.45)',
+            borderRadius: 999, padding: '7px 18px', marginBottom: 16,
           }}>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              background: 'rgba(212,175,55,0.15)',
-              border: '1.5px solid rgba(212,175,55,0.5)',
-              borderRadius: 24,
-              padding: '8px 20px',
-              fontSize: 13,
-              fontWeight: 700,
-              color: '#fcd34d',
-              letterSpacing: '0.06em',
-              marginBottom: 16,
-            }}>
-              ✦ Round {completedRoundIndex + 1} Complete ✦
-            </div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', lineHeight: 1.2 }}>
-              {survivors.length} song{survivors.length !== 1 ? 's' : ''} moving on
-            </div>
-            {nextRoundNum <= totalRounds && (
-              <div style={{ fontSize: 14, color: '#64748b', marginTop: 6 }}>
-                Round {nextRoundNum} of {totalRounds} is up next
-              </div>
-            )}
+            <Eyebrow color={GOLD_LT}>✦ Round {completedRoundIndex + 1} complete ✦</Eyebrow>
           </div>
-
-          {/* Survivors grid */}
-          <div style={{
-            background: 'rgba(255,255,255,0.04)',
-            borderRadius: 16,
-            padding: '16px',
-            marginBottom: 24,
-          }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#64748b', marginBottom: 12, letterSpacing: '0.06em' }}>
-              SURVIVORS
-            </div>
-            <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 8,
-            }}>
-              {survivors.map((song, i) => (
-                <div key={i} style={{ animationDelay: `${i * 0.07}s` }}>
-                  <MiniSongChip song={song} />
-                </div>
-              ))}
-            </div>
+          <div style={{ fontFamily: fontDisplay, fontSize: 30, lineHeight: 1.12, letterSpacing: -0.4 }}>
+            {survivors.length} song{survivors.length !== 1 ? 's' : ''} moving on
           </div>
-
-          {/* Trivia card */}
-          {trivia && (
-            <div style={{
-              background: 'rgba(168,85,247,0.1)',
-              border: '1.5px solid rgba(168,85,247,0.25)',
-              borderRadius: 14,
-              padding: '16px',
-              marginBottom: 28,
-              animation: 'fade-in-up 0.4s ease 0.2s both',
-            }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--brand-text)', marginBottom: 8, letterSpacing: '0.08em' }}>
-                ✦ DID YOU KNOW?
-              </div>
-              <div style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 }}>
-                {trivia}
-              </div>
+          {nextRoundNum <= totalRounds && (
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 8 }}>
+              Round {nextRoundNum} of {totalRounds} is up next
             </div>
           )}
+        </div>
 
-          {/* Continue button */}
-          <button
-            onClick={onContinue}
-            style={{
-              width: '100%',
-              padding: '16px',
-              background: 'linear-gradient(135deg, var(--brand), var(--brand-2))',
-              border: 'none',
-              borderRadius: 16,
-              color: '#ffffff',
-              fontSize: 16,
-              fontWeight: 700,
-              cursor: 'pointer',
-              letterSpacing: '0.02em',
-              boxShadow: '0 4px 20px rgba(168,85,247,0.4)',
-              animation: 'fade-in-up 0.4s ease 0.3s both',
-            }}
-          >
+        {/* Survivors */}
+        <div style={{
+          background: 'rgba(255,255,255,0.05)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: 16, padding: 16, marginBottom: 22,
+        }}>
+          <Eyebrow color="rgba(255,255,255,0.5)">Survivors</Eyebrow>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+            {survivors.map((song, i) => (
+              <div key={i} style={{ animationDelay: `${i * 0.06}s` }}>
+                <SurvivorChip song={song} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Trivia */}
+        {trivia && (
+          <div style={{
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(245,217,122,0.25)',
+            borderRadius: 14, padding: 16, marginBottom: 28,
+            animation: 'rt-fade-in-up 0.4s ease 0.2s both',
+          }}>
+            <Eyebrow color={GOLD_LT}>✦ Did you know?</Eyebrow>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.78)', lineHeight: 1.6, marginTop: 8 }}>
+              {trivia}
+            </div>
+          </div>
+        )}
+
+        {/* Continue */}
+        <div style={{ animation: 'rt-fade-in-up 0.4s ease 0.3s both' }}>
+          <GoldButton full onClick={onContinue}>
             {nextRoundNum <= totalRounds
               ? `Continue to Round ${nextRoundNum} →`
-              : 'See the Winner →'}
-          </button>
+              : 'See the winner →'}
+          </GoldButton>
         </div>
       </div>
-    </>
+    </div>
   );
 }

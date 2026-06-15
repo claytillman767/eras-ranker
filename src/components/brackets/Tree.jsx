@@ -1,11 +1,17 @@
+// Custom-bracket full-bracket view ("See full bracket"). Restyled to the weekly
+// arena look: navy arena background, era-tile nodes (getEra), gold accents for
+// the live matchup / winner / final, and a gold "Vote Now" CTA. Layout + the
+// bracket-fan connector math are unchanged — this is a color/skin pass.
+
 import { useState, useEffect, useRef } from 'react';
 import { FeedbackLauncher } from '../FeedbackButton';
-import { getEraColors } from '../../constants/eraColors';
+import { getEra } from '../../constants/eraColors';
+import { ArenaBg, GoldButton, GOLD_LT, fontUI } from './weekly/WeeklyParts';
 
 const STYLE = `
 @keyframes tree-live-pulse {
-  0%, 100% { box-shadow: 0 0 0 2px #f59e0b, 0 0 0 4px rgba(245,158,11,0.18); }
-  50%      { box-shadow: 0 0 0 2px #f59e0b, 0 0 0 7px rgba(245,158,11,0.05); }
+  0%, 100% { box-shadow: 0 0 0 2px #f5d97a, 0 0 0 4px rgba(245,217,122,0.20); }
+  50%      { box-shadow: 0 0 0 2px #f5d97a, 0 0 0 7px rgba(245,217,122,0.05); }
 }
 `;
 
@@ -16,9 +22,8 @@ function getRoundLabel(roundIndex, totalRounds) {
   return `Round ${roundIndex + 1}`;
 }
 
-// "R1 · 16 → 8" sub-label for the column header.
 function getRoundSubLabel(roundIndex, totalRounds) {
-  const songsIn  = Math.pow(2, totalRounds - roundIndex);
+  const songsIn = Math.pow(2, totalRounds - roundIndex);
   const songsOut = songsIn / 2;
   if (songsOut < 1) return '';
   return `${songsIn} → ${songsOut}`;
@@ -26,91 +31,54 @@ function getRoundSubLabel(roundIndex, totalRounds) {
 
 function TreeNode({ song, status, highlight, small, width }) {
   // status: 'won' | 'lost' | 'pending' | 'live' | 'tbd'
-  // 'pending' = song is here but matchup not yet played → show in color
-  // 'tbd'     = slot not yet filled (no song)           → show gray placeholder
-  const colors = song ? getEraColors(song.albumId) : null;
+  const era = song ? getEra(song.albumId) : null;
   const isLost = status === 'lost';
-  const isTbd  = status === 'tbd';
+  const isTbd = status === 'tbd';
   const isLive = status === 'live';
 
   const w = width !== undefined ? width : (small ? 100 : 120);
   const h = small ? 30 : 36;
-
-  const hasColor = colors && !isTbd;
-
-  let background = 'var(--surface)';
-  if (hasColor) {
-    background = `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`;
-  } else if (isTbd) {
-    background = 'var(--surface-2)';
-  }
+  const hasColor = era && !isTbd;
 
   return (
     <div style={{
-      width: w,
-      height: h,
-      borderRadius: 8,
-      background,
-      border: isTbd ? '1px dashed var(--control-off)' : '1px solid var(--border)',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 6,
-      padding: '0 8px',
+      width: w, height: h, borderRadius: 8,
+      background: hasColor
+        ? `linear-gradient(140deg, ${era.tile}, ${era.deep})`
+        : 'rgba(255,255,255,0.05)',
+      border: isTbd ? '1px dashed rgba(255,255,255,0.18)' : '1px solid rgba(255,255,255,0.12)',
+      display: 'flex', alignItems: 'center', gap: 6, padding: '0 8px',
       opacity: isLost ? 0.4 : 1,
       position: 'relative',
       animation: isLive ? 'tree-live-pulse 1.4s ease-in-out infinite' : undefined,
-      boxShadow: highlight && !isLive ? '0 0 0 2px #f59e0b' : undefined,
+      boxShadow: highlight && !isLive ? '0 0 0 2px #f5d97a' : undefined,
     }}>
-      {hasColor ? (
-        <span style={{
-          width: small ? 10 : 12,
-          height: small ? 10 : 12,
-          borderRadius: '50%',
-          background: colors.primary,
-          border: '1px solid rgba(0,0,0,0.15)',
-          flexShrink: 0,
-        }} />
-      ) : (
-        <span style={{
-          width: small ? 10 : 12,
-          height: small ? 10 : 12,
-          borderRadius: '50%',
-          background: 'var(--surface-3)',
-          border: '1px dashed var(--control-off)',
-          flexShrink: 0,
-        }} />
-      )}
       <span style={{
-        fontSize: small ? 10 : 11,
-        fontWeight: 500,
-        color: hasColor ? colors.text : 'var(--text-3)',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
+        width: small ? 14 : 16, height: small ? 14 : 16, flexShrink: 0,
+        fontSize: small ? 11 : 13, lineHeight: 1,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        opacity: hasColor ? 1 : 0.4,
+      }}>{hasColor ? era.emoji : '·'}</span>
+      <span style={{
+        fontSize: small ? 10 : 11, fontWeight: 600,
+        color: hasColor ? era.ink : 'rgba(255,255,255,0.4)',
+        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         textDecoration: isLost ? 'line-through' : 'none',
-        flex: 1,
-        lineHeight: 1.1,
+        flex: 1, lineHeight: 1.1,
       }}>
         {song ? song.name : '?'}
       </span>
       {isLive && (
         <span style={{
-          position: 'absolute',
-          top: -4,
-          right: -4,
-          width: 8,
-          height: 8,
-          borderRadius: 4,
-          background: '#ef4444',
-          border: '1.5px solid #ffffff',
+          position: 'absolute', top: -4, right: -4,
+          width: 8, height: 8, borderRadius: 4,
+          background: '#ef4444', border: '1.5px solid #16213e',
         }} />
       )}
     </div>
   );
 }
 
-// Returns the visual status of one slot (song1 or song2) within a matchup,
-// given that matchup's winner and whether this matchup is the live one.
 function slotStatus(matchup, slot, isLive, totalRounds, roundIndex, isFutureRound) {
   if (isFutureRound || !matchup) return 'tbd';
   const slotSong = matchup[slot];
@@ -126,9 +94,10 @@ function slotStatus(matchup, slot, isLive, totalRounds, roundIndex, isFutureRoun
 
 export default function Tree({
   bracket,
-  weekLabel,             // header title, e.g., "Best Bridge · Wk 37"
+  weekLabel,
+  emoji,
   onClose,
-  onOpenMatchup,         // (roundIndex, matchupIndex) => void — opens Matchup
+  onOpenMatchup,
 }) {
   const totalRounds = Math.log2(bracket.contestants.length);
 
@@ -137,20 +106,14 @@ export default function Tree({
   const liveMatchup = bracket.rounds[liveRound]?.[liveMatchupIdx] || null;
   const isComplete = bracket.status === 'complete';
 
-  // Which round is currently "expanded" in the tree view (wider, full song
-  // names visible). Defaults to the live round; clicking a round header
-  // overrides. Snaps back to the new live round when the bracket advances.
   const [expandedRound, setExpandedRound] = useState(liveRound);
-  useEffect(() => {
-    setExpandedRound(liveRound);
-  }, [liveRound]);
+  useEffect(() => { setExpandedRound(liveRound); }, [liveRound]);
 
   const COL_W_EXPANDED = 200;
   const COL_W_COMPRESSED = 78;
   const COL_GAP = 14;
   const colWidth = (idx) => idx === expandedRound ? COL_W_EXPANDED : COL_W_COMPRESSED;
 
-  // Build a column per round — fill in placeholders for future rounds.
   const columns = [];
   for (let r = 0; r < totalRounds; r++) {
     const round = bracket.rounds[r];
@@ -158,38 +121,24 @@ export default function Tree({
       columns.push({ round, isFuture: false, index: r });
     } else {
       const matchupCount = Math.pow(2, totalRounds - 1 - r);
-      const empty = Array.from({ length: matchupCount }, () => ({
-        song1: null, song2: null, winner: null,
-      }));
+      const empty = Array.from({ length: matchupCount }, () => ({ song1: null, song2: null, winner: null }));
       columns.push({ round: empty, isFuture: true, index: r });
     }
   }
 
-  // Auto-scroll the tree viewport so the expanded column is visible.
   const scrollerRef = useRef(null);
   useEffect(() => {
     if (!scrollerRef.current) return;
     let leftOffset = 0;
-    for (let i = 0; i < expandedRound; i++) {
-      leftOffset += COL_W_COMPRESSED + COL_GAP;
-    }
-    scrollerRef.current.scrollTo({
-      left: Math.max(0, leftOffset - 16),
-      behavior: 'smooth',
-    });
+    for (let i = 0; i < expandedRound; i++) leftOffset += COL_W_COMPRESSED + COL_GAP;
+    scrollerRef.current.scrollTo({ left: Math.max(0, leftOffset - 16), behavior: 'smooth' });
   }, [expandedRound]);
 
-  // Derive spacing so each round's pairs are vertically centered between the two
-  // source pairs from the previous round — gives a proper bracket fan.
-  // nodeH=30 (small), intraGap=2, pairH=62, baseGap=10 → slotH doubles each round.
   function computeRoundLayout(r) {
-    const pairH = 62; // nodeH*2 + intraGap = 30*2 + 2
-    let slotH = 72;   // pairH + baseGap = 62 + 10
+    const pairH = 62;
+    let slotH = 72;
     let paddingTop = 0;
-    for (let i = 0; i < r; i++) {
-      paddingTop += slotH / 2;
-      slotH *= 2;
-    }
+    for (let i = 0; i < r; i++) { paddingTop += slotH / 2; slotH *= 2; }
     return { interGap: slotH - pairH, paddingTop };
   }
 
@@ -197,253 +146,149 @@ export default function Tree({
     liveMatchup.song1 && liveMatchup.song2 && !liveMatchup.winner;
 
   return (
-    <>
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 200,
+      maxWidth: 700, margin: '0 auto',
+      display: 'flex', flexDirection: 'column',
+      color: '#fff', fontFamily: fontUI,
+    }}>
       <style>{STYLE}</style>
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: 200,
-        background: 'var(--bg)',
-        maxWidth: 700, margin: '0 auto',
-        display: 'flex', flexDirection: 'column',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        color: 'var(--text)',
-      }}>
+      <ArenaBg />
+
+      <div style={{ position: 'relative', zIndex: 2, flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
 
         {/* Header */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '14px 16px',
-          borderBottom: '1px solid var(--border)',
-          flexShrink: 0,
+          padding: '16px 16px 12px', flexShrink: 0,
         }}>
-          <div style={{ fontSize: 16, fontWeight: 500 }}>{weekLabel}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <FeedbackLauncher variant="header" />
+          <div style={{ fontSize: 16, fontWeight: 600, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {emoji ? `${emoji} ` : ''}{weekLabel}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <FeedbackLauncher variant="overlay" />
             <button
               onClick={onClose}
               aria-label="Close"
               style={{
-                width: 26, height: 26, borderRadius: 13,
-                border: '1px solid var(--text)',
-                background: 'transparent',
-                cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 12, color: 'var(--text)', padding: 0, lineHeight: 1,
+                width: 34, height: 34, borderRadius: 17,
+                border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(255,255,255,0.08)',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 17, color: '#fff', padding: 0, lineHeight: 1,
               }}
-            >✕</button>
+            >×</button>
           </div>
         </div>
 
-        {/* "Your turn" CTA — pinned at the top */}
+        {/* "Your turn" CTA */}
         {showCTA && (
           <div style={{
-            borderBottom: '1px solid var(--border)',
-            padding: '10px 14px',
-            background: 'var(--surface)',
-            display: 'flex', alignItems: 'center', gap: 10,
-            flexShrink: 0,
+            margin: '0 14px 8px', padding: '11px 14px', borderRadius: 14,
+            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(245,217,122,0.3)',
+            display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0,
           }}>
-            <span style={{
-              width: 8, height: 8, borderRadius: 4,
-              background: 'var(--brand)',
-              flexShrink: 0,
-            }} />
+            <span style={{ width: 8, height: 8, borderRadius: 4, background: GOLD_LT, flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)' }}>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>
                 Your turn — {getRoundLabel(liveRound, totalRounds)} matchup {liveMatchupIdx + 1}
               </div>
-              <div style={{
-                fontSize: 11, color: 'var(--text-2)',
-                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-              }}>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {liveMatchup.song1.name} vs {liveMatchup.song2.name}
               </div>
             </div>
-            <button
-              onClick={() => onOpenMatchup?.(liveRound, liveMatchupIdx)}
-              style={{
-                padding: '8px 16px', borderRadius: 16,
-                background: 'var(--brand)', color: '#ffffff',
-                border: 'none', fontSize: 13, fontWeight: 600,
-                cursor: 'pointer', flexShrink: 0,
-              }}
-            >Vote Now</button>
+            <div style={{ flexShrink: 0 }}>
+              <GoldButton size="sm" onClick={() => onOpenMatchup?.(liveRound, liveMatchupIdx)}>Vote Now</GoldButton>
+            </div>
           </div>
         )}
 
-        {/* Body */}
-        <div style={{
-          flex: 1, overflow: 'hidden',
-          display: 'flex', flexDirection: 'column', minHeight: 0,
-        }}>
-
-            <div
-              ref={scrollerRef}
-              style={{
-                flex: 1, overflowX: 'auto', overflowY: 'auto',
-                padding: '8px 16px 16px',
-              }}
-            >
-              <div style={{
-                display: 'flex', gap: COL_GAP,
-                minWidth:
-                  COL_W_EXPANDED +
-                  (totalRounds - 1) * COL_W_COMPRESSED +
-                  (totalRounds - 1) * COL_GAP,
-              }}>
-                {columns.map(({ round, isFuture, index }) => {
-                  const isExpanded = index === expandedRound;
-                  const w = colWidth(index);
-                  return (
-                    <div key={index} style={{
-                      display: 'flex', flexDirection: 'column', gap: 8,
-                      flexShrink: 0,
-                      width: w,
+        {/* Body — horizontally scrolling bracket fan */}
+        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <div ref={scrollerRef} style={{ flex: 1, overflowX: 'auto', overflowY: 'auto', padding: '8px 16px 16px' }}>
+            <div style={{
+              display: 'flex', gap: COL_GAP,
+              minWidth: COL_W_EXPANDED + (totalRounds - 1) * COL_W_COMPRESSED + (totalRounds - 1) * COL_GAP,
+            }}>
+              {columns.map(({ round, isFuture, index }) => {
+                const isExpanded = index === expandedRound;
+                const w = colWidth(index);
+                return (
+                  <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0, width: w }}>
+                    <button
+                      onClick={() => setExpandedRound(index)}
+                      title={isExpanded ? 'Currently showing full names' : 'Tap to expand this round'}
+                      style={{
+                        appearance: 'none', background: 'transparent', border: 'none', padding: 0, margin: 0,
+                        fontFamily: 'inherit', fontSize: 9,
+                        color: isExpanded ? '#fff' : 'rgba(255,255,255,0.4)',
+                        textTransform: 'uppercase', letterSpacing: '0.1em',
+                        fontWeight: isExpanded ? 700 : 600, textAlign: 'left', cursor: 'pointer',
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%',
+                        borderBottom: isExpanded ? '1px solid rgba(255,255,255,0.6)' : '1px dashed transparent',
+                        paddingBottom: 2,
+                      }}
+                    >
+                      {getRoundLabel(index, totalRounds)}
+                      {getRoundSubLabel(index, totalRounds) && (
+                        <span style={{ marginLeft: 6, opacity: 0.7 }}>· {getRoundSubLabel(index, totalRounds)}</span>
+                      )}
+                    </button>
+                    <div style={{
+                      display: 'flex', flexDirection: 'column',
+                      gap: computeRoundLayout(index).interGap,
+                      paddingTop: computeRoundLayout(index).paddingTop,
                     }}>
-                      <button
-                        onClick={() => setExpandedRound(index)}
-                        title={isExpanded ? 'Currently showing full names' : 'Tap to expand this round'}
-                        style={{
-                          appearance: 'none',
-                          background: 'transparent',
-                          border: 'none',
-                          padding: 0,
-                          margin: 0,
-                          fontFamily: 'inherit',
-                          fontSize: 9,
-                          color: isExpanded ? 'var(--text)' : 'var(--text-3)',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.1em',
-                          fontWeight: isExpanded ? 700 : 600,
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          width: '100%',
-                          borderBottom: isExpanded
-                            ? '1px solid var(--text)'
-                            : '1px dashed transparent',
-                          paddingBottom: 2,
-                        }}
-                      >
-                        {getRoundLabel(index, totalRounds)}
-                        {getRoundSubLabel(index, totalRounds) && (
-                          <span style={{ marginLeft: 6, opacity: 0.7 }}>
-                            · {getRoundSubLabel(index, totalRounds)}
-                          </span>
-                        )}
-                      </button>
-                      <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: computeRoundLayout(index).interGap,
-                        paddingTop: computeRoundLayout(index).paddingTop,
-                      }}>
-                        {round.map((m, mIdx) => {
-                          const isLive = !isFuture &&
-                            index === liveRound && mIdx === liveMatchupIdx &&
-                            m.song1 && m.song2 && !m.winner;
-                          const isLastRound = index === totalRounds - 1;
-                          return (
-                            <div
-                              key={mIdx}
-                              onClick={() => {
-                                if (isLive && onOpenMatchup) onOpenMatchup(index, mIdx);
-                              }}
-                              style={{
-                                display: 'flex', flexDirection: 'column', gap: 2,
-                                cursor: isLive ? 'pointer' : 'default',
-                                position: 'relative',
-                              }}
-                            >
-                              <TreeNode
-                                song={m.song1}
-                                status={slotStatus(m, 'song1', isLive, totalRounds, index, isFuture)}
-                                highlight={isLive}
-                                small
-                                width={w}
-                              />
-                              <TreeNode
-                                song={m.song2}
-                                status={slotStatus(m, 'song2', isLive, totalRounds, index, isFuture)}
-                                highlight={isLive}
-                                small
-                                width={w}
-                              />
-                              {/* Bracket connector lines into the next round */}
-                              {!isLastRound && (
-                                <>
-                                  {/* Horizontal stub from upper box (centered on its row) */}
-                                  <div style={{
-                                    position: 'absolute', pointerEvents: 'none',
-                                    right: -7, top: 15,
-                                    width: 7, height: 1,
-                                    background: 'var(--control-off)',
-                                  }} />
-                                  {/* Horizontal stub from lower box */}
-                                  <div style={{
-                                    position: 'absolute', pointerEvents: 'none',
-                                    right: -7, bottom: 15,
-                                    width: 7, height: 1,
-                                    background: 'var(--control-off)',
-                                  }} />
-                                  {/* Vertical line connecting the two stubs */}
-                                  <div style={{
-                                    position: 'absolute', pointerEvents: 'none',
-                                    right: -7, top: 15, bottom: 15,
-                                    width: 1,
-                                    background: 'var(--control-off)',
-                                  }} />
-                                  {/* Horizontal line from midpoint extending to next column */}
-                                  <div style={{
-                                    position: 'absolute', pointerEvents: 'none',
-                                    right: -14, top: '50%',
-                                    width: 7, height: 1,
-                                    background: 'var(--control-off)',
-                                  }} />
-                                </>
-                              )}
-                            </div>
-                          );
-                        })}
-                        {/* Final-column trophy slot when bracket isn't complete */}
-                        {index === totalRounds - 1 && !isComplete && (
-                          <div style={{
-                            marginTop: 12,
-                            padding: '8px 10px',
-                            border: '1.5px dashed #f59e0b',
-                            borderRadius: 8,
-                            textAlign: 'center',
-                            fontSize: isExpanded ? 11 : 10,
-                            fontStyle: 'italic',
-                            color: '#b45309',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}>
-                            ♛ winner
+                      {round.map((m, mIdx) => {
+                        const isLive = !isFuture && index === liveRound && mIdx === liveMatchupIdx &&
+                          m.song1 && m.song2 && !m.winner;
+                        const isLastRound = index === totalRounds - 1;
+                        return (
+                          <div
+                            key={mIdx}
+                            onClick={() => { if (isLive && onOpenMatchup) onOpenMatchup(index, mIdx); }}
+                            style={{ display: 'flex', flexDirection: 'column', gap: 2, cursor: isLive ? 'pointer' : 'default', position: 'relative' }}
+                          >
+                            <TreeNode song={m.song1} status={slotStatus(m, 'song1', isLive, totalRounds, index, isFuture)} highlight={isLive} small width={w} />
+                            <TreeNode song={m.song2} status={slotStatus(m, 'song2', isLive, totalRounds, index, isFuture)} highlight={isLive} small width={w} />
+                            {!isLastRound && (
+                              <>
+                                <div style={{ position: 'absolute', pointerEvents: 'none', right: -7, top: 15, width: 7, height: 1, background: 'rgba(255,255,255,0.2)' }} />
+                                <div style={{ position: 'absolute', pointerEvents: 'none', right: -7, bottom: 15, width: 7, height: 1, background: 'rgba(255,255,255,0.2)' }} />
+                                <div style={{ position: 'absolute', pointerEvents: 'none', right: -7, top: 15, bottom: 15, width: 1, background: 'rgba(255,255,255,0.2)' }} />
+                                <div style={{ position: 'absolute', pointerEvents: 'none', right: -14, top: '50%', width: 7, height: 1, background: 'rgba(255,255,255,0.2)' }} />
+                              </>
+                            )}
                           </div>
-                        )}
-                      </div>
+                        );
+                      })}
+                      {index === totalRounds - 1 && !isComplete && (
+                        <div style={{
+                          marginTop: 12, padding: '8px 10px',
+                          border: '1.5px dashed rgba(245,217,122,0.6)', borderRadius: 8,
+                          textAlign: 'center', fontSize: isExpanded ? 11 : 10, fontStyle: 'italic',
+                          color: GOLD_LT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                        }}>
+                          ♛ winner
+                        </div>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </div>
+          </div>
 
           {isComplete && (
             <div style={{
-              borderTop: '1px solid var(--border)',
-              padding: '10px 14px',
-              background: '#fffbeb',
-              fontSize: 12, color: '#78350f', textAlign: 'center',
-              flexShrink: 0,
+              padding: '11px 14px', flexShrink: 0, textAlign: 'center',
+              background: 'rgba(212,175,55,0.12)', borderTop: '1px solid rgba(245,217,122,0.25)',
+              fontSize: 12.5, color: GOLD_LT, fontWeight: 600,
             }}>
               ♛ Bracket complete — {bracket.winner?.name} crowned
             </div>
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

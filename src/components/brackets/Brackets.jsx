@@ -175,8 +175,8 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
         <Matchup
           song1={matchup.song1}
           song2={matchup.song2}
-          categoryId={activeBracket.categoryId || 'most-devastating'}
           weekLabel={weekLabel}
+          emoji={activeBracket.emoji}
           roundIndex={activeBracket.currentRound}
           totalRounds={totalRounds}
           matchupIndex={activeBracket.currentMatchupIndex}
@@ -196,6 +196,7 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
       <Tree
         bracket={activeBracket}
         weekLabel={weekLabel}
+        emoji={activeBracket.emoji}
         onClose={backToLanding}
         onOpenMatchup={() => setScreen('matchup')}
       />
