@@ -249,6 +249,78 @@ export function VoteBar({ leftSong, rightSong, leftPct, rightPct, settled = fals
   );
 }
 
+// ── Vote card — big tappable era-gradient song card ─────────────────────────
+// Shared by the weekly Voting screen AND the custom-bracket Matchup so both
+// flows render identical cards. Tap → it locks in with a gold ring + ✓ and the
+// other card dims (the parent drives picked/dimmed/disabled).
+export function VoteCard({ song, onTap, picked, dimmed, disabled }) {
+  const era = getEra(song.albumId);
+  return (
+    <button onClick={onTap} disabled={disabled} style={{
+      appearance: 'none', border: 'none',
+      cursor: disabled ? 'default' : 'pointer',
+      width: '100%', textAlign: 'left',
+      padding: 0, borderRadius: 22,
+      background: `linear-gradient(155deg, ${era.tile} 0%, ${era.deep} 130%)`,
+      boxShadow: picked
+        ? `0 0 0 3px ${GOLD_LT}, 0 14px 36px ${era.tile}66, 0 6px 14px rgba(0,0,0,0.3)`
+        : '0 12px 30px rgba(0,0,0,0.35), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.18)',
+      color: era.ink,
+      position: 'relative', overflow: 'hidden',
+      opacity: dimmed ? 0.45 : 1,
+      transform: picked ? 'scale(1.01)' : 'scale(1)',
+      transition: 'transform .25s, opacity .35s, box-shadow .25s',
+    }}>
+      {/* glossy highlight */}
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 22,
+        background: 'radial-gradient(120% 60% at 25% 0%, rgba(255,255,255,0.28), transparent 55%)',
+        pointerEvents: 'none',
+      }} />
+      <div style={{
+        position: 'relative', padding: '20px 22px 22px',
+        display: 'flex', flexDirection: 'column', gap: 8,
+      }}>
+        <div style={{
+          fontSize: 64, lineHeight: 1, marginBottom: 6,
+          filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.25))',
+        }}>{era.emoji}</div>
+        <div style={{
+          fontFamily: fontUI, fontWeight: 800, fontSize: 28,
+          lineHeight: 1.1, letterSpacing: -0.6,
+          textShadow: '0 1px 2px rgba(0,0,0,0.18)',
+        }}>{song.name}</div>
+        <div style={{
+          fontFamily: fontUI, fontSize: 12, fontWeight: 600,
+          letterSpacing: 1.4, textTransform: 'uppercase',
+          opacity: 0.75, marginTop: 2,
+        }}>from {era.name}</div>
+      </div>
+      {picked && (
+        <div style={{
+          position: 'absolute', top: 14, right: 14,
+          width: 36, height: 36, borderRadius: 18,
+          background: GOLD_LT, color: '#2a1d00',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 20, fontWeight: 800,
+          boxShadow: '0 4px 10px rgba(0,0,0,0.25)',
+        }}>✓</div>
+      )}
+    </button>
+  );
+}
+
+// ── "vs" divider between two stacked vote cards ─────────────────────────────
+export function VsDivider() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '-4px 0' }}>
+      <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.14)' }} />
+      <div style={{ fontFamily: fontDisplay, fontStyle: 'italic', fontSize: 22, color: GOLD_LT }}>vs</div>
+      <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.14)' }} />
+    </div>
+  );
+}
+
 // ── Section eyebrow ("ROUND 1 · MATCHUP 3 / 8") ─────────────────────────────
 export function Eyebrow({ children, color }) {
   return (

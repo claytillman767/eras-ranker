@@ -44,6 +44,7 @@ before candidate surfacing) and **appends to it whenever Clay gives a correction
 - 2026-05-25 | propagate consequences | NOTE | Act on the FULL downstream effect of an instruction across all files (renumber → rename file + stub old + re-sequence calendar + fix refs), then summarize. Don't stop at the literal edit and ask. Only the Step 1 gate + genuine forks stop for Clay.
 - 2026-05-25 | rerun default | NOTE | On a category RERUN, propose the REMATCH model first: keep 1–4 prior champions as anchors (reference past winner/margins for engagement), rotate the middle. Read results.json at Step 0. Sliced/era/deep-cuts/adjacent editions are secondary options.
 - 2026-05-25 | overlap rule | NOTE | Overlap NEVER filters scoring — always show the honest full ranked list (hiding songs corrupts Clay's training feedback). Overlap only informs category TIMING/spacing on the calendar. Rematch anchors are a separate deliberate choice.
+- 2026-05-31 | unattended run | NOTE | Wk2 Best Chorus + Wk3 Most Romantic were scored in an autonomous run with the Step-1 gate SKIPPED per Clay's explicit one-time authorization. Their DIMS/GUIDE below are PROPOSED, not approved — confirm with Clay before treating as locked.
 
 ---
 
@@ -64,6 +65,24 @@ before candidate surfacing) and **appends to it whenever Clay gives a correction
 - 2026-05-25 | Dear John — Speak Now | NOTE | Supporting lyric = "Well, I stopped pickin' up and this song is to let you know why" (most theme-direct line).
 - 2026-05-25 | Tell Me Why — Fearless | NOTE | Strong theme fit, low Popularity; KEEP IN — deliberate test of how hard fans punish unfamiliar songs.
 - 2026-05-25 | Emotional Weight — scope | NOTE | Breakup-specific only: off-theme songs (thanK you aIMee, Mean, LWYMMD) lose their Emo Weight too, not just Theme.
+
+---
+
+## Best Chorus (Wk 2) — "the part you scream at concerts" — PROPOSED, awaiting Clay review
+- 2026-05-31 | DIMS (PROPOSED) | NOTE | Chorus Power 50% + Iconicity 20% + Popularity 30%. (Chorus Power = how big/singable the CHORUS section is, scoped to the chorus only; Iconicity = how recognizable/quotable; Popularity = overall reach.)
+- 2026-05-31 | GUIDE (PROPOSED) | NOTE | "Which song has the chorus you can't not belt — the part the whole stadium screams back?"
+- 2026-05-31 | rule-7 limit | NOTE | "Catchiness" is partly melody/production the lyrics can't show; Chorus Power scored from word-level cues (repetition, chantable title-drop, call-and-response). Final melodic verdict needs the recording.
+- 2026-05-31 | bridge/line songs | NOTE | Songs whose best moment is the BRIDGE or a single LINE (e.g. All Too Well, august) stay OUT — they belong to Best Bridge (Wk7) / Best Lyric (Wk6) by the discipline test.
+
+---
+
+## Most Romantic Song (Wk 3) — "the one you send without context" — PROPOSED, awaiting Clay review
+- 2026-05-31 | DIMS (PROPOSED) | NOTE | Romance/Devotion 50% + Swoon Factor 20% + Popularity 30%. (Romance/Devotion = warm returned love for a partner; Swoon = how tender it lands, scoped to the romance; Popularity = reach.)
+- 2026-05-31 | GUIDE (PROPOSED) | NOTE | "Which song says 'I love you' the best — the one you'd send someone you're crazy about with no caption needed?"
+- 2026-05-31 | scope | NOTE | OUT of scope: heartbreak/breakups, spite, fear-driven situationships, lust-only, and one-sided pining with no relationship. Secure returned love scores above hopeful crush.
+- 2026-05-31 | You Belong With Me — Fearless | NOTE | Pining from outside (he's with another girl), not a romance she's in → OUT of Romantic; strong Best Chorus pick instead.
+- 2026-05-31 | Wildest Dreams / gold rush / ivy — 1989/Evermore | NOTE | Doomed/fantasized/affair loves shadowed by loss or guilt — held OUT of Romantic top 25.
+- 2026-05-31 | Mary's Song — Taylor Swift | NOTE | Among the most purely romantic in catalog; low Popularity (early deep cut) holds it off the top — kept IN as an unfamiliarity test.
 
 ---
 

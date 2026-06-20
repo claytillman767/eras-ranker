@@ -187,7 +187,7 @@ export function useBrackets(user) {
 
   // Create a new personal bracket. `desiredSize` (optional) overrides the
   // default "largest power-of-two that fits" sizing — see BRACKET_SIZES.
-  const createBracket = useCallback((categoryId, scope = 'all', desiredSize, customCategoryName, explicitContestants) => {
+  const createBracket = useCallback((categoryId, scope = 'all', desiredSize, customCategoryName, explicitContestants, emoji) => {
     // Backstop for the soft cap. The UI disables the "New bracket" entry at
     // the limit, so this normally never trips — it just guarantees the array
     // can't grow past the budget even if a caller bypasses the disabled UI.
@@ -223,6 +223,9 @@ export function useBrackets(user) {
       // Optional — when set, every screen displays this instead of the
       // curated category name. Used by the "Write your own" builder path.
       ...(customCategoryName ? { customCategoryName } : {}),
+      // Optional per-bracket icon chosen in the builder (curated emoji, or the
+      // theme emoji for a theme-based bracket). Shown on the My Brackets card.
+      ...(emoji ? { emoji } : {}),
     };
 
     persistBrackets([...brackets, bracket]);

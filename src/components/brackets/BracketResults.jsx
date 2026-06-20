@@ -1,71 +1,58 @@
+// Custom-bracket results — the champion reveal. Restyled to the weekly arena
+// look: navy arena, gold champion eyebrow, big era tile, display-serif winner
+// name, gold pill share button, and the full bracket recap.
+//
+// NOTE: a personal bracket has no other voters, so the old "X% of Swifties
+// chose the same winner" stat (which was fabricated) is GONE. We show the real,
+// honest runner-up the champion beat in the final instead.
+
 import { useState, useEffect, useRef } from 'react';
 import { FeedbackLauncher } from '../FeedbackButton';
-import { getEraColors } from '../../constants/eraColors';
+import { getEra, getEraColors } from '../../constants/eraColors';
 import { BRACKET_CATEGORIES } from '../../constants/bracketCategories';
-import { ALBUMS } from '../../data/albums';
+import { ArenaBg, GoldButton, Eyebrow, SongTile, GOLD_LT, fontUI, fontDisplay } from './weekly/WeeklyParts';
 
 const RESULTS_STYLE = `
-@keyframes confetti-fall {
-  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+@keyframes br-confetti-fall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
   100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
-@keyframes winner-reveal {
-  0% { opacity: 0; transform: scale(0.7) translateY(20px); }
-  60% { transform: scale(1.05) translateY(-4px); }
+@keyframes br-winner-reveal {
+  0%   { opacity: 0; transform: scale(0.7) translateY(20px); }
+  60%  { transform: scale(1.05) translateY(-4px); }
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
-@keyframes fade-in {
+@keyframes br-fade-in {
   from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 `;
 
-const CONFETTI_COLORS = ['#d4af37', '#a855f7', '#ec4899', '#3b82f6', '#10b981', '#f97316'];
-
-function ConfettiPiece({ style }) {
-  return (
-    <div style={{
-      position: 'fixed',
-      width: 8,
-      height: 8,
-      borderRadius: 2,
-      pointerEvents: 'none',
-      zIndex: 300,
-      ...style,
-    }} />
-  );
-}
+const CONFETTI_COLORS = ['#f5d97a', '#d4af37', '#a855f7', '#ec4899', '#5cc0ef', '#82d39a'];
 
 function Confetti() {
   const pieces = Array.from({ length: 40 }, (_, i) => ({
-    left: `${Math.random() * 100}%`,
+    left: `${(i * 37) % 100}%`,
     background: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-    animationDuration: `${2 + Math.random() * 2}s`,
-    animationDelay: `${Math.random() * 1.5}s`,
-    width: `${6 + Math.random() * 8}px`,
-    height: `${6 + Math.random() * 8}px`,
+    animationDuration: `${2 + (i % 4) * 0.5}s`,
+    animationDelay: `${(i % 6) * 0.25}s`,
+    size: `${6 + (i % 5) * 2}px`,
   }));
-
   return (
     <>
       {pieces.map((p, i) => (
-        <ConfettiPiece
-          key={i}
-          style={{
-            top: '-20px',
-            left: p.left,
-            background: p.background,
-            width: p.width,
-            height: p.height,
-            animation: `confetti-fall ${p.animationDuration} ease-in ${p.animationDelay} forwards`,
-          }}
-        />
+        <div key={i} style={{
+          position: 'fixed', top: -20, left: p.left,
+          width: p.size, height: p.size, borderRadius: 2,
+          background: p.background, pointerEvents: 'none', zIndex: 300,
+          animation: `br-confetti-fall ${p.animationDuration} ease-in ${p.animationDelay} forwards`,
+        }} />
       ))}
     </>
   );
 }
 
-// Draw a shareable winner card to a canvas
+// Draw a shareable winner card to a canvas (1080×1080).
 function drawResultCard(canvas, bracket, categoryId, categoryNameOverride) {
   if (!canvas || !bracket.winner) return;
   const ctx = canvas.getContext('2d');
@@ -73,42 +60,35 @@ function drawResultCard(canvas, bracket, categoryId, categoryNameOverride) {
   canvas.width = W;
   canvas.height = H;
 
+  const era = getEra(bracket.winner.albumId);
   const colors = getEraColors(bracket.winner.albumId);
-  const album = ALBUMS.find(a => a.id === bracket.winner.albumId);
   const cat = BRACKET_CATEGORIES.find(c => c.id === categoryId);
 
-  // Background gradient
   const grad = ctx.createLinearGradient(0, 0, W, H);
-  grad.addColorStop(0, '#0f172a');
-  grad.addColorStop(1, '#1e1b4b');
+  grad.addColorStop(0, '#1a1a2e');
+  grad.addColorStop(1, '#0f3460');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
 
-  // Golden accent strip
   ctx.fillStyle = '#d4af37';
   ctx.fillRect(0, 0, W, 8);
   ctx.fillRect(0, H - 8, W, 8);
 
-  // Album icon
-  ctx.font = '140px serif';
   ctx.textAlign = 'center';
-  ctx.fillText(album?.icon || '🎵', W / 2, 360);
+  ctx.font = '140px serif';
+  ctx.fillText(era.emoji, W / 2, 360);
 
-  // Category
-  ctx.fillStyle = '#d4af37';
+  ctx.fillStyle = '#f5d97a';
   ctx.font = 'bold 36px system-ui, -apple-system, sans-serif';
   ctx.fillText((categoryNameOverride || cat?.name || categoryId).toUpperCase(), W / 2, 460);
 
-  // "WINNER" label
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 52px system-ui, -apple-system, sans-serif';
-  ctx.fillText('WINNER', W / 2, 560);
+  ctx.fillText('CHAMPION', W / 2, 560);
 
-  // Song name
   ctx.font = 'bold 68px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = colors.secondary || '#f1f5f9';
   const name = bracket.winner.name;
-  // Wrap long names
   if (name.length > 22) {
     const mid = name.lastIndexOf(' ', 22);
     ctx.fillText(name.slice(0, mid), W / 2, 660);
@@ -117,29 +97,18 @@ function drawResultCard(canvas, bracket, categoryId, categoryNameOverride) {
     ctx.fillText(name, W / 2, 700);
   }
 
-  // Album name
   ctx.fillStyle = '#94a3b8';
   ctx.font = '34px system-ui, -apple-system, sans-serif';
-  ctx.fillText(album?.name || bracket.winner.albumId, W / 2, 820);
+  ctx.fillText(era.name, W / 2, 820);
 
-  // Watermark
   ctx.fillStyle = 'rgba(148,163,184,0.6)';
   ctx.font = '28px system-ui, -apple-system, sans-serif';
-  ctx.fillText('The Eras Ranker · erasranker.app', W / 2, 1010);
+  ctx.fillText('The Eras Ranker · erasranker.com', W / 2, 1010);
 }
 
-// Simplified bracket diagram with responsive scaling
+// Compact bracket recap — winners highlighted with their era color.
 function BracketDiagram({ bracket }) {
-  const colors = {
-    winner: '#d4af37',
-    loser: '#334155',
-    text: '#f1f5f9',
-  };
-
-  // Determine if a round is complete (all matchups have winners)
   const isRoundComplete = (round) => round.every(m => m.winner !== null);
-
-  // Find if any rounds are incomplete (current/future)
   const currentRoundIndex = bracket.rounds.findIndex(r => !isRoundComplete(r));
   const hasCurrentRound = currentRoundIndex !== -1;
 
@@ -147,67 +116,41 @@ function BracketDiagram({ bracket }) {
     <div style={{ width: '100%', overflowX: 'auto' }}>
       {bracket.rounds.map((round, ri) => {
         const isCurrent = hasCurrentRound && ri === currentRoundIndex;
-        const isPast = ri < currentRoundIndex;
-        const isFuture = ri > currentRoundIndex;
-
-        // Scale factors: current round large, past/future rounds small
-        const scale = isCurrent ? 1 : isFuture ? 0.65 : 0.8;
-        const marginBottom = isCurrent ? 24 : 16;
-        const gap = isCurrent ? 10 : 6;
+        const isFuture = hasCurrentRound && ri > currentRoundIndex;
+        const scale = isCurrent ? 1 : isFuture ? 0.65 : 0.85;
         const fontSize = isCurrent ? 12 : 10;
-        const padding = isCurrent ? '10px 12px' : '6px 8px';
-        const labelFontSize = isCurrent ? 12 : 10;
+        const padding = isCurrent ? '9px 11px' : '6px 8px';
         const opacity = isFuture ? 0.5 : 1;
 
         return (
-          <div key={ri} style={{ marginBottom, opacity, transform: `scale(${scale})`, transformOrigin: 'top left', transition: 'all 0.2s ease' }}>
+          <div key={ri} style={{ marginBottom: isCurrent ? 22 : 14, opacity, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
             <div style={{
-              fontSize: labelFontSize,
-              fontWeight: 700,
-              color: isCurrent ? '#d4af37' : '#64748b',
-              letterSpacing: '0.08em',
+              fontSize: isCurrent ? 12 : 10, fontWeight: 700,
+              color: isCurrent ? GOLD_LT : 'rgba(255,255,255,0.4)',
+              letterSpacing: '0.08em', textTransform: 'uppercase',
               marginBottom: isCurrent ? 10 : 6,
             }}>
-              {ri === bracket.rounds.length - 1 ? 'FINAL' : `ROUND ${ri + 1}`}{isCurrent && ' ← CURRENT'}
+              {ri === bracket.rounds.length - 1 ? 'Final' : `Round ${ri + 1}`}
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: isCurrent ? 8 : 5 }}>
               {round.map((m, mi) => (
-                <div key={mi} style={{
-                  display: 'flex',
-                  gap: isCurrent ? 8 : 4,
-                  alignItems: 'center',
-                }}>
+                <div key={mi} style={{ display: 'flex', gap: isCurrent ? 8 : 4, alignItems: 'center' }}>
                   {[m.song1, m.song2].map((song, si) => {
-                    const isWinner = m.winner &&
-                      m.winner.albumId === song.albumId &&
-                      m.winner.songIndex === song.songIndex;
-                    const isPlaceholder = !song.name; // Future round, no opponent yet
-                    const albumColors = getEraColors(song.albumId);
-
+                    const isWinner = m.winner && song &&
+                      m.winner.albumId === song.albumId && m.winner.songIndex === song.songIndex;
+                    const isPlaceholder = !song || !song.name;
+                    const era = song ? getEra(song.albumId) : null;
                     return (
-                      <div
-                        key={si}
-                        style={{
-                          flex: 1,
-                          padding,
-                          borderRadius: 8,
-                          background: isWinner
-                            ? `${albumColors.primary}33`
-                            : isPlaceholder
-                              ? 'rgba(255,255,255,0.02)'
-                              : 'rgba(255,255,255,0.04)',
-                          border: isWinner
-                            ? `1.5px solid ${albumColors.primary}88`
-                            : '1.5px solid rgba(255,255,255,0.08)',
-                          fontSize,
-                          fontWeight: isWinner ? 700 : 400,
-                          color: isPlaceholder ? '#334155' : (isWinner ? '#f1f5f9' : '#64748b'),
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                        }}
-                      >
-                        {isWinner && '👑 '}{isPlaceholder ? '?' : song.name}
+                      <div key={si} style={{
+                        flex: 1, padding, borderRadius: 8, fontSize,
+                        background: isWinner ? `linear-gradient(135deg, ${era.tile}, ${era.deep})`
+                          : 'rgba(255,255,255,0.05)',
+                        border: isWinner ? `1px solid ${era.tile}` : '1px solid rgba(255,255,255,0.08)',
+                        fontWeight: isWinner ? 700 : 400,
+                        color: isWinner ? '#fff' : (isPlaceholder ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.5)'),
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      }}>
+                        {isWinner && '♛ '}{isPlaceholder ? '?' : song.name}
                       </div>
                     );
                   })}
@@ -228,8 +171,9 @@ export default function BracketResults({ bracket, onTryAnother, onClose }) {
   const categoryId = bracket.categoryId;
 
   useEffect(() => {
-    setTimeout(() => setEntered(true), 100);
-    setTimeout(() => setShowConfetti(false), 4000);
+    const t1 = setTimeout(() => setEntered(true), 100);
+    const t2 = setTimeout(() => setShowConfetti(false), 4000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
   useEffect(() => {
@@ -254,178 +198,94 @@ export default function BracketResults({ bracket, onTryAnother, onClose }) {
   if (!winner) return null;
 
   const cat = BRACKET_CATEGORIES.find(c => c.id === categoryId);
-  const winnerColors = getEraColors(winner.albumId);
-  const album = ALBUMS.find(a => a.id === winner.albumId);
+  const era = getEra(winner.albumId);
+  const bracketName = bracket.customCategoryName || cat?.name || 'Bracket';
 
-  // Simulate community comparison
-  const communityMatch = 45 + ((bracket.contestants.length + winner.songIndex) % 40);
+  // Real runner-up: the song the champion beat in the final.
+  const finalRound = bracket.rounds[bracket.rounds.length - 1];
+  const finalMatch = finalRound && finalRound.length === 1 ? finalRound[0] : null;
+  const runnerUp = finalMatch
+    ? ((finalMatch.song1 && finalMatch.song1.albumId === winner.albumId && finalMatch.song1.songIndex === winner.songIndex)
+        ? finalMatch.song2 : finalMatch.song1)
+    : null;
 
   return (
-    <>
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 200,
+      maxWidth: 700, margin: '0 auto',
+      color: '#fff', fontFamily: fontUI, overflowY: 'auto',
+    }}>
       <style>{RESULTS_STYLE}</style>
       {showConfetti && <Confetti />}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
+      <ArenaBg />
+
+      <div style={{ position: 'absolute', top: 16, left: 16, zIndex: 5 }}>
+        <FeedbackLauncher variant="overlay" />
+      </div>
 
       <div style={{
-        position: 'fixed',
-        inset: 0,
-        background: '#0f172a',
-        zIndex: 200,
-        overflowY: 'auto',
-        maxWidth: 700,
-        margin: '0 auto',
+        position: 'relative', zIndex: 2,
+        padding: '52px 22px 40px', maxWidth: 460, margin: '0 auto',
+        opacity: entered ? 1 : 0, transform: entered ? 'none' : 'scale(0.96)',
+        transition: 'all 0.5s ease',
       }}>
-        {/* Feedback launcher — pinned top-left so it never overlaps content */}
-        <div style={{ position: 'absolute', top: 14, left: 14, zIndex: 5 }}>
-          <FeedbackLauncher variant="overlay" />
+
+        {/* Champion reveal */}
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div style={{ display: 'inline-block', animation: 'br-winner-reveal 0.6s ease-out both' }}>
+            <SongTile song={winner} size={92} glow />
+          </div>
+          <div style={{ marginTop: 14, animation: 'br-fade-in 0.4s ease 0.2s both' }}>
+            <Eyebrow color={GOLD_LT}>✦ {bracket.emoji ? `${bracket.emoji} ` : ''}{bracketName} champion ✦</Eyebrow>
+          </div>
+          <div style={{
+            fontFamily: fontDisplay, fontSize: 34, lineHeight: 1.1, letterSpacing: -0.4,
+            marginTop: 10, animation: 'br-winner-reveal 0.6s ease-out 0.1s both',
+          }}>
+            {winner.name}
+          </div>
+          <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginTop: 6, animation: 'br-fade-in 0.4s ease 0.3s both' }}>
+            {era.name}
+          </div>
+          {runnerUp && runnerUp.name && (
+            <div style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.42)', marginTop: 12, animation: 'br-fade-in 0.4s ease 0.4s both' }}>
+              crowned over <span style={{ color: 'rgba(255,255,255,0.72)', fontWeight: 600 }}>{runnerUp.name}</span> in the final
+            </div>
+          )}
         </div>
-        <div style={{
-          padding: '40px 20px 40px',
-          maxWidth: 440,
-          margin: '0 auto',
-          opacity: entered ? 1 : 0,
-          transform: entered ? 'none' : 'scale(0.95)',
-          transition: 'all 0.5s ease',
-        }}>
 
-          {/* Winner reveal */}
-          <div style={{
-            textAlign: 'center',
-            marginBottom: 32,
-          }}>
-            <div style={{
-              fontSize: 48,
-              marginBottom: 8,
-              animation: 'winner-reveal 0.6s ease-out both',
-            }}>
-              {album?.icon || '🏆'}
-            </div>
-            <div style={{
-              fontSize: 12,
-              fontWeight: 700,
-              color: '#d4af37',
-              letterSpacing: '0.12em',
-              marginBottom: 10,
-              animation: 'fade-in 0.4s ease 0.2s both',
-            }}>
-              {(bracket.customCategoryName || cat?.name || 'BRACKET').toUpperCase()} WINNER
-            </div>
-            <div style={{
-              fontSize: 28,
-              fontWeight: 900,
-              color: '#ffffff',
-              lineHeight: 1.2,
-              marginBottom: 6,
-              animation: 'winner-reveal 0.6s ease-out 0.1s both',
-            }}>
-              {winner.name}
-            </div>
-            <div style={{
-              fontSize: 14,
-              color: '#64748b',
-              animation: 'fade-in 0.4s ease 0.3s both',
-            }}>
-              {album?.name}
-            </div>
-          </div>
+        {/* Actions */}
+        <div style={{ animation: 'br-fade-in 0.4s ease 0.5s both', marginBottom: 30 }}>
+          <GoldButton full onClick={handleShare}>Share result 📲</GoldButton>
+          <button
+            onClick={onTryAnother}
+            style={{
+              width: '100%', marginTop: 10, padding: '13px', borderRadius: 999,
+              background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+              color: '#fff', fontFamily: fontUI, fontSize: 14, fontWeight: 600, cursor: 'pointer',
+            }}
+          >Back to brackets</button>
+        </div>
 
-          {/* Community comparison */}
-          <div style={{
-            background: 'rgba(168,85,247,0.1)',
-            border: '1.5px solid rgba(168,85,247,0.25)',
-            borderRadius: 14,
-            padding: '16px',
-            marginBottom: 20,
-            animation: 'fade-in 0.4s ease 0.4s both',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontSize: 12, color: 'var(--brand-text)', fontWeight: 700, marginBottom: 6 }}>
-              HOW DO YOU COMPARE?
-            </div>
-            <div style={{ fontSize: 24, fontWeight: 800, color: '#f1f5f9', marginBottom: 4 }}>
-              {communityMatch}%
-            </div>
-            <div style={{ fontSize: 13, color: '#94a3b8' }}>
-              of Swifties who completed this bracket chose the same winner
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div style={{
-            display: 'flex',
-            gap: 10,
-            marginBottom: 28,
-            animation: 'fade-in 0.4s ease 0.5s both',
-          }}>
-            <button
-              onClick={handleShare}
-              style={{
-                flex: 1,
-                padding: '13px',
-                background: 'linear-gradient(135deg, #d4af37, #f5d97a)',
-                border: 'none',
-                borderRadius: 12,
-                color: '#1a1000',
-                fontSize: 14,
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              Share Result 📲
-            </button>
-            <button
-              onClick={onTryAnother}
-              style={{
-                flex: 1,
-                padding: '13px',
-                background: 'rgba(255,255,255,0.08)',
-                border: '1.5px solid rgba(255,255,255,0.15)',
-                borderRadius: 12,
-                color: '#f1f5f9',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              Try Another
-            </button>
-          </div>
-
-          {/* Full bracket diagram */}
-          <div style={{
-            animation: 'fade-in 0.4s ease 0.6s both',
-          }}>
-            <div style={{
-              fontSize: 12,
-              fontWeight: 700,
-              color: '#64748b',
-              letterSpacing: '0.08em',
-              marginBottom: 14,
-            }}>
-              FULL BRACKET
-            </div>
+        {/* Full bracket recap */}
+        <div style={{ animation: 'br-fade-in 0.4s ease 0.6s both' }}>
+          <Eyebrow color="rgba(255,255,255,0.5)">Full bracket</Eyebrow>
+          <div style={{ marginTop: 12 }}>
             <BracketDiagram bracket={bracket} />
           </div>
-
-          <button
-            onClick={onClose}
-            style={{
-              width: '100%',
-              marginTop: 24,
-              padding: '12px',
-              background: 'none',
-              border: '1px solid rgba(255,255,255,0.15)',
-              borderRadius: 12,
-              color: '#64748b',
-              fontSize: 13,
-              cursor: 'pointer',
-              animation: 'fade-in 0.4s ease 0.7s both',
-            }}
-          >
-            Back to Brackets
-          </button>
         </div>
+
+        <button
+          onClick={onClose}
+          style={{
+            width: '100%', marginTop: 22, padding: '11px',
+            background: 'transparent', border: 'none',
+            color: 'rgba(255,255,255,0.4)', fontFamily: fontUI, fontSize: 13, cursor: 'pointer',
+            animation: 'br-fade-in 0.4s ease 0.7s both',
+          }}
+        >Done →</button>
       </div>
-    </>
+    </div>
   );
 }

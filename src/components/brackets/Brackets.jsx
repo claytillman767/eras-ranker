@@ -110,14 +110,14 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
   // anything"). 'ok' = routed into matchup. 'locked' = routed to paywall.
   // 'failed' = createBracket couldn't produce a bracket; builder shows
   // an inline error.
-  function handleBuilderStart(categoryId, scope, size, customCategoryName, contestants) {
+  function handleBuilderStart(categoryId, scope, size, customCategoryName, contestants, emoji) {
     if (!isPro) {
       // eslint-disable-next-line no-console
       console.warn('[handleBuilderStart] not Pro — routing to locked', { categoryId, scope, size });
       setScreen('locked');
       return 'locked';
     }
-    const id = createBracket(categoryId, scope, size, customCategoryName, contestants);
+    const id = createBracket(categoryId, scope, size, customCategoryName, contestants, emoji);
     if (id) {
       setActiveBracketId(id);
       setScreen('matchup');
@@ -175,8 +175,8 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
         <Matchup
           song1={matchup.song1}
           song2={matchup.song2}
-          categoryId={activeBracket.categoryId || 'most-devastating'}
           weekLabel={weekLabel}
+          emoji={activeBracket.emoji}
           roundIndex={activeBracket.currentRound}
           totalRounds={totalRounds}
           matchupIndex={activeBracket.currentMatchupIndex}
@@ -196,6 +196,7 @@ export default function Brackets({ user, isPro, unlockPro, signIn }) {
       <Tree
         bracket={activeBracket}
         weekLabel={weekLabel}
+        emoji={activeBracket.emoji}
         onClose={backToLanding}
         onOpenMatchup={() => setScreen('matchup')}
       />

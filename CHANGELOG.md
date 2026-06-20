@@ -16,6 +16,23 @@ Newest entries go at the top.
 
 ---
 
+## 0.32.0 — 2026-06-15
+
+### Changed
+- **Custom brackets now match the weekly bracket's look.** The whole "play your bracket" experience — the "Which one wins?" voting screen, the between-rounds recap, the full-bracket view, and the champion screen — has been redesigned to match the polished weekly community bracket: a deep navy arena, big full-color era cards you tap once to crown a winner, gold accents, and your bracket's emoji right in the header.
+
+### Removed
+- **No more made-up community stat on your personal results.** A custom bracket is yours alone, so the champion screen no longer shows an invented "% of Swifties chose the same winner" number. It now celebrates the real runner-up your champion beat in the final.
+
+---
+
+## 0.31.0 — 2026-06-14
+
+### Added
+- **Give your custom brackets an icon.** When you build your own bracket, you can now pick an emoji for it from a set of music- and Taylor-themed icons. Your chosen icon shows on the bracket's card in your My Brackets list and on the "Bracket ready" screen, so each tournament is easy to tell apart at a glance. Theme brackets (Best Breakup, Best Chorus, etc.) automatically use their theme icon.
+
+---
+
 ## 0.30.0 — 2026-06-14
 
 ### Added

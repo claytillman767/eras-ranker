@@ -68,8 +68,8 @@ no two consecutive weeks repeat. Category-file numbering (`NN-slug.md`) matches 
 | Wk | Category | Hook | Why here | Mood | Source | Status |
 |----|----------|------|----------|------|--------|--------|
 | 1 | Best Breakup Song | "For when it's truly over" | Instantly legible, radio-single-stacked, argument-starting — a strong onboarding vote | Heartbreak/spite | New | **Finalized top-25** |
-| 2 | Best Chorus | "The part you scream at concerts" | Famous-song-stacked, high-energy, alternates mood away from Wk 1 | Joy/energy | Existing | Not started |
-| 3 | Most Romantic Song | "The one you send without context" | Broad appeal, swoony, shareable | Love | Existing | Not started |
+| 2 | Best Chorus | "The part you scream at concerts" | Famous-song-stacked, high-energy, alternates mood away from Wk 1 | Joy/energy | Existing | **Scored top-25 (criteria proposed, awaiting Clay review)** |
+| 3 | Most Romantic Song | "The one you send without context" | Broad appeal, swoony, shareable | Love | Existing | **Scored top-25 (criteria proposed, awaiting Clay review)** |
 | 4 | Best Opening Line | "First impressions that never leave" | Quotable, starts arguments | Craft | Existing | Not started |
 | 5 | Saddest Song | "The one you cry to" | The big emotional bracket; plainer reskin of "Most Devastating" placeholder | Heartbreak | Reskin | Not started |
 | 6 | Best Lyric | "The line you've thought about getting tattooed" | Peak shareability, mid-run spike | Quotability | New | Not started |
@@ -84,6 +84,10 @@ no two consecutive weeks repeat. Category-file numbering (`NN-slug.md`) matches 
 - **Wk 1 Best Breakup Song** opens the launch (moved up from Wk 3). Hook reworded from the
   old "driving away" framing to "for when it's truly over," matching the finalized category
   (it covers the whole feeling of an ending, not just the defiant exit).
+- **Wk 2 Best Chorus / Wk 3 Most Romantic** were scored in an autonomous unattended run
+  (2026-05-31) WITHOUT the normal Step-1 criteria gate, per Clay's explicit one-time
+  authorization. Their scope/criteria/weights are the agent's proposal and need Clay's
+  review before they're locked (and before their `DIMS`/`GUIDE` lines go to the ledger).
 - **Wk 5 Saddest Song** uses the plainer word over the "Most Devastating" placeholder
   copy. Same song pool, friendlier title. One-line swap if Clay prefers the original.
 - **Wk 11 is open** — freed up when Best Breakup moved to Wk 1 and the rest shifted up.
@@ -142,13 +146,34 @@ user base. Keep, don't delete.
 ---
 
 ## STATUS / NEXT STEPS
+- **App categories refreshed to all-non-lyric (2026-06-14).** The app now ships a
+  vibe/situational category set so nothing depends on on-screen lyrics (rule 4). Source of
+  truth is `src/constants/bracketCategories.js` (`BRACKET_CATEGORIES` + `WEEKLY_CATEGORY_NAMES`);
+  the custom builder's featured themes live in `THEME_PRESENTATION` in
+  `src/components/brackets/BracketBuilder.jsx`. The 13 featured/rotating categories: Best
+  Breakup Song, Best Chorus, Most Romantic Song, Most Devastating Song, **Best Driving Song**,
+  **Best Hype Song**, **Best Revenge Song**, **Best Dance Floor Song**, **Best Summer Song**,
+  **Best Fall Song**, Best Vocal Performance, Most Underrated Song, **Most Iconic Song** (bold =
+  new this pass). The three lyric-only ones (Best Bridge / Opening Line / Closing Line) are kept
+  in `BRACKET_CATEGORIES` for Phase 2 but are NOT shown as builder themes and NOT in the weekly
+  rotation while `LYRICS_DISPLAY_ENABLED = false`. The 12-week launch calendar below is the
+  editorial plan; where a planned week is a lyric category, it stays Phase 2 until lyrics can be
+  shown. The new vibe categories don't yet have scored top-25 shortlists — they run on the
+  Phase-A random-16 pool until the `bracket-picker` builds them.
 - Calendar: **Best Breakup Song is Week 1** (the launch opener); Best Chorus → Wk 2;
   everything else shifted up. **Wk 11 is the open slot.**
 - Rotation strategy settled: rematch model is the default rerun mechanic (full spec in the
   subagent). Overlap is a scheduling input only, never a scoring filter.
 - **Wk 1 Best Breakup Song finalized** → `categories/01-best-breakup-song.md` (scored top-25
   with criteria, weights, guidance line, app blurbs). Final 16 + seeding still Clay's call.
-- Open decisions: (1) Best Breakup final 16 + seeding; (2) fill the Wk 11 slot.
+- **Wk 2 Best Chorus scored** → `categories/02-best-chorus.md` and **Wk 3 Most Romantic Song
+  scored** → `categories/03-most-romantic-song.md` (autonomous run 2026-05-31, no Step-1 gate
+  per Clay's explicit unattended-run authorization). Scope/criteria/weights were set by the
+  agent and are **flagged PROPOSED for Clay's review** — nothing locked. Once Clay approves or
+  adjusts the criteria, write each category's `DIMS` + `GUIDE` lines to the feedback ledger
+  (deferred until then, since the gate was skipped). Final 16 + seeding for both still Clay's call.
+- Open decisions: (1) Best Breakup final 16 + seeding; (2) review Wk 2 / Wk 3 criteria, then
+  cut each to 16 + seed; (3) fill the Wk 11 slot.
 - Best Era remains on the backup shelf (album bracket, doesn't use the subagent).
 - **Future build-out:** a Firebase → `results/results.json` export so reruns can reference
   past results. Manual export first; automate later. Full instructions for Claude Code are
