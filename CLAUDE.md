@@ -228,8 +228,8 @@ design framework (lavender brand spine + a per-album era-color layer, Didone dis
 grotesque body type, the Editorial-base / Era-Block "rule of one", voice, and the rule of
 13). **Read it before building or changing any screen, component, or visual detail**, and
 apply its tokens as inline-style values (the app uses inline styles only — no CSS classes).
-The era palette has a code home at `src/data/eraColors.js` (`getEra()`, `ERA_TILES`) — use
-it rather than re-typing hex values.
+The era palette has a code home at `src/constants/eraColors.js` (`getEra()`, `ERA_TILES`) —
+use it rather than re-typing hex values.
 
 - **It's the target state, not a description of today.** The live app is migrating toward
   it. Apply it to anything you build or change; don't repaint untouched screens just to

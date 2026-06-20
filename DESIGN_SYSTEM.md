@@ -22,7 +22,7 @@ for the fans who look closely.
 - **Apply tokens as inline styles.** The app styles with **inline styles only** (no Tailwind
   classes in JSX — see CLAUDE.md → Stack). So these tokens are values you hard-code into
   `style={{ ... }}`, not CSS class names. The era palette already has a code home at
-  [src/data/eraColors.js](src/data/eraColors.js) (`getEra()`, `ERA_TILES`) — use it rather
+  [src/constants/eraColors.js](src/constants/eraColors.js) (`getEra()`, `ERA_TILES`) — use it rather
   than re-typing hex values.
 - **Don't repaint untouched screens.** This is the target state; the live app is migrating
   toward it. Apply the system to anything you build or change, and improve neighbouring
@@ -71,7 +71,7 @@ are warmed slightly toward purple so white cards never feel clinical on the lave
 
 Twelve palettes — one per album. Each exposes a **gradient** (for full-bleed Era-Block
 surfaces), a **primary** (accents, scores, progress fills) and a **deep** (text on tints).
-Whenever a song or album appears, it wears its era. Code home: [src/data/eraColors.js](src/data/eraColors.js).
+Whenever a song or album appears, it wears its era. Code home: [src/constants/eraColors.js](src/constants/eraColors.js).
 
 | Era | Year | Icon | Primary | Deep | Gradient |
 |---|---|---|---|---|---|
@@ -174,6 +174,7 @@ consistently**, and add the decision to this section in the same change — that
 system grows without drifting. A few that already have a de-facto pattern in the code worth
 matching:
 
+- **Dark mode** — the app SHIPS a dark theme (`:root[data-theme="dark"]` in `src/index.css`, toggled in Settings → Preferences, synced via `useSettings`), but this framework is written light-only. Decide whether to define dark tokens for the spine + the 12 eras (so dark mode is on-brand) or descope dark mode for launch. Until then, treat dark mode as an open gap, not a styled surface.
 - **Spacing scale** — no formal scale defined. Lean on a simple 4px-based rhythm (4 / 8 / 12 / 16 / 24 / 32) until one is set.
 - **Corner radii** — "round everything" is the rule, but exact radii per element (cards vs pills vs buttons) aren't fixed. Pills/chips are fully rounded; cards are soft-rounded.
 - **Shadows** — "soft shadow" on buttons/cards isn't a defined token yet.
