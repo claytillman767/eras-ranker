@@ -221,8 +221,31 @@ Companion files (all under the repo, none built by Vite, nothing in `src/` impor
 Judging is grounded in `taylor_swift_lyrics.txt`. To invoke: ask for a category by name or
 week (e.g. "build the Best Breakup bracket" / "do week 2"), and the subagent runs its process.
 
+## Design system — DESIGN_SYSTEM.md is the source of truth
+
+All UI work follows **[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)** at the repo root — the binding
+design framework (lavender brand spine + a per-album era-color layer, Didone display /
+grotesque body type, the Editorial-base / Era-Block "rule of one", voice, and the rule of
+13). **Read it before building or changing any screen, component, or visual detail**, and
+apply its tokens as inline-style values (the app uses inline styles only — no CSS classes).
+The era palette has a code home at `src/data/eraColors.js` (`getEra()`, `ERA_TILES`) — use
+it rather than re-typing hex values.
+
+- **It's the target state, not a description of today.** The live app is migrating toward
+  it. Apply it to anything you build or change; don't repaint untouched screens just to
+  conform — that's its own kind of churn.
+- **If a needed value isn't specified** (a spacing step, a shadow, a radius), pick a
+  sensible one, use it consistently, and record the decision in DESIGN_SYSTEM.md's "Not yet
+  specified" section in the same change — that's how the system grows without drifting.
+- **Canonical copy is the tracked `DESIGN_SYSTEM.md`.** The gitignored `Claude Design/`
+  brand-template file is the design-tool scratchpad; if the look evolves there, fold the
+  decisions back into DESIGN_SYSTEM.md so the two never diverge.
+- Changing the design language itself (a token, a type rule, the color rhythm) is a
+  material design change — update DESIGN_SYSTEM.md and bump its "v" + date at the top as
+  part of the same ship.
+
 ## Claude Design folder (reference only — not part of the app)
-The top-level `Claude Design/` folder holds UI design handoffs produced by a separate AI design tool. It is **not part of the running app** — nothing in `src/` imports from it, and Vite never builds it.
+The top-level `Claude Design/` folder holds UI design handoffs produced by a separate AI design tool. It is **not part of the running app** — nothing in `src/` imports from it, and Vite never builds it. The brand-template file in here is the design-tool scratchpad; its **committed, canonical home is [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)** (see the section above).
 
 - **Gitignored on purpose** — kept out of git so design experiments don't bloat the repo. Listed in `.gitignore`; never commit it.
 - **Reference for future UI work** — the user pulls these in when redesigning a screen. Treat the JSX/HTML inside as inspiration to translate into real components, not files to copy verbatim.
