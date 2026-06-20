@@ -713,6 +713,13 @@ The flow:
    on main should list every file you expected. If it shows only
    the version bump and CHANGELOG, you forgot to stage the actual
    code; the deploy will go out empty.
+9. **Delete the branch once it's merged** — the moment a feature
+   branch is in `main`, delete it both places so branches don't pile
+   up: `git branch -d <branch>` (local) and `git push origin --delete
+   <branch>` (remote). Skip this in sandbox/web mode — the user
+   deletes the branch when they merge the PR on GitHub (the "Delete
+   branch" button right there). A branch left undeleted after merge is
+   the #1 cause of clutter; see "### Branch hygiene" below.
 
 If a build fails or there's something genuinely uncertain about the
 change, stop and ask — but the default is "ship it." Don't pause to
@@ -735,6 +742,57 @@ to ship this?" prompt. CLAUDE.md is docs-only, so:
 - Commit message: short imperative like `"Update CLAUDE.md: <what
   changed>"`
 - Then push the branch + merge to main exactly like any other ship
+
+### Branch hygiene — keep only `main` plus live work
+Branches should be deleted as soon as they merge (step 9 above). They
+still accumulate over time because **Claude Code web/cloud sessions
+auto-create `claude/*` branches** that nobody cleans up, and because
+older sessions didn't delete after merging. If Clay ever says "the
+branches are messy" or asks for a branch review/cleanup, this is the
+drill — it's a safe, repeatable chore, not a research project.
+
+**First, separate shipped work from real pending work.** A branch that
+is already merged into `main` contains nothing new — it's pure clutter,
+safe to delete without reading it. Only *unmerged* branches can hold
+work worth recovering, and even those are usually stale (the app moves
+fast; QuickScore alone was fully rewritten between v0.8 and v0.32).
+
+```bash
+git fetch --all --prune
+# Already in main → safe to delete, no review needed:
+git branch -r --merged origin/main | grep -v 'origin/HEAD' | grep -v 'origin/main$'
+# NOT in main → the only branches worth actually looking at:
+git branch -r --no-merged origin/main | grep -v 'origin/HEAD'
+```
+
+For each *unmerged* branch, don't trust the name — check whether its
+work already landed in `main` by another path (features get redesigned
+past recognition, or re-shipped from a fresh branch). Compare the real
+diff against today's files before assuming there's anything to save:
+`git log origin/main..origin/<branch>` and
+`git diff $(git merge-base origin/main origin/<branch>)..origin/<branch>`.
+
+**Full prune (delete every branch except `main`)** — what Clay means by
+"full tidy":
+```bash
+# Local: delete all but main
+git branch --format='%(refname:short)' | grep -v '^main$' | xargs -r git branch -D
+# Remote: delete all but main — build the list, THEN push once
+git branch -r | grep -v -- '->' | grep -vE '^\s*origin/main$' \
+  | sed -E 's#^\s*origin/##' | grep -vE '^(origin|HEAD)$' \
+  | xargs -r git push origin --delete
+```
+**Gotcha (learned the hard way):** `git push origin --delete` is
+all-or-nothing — one bad ref aborts the whole push and deletes nothing.
+The usual bad ref is the remote `HEAD` pointer sneaking in as a bare
+`origin`, which is why the remote command above explicitly strips
+`'->'`, `origin`, and `HEAD` before pushing. Always eyeball the list
+before the push; confirm with `git branch -a` after.
+
+Deleting branches never touches code on `main` — the live app is
+unaffected. Treat a full prune as low-stakes, but since it's an
+outward-facing action, do the safe split first and tell Clay which
+branches (if any) hold unmerged work before wiping everything.
 
 The reason: keeping CLAUDE.md in sync with reality across sessions
 matters more than a confirmation step, and forgetting to ship a
